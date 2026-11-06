@@ -300,7 +300,15 @@ def pc_package_checks(report, folder, pc, contract):
         # The artifact's exact bytes are verified by its manifest above. JSON
         # indentation/newlines need not equal the source resource's formatting.
         verify_json_equivalent(layout['defaults']/'overlay-style.json', pc/'src/ds_overlay_default.json')
-        require(sha(game/'DeadSpace.ipa') in contract['accepted_ipa_sha256'], 'Unknown/derived PC IPA')
+        if manifest.get('marker_required') is True:
+            require(not (game/'DeadSpace.ipa').exists(), 'Marker package must not embed the game IPA')
+            require(not (folder/'Assets/texture-packs').exists(), 'Marker package must not embed texture packs')
+            require(re.fullmatch(r'[0-9a-f]{64}', str(manifest.get('marker_id', ''))) is not None, 'Marker package marker_id invalid')
+            require(re.fullmatch(r'[0-9a-f]{64}', str(manifest.get('marker_sha256', ''))) is not None, 'Marker package marker_sha256 invalid')
+            require(manifest.get('marker_install_root') == 'Documents/DeadSpaceLegacy/marker-content/<marker_id>', 'Marker install root changed')
+        else:
+            require((game/'DeadSpace.ipa').is_file(), 'PC package has no game IPA')
+            require(sha(game/'DeadSpace.ipa') in contract['accepted_ipa_sha256'], 'Unknown/derived PC IPA')
         bank = (pc/'res/overlay/deadspace_iphone.bin').read_bytes()
         executable = (game/'touchHLE.exe').read_bytes()
         require(bank in executable, 'PC executable does not embed current native text bank')
@@ -309,7 +317,8 @@ def pc_package_checks(report, folder, pc, contract):
             verify_hash(font_path, expected)
             require(font_path.read_bytes() in executable, 'PC executable lacks current role font: ' + relative)
         require(manifest['native_bank_sha256'] == hashlib.sha256(bank).hexdigest(), 'PC bank manifest drift')
-        return {'files': len(manifest['files']), 'declared_source_files': len(manifest['source_sha256']), 'embedded_native_bank': True}
+        return {'files': len(manifest['files']), 'declared_source_files': len(manifest['source_sha256']), 'embedded_native_bank': True,
+                'marker_required': bool(manifest.get('marker_required'))}
     report.check('pc.package', check)
 
 

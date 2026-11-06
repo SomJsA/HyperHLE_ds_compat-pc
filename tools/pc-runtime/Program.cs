@@ -103,6 +103,7 @@ namespace DeadSpaceBootstrap
             if(firstConfiguration){ApplyDetectedGraphicsDefaults();SaveSettings();}
             UpdateQualityPreset();
             WatchGame();
+            Shown += delegate { EnsureMarkerReady(false); };
         }
 
         private static void AddComboRow(Control parent, string label, int y, ComboBox combo, string[] items)
@@ -162,8 +163,7 @@ namespace DeadSpaceBootstrap
                 Path.Combine(baseDir, "DeadSpace.ipa"),
                 Path.Combine(baseDir, "Dead Space-v1.3.34.ipa"),
                 Path.Combine(baseDir, "touchHLE_apps", "DeadSpace.ipa"),
-                Path.Combine(baseDir, "touchHLE_apps", "DeadSpace-ipad2.ipa"),
-                @"D:\BaiduNetdiskDownload\Dead Space-v1.3.34-jack821309.ipa"
+                Path.Combine(baseDir, "touchHLE_apps", "DeadSpace-ipad2.ipa")
             };
             foreach (string candidate in candidates)
             {

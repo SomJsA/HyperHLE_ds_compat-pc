@@ -20,15 +20,15 @@ namespace DeadSpaceBootstrap
 
         private void BuildStorageControls(Control page)
         {
-            AddComboRow(page, "存档位置", 238, saveMode, new[] { "便携（启动器目录）", "文档（当前用户）" });
-            storagePath.Location = new Point(30, 280); storagePath.Size = new Size(675, 70);
+            AddComboRow(page, "存档位置", 306, saveMode, new[] { "便携（启动器目录）", "文档（当前用户）" });
+            storagePath.Location = new Point(30, 348); storagePath.Size = new Size(675, 70);
             page.Controls.Add(storagePath);
-            var copy = new Button { Text = "从另一模式复制存档到所选模式", Location = new Point(30, 362), Size = new Size(300, 38) };
+            var copy = new Button { Text = "从另一模式复制存档到所选模式", Location = new Point(30, 430), Size = new Size(300, 38) };
             page.Controls.Add(copy);
-            LabelText(page, "切换位置不会自动合并进度；空目录会新建进度。复制只接受空目标，保留源档并逐文件校验。\r\n复制方向：另一模式 → 当前所选模式。请先退出游戏；已有目标存档时拒绝覆盖。", 30, 414, 675, 65);
-            LabelText(page, "三个槽位，一个 ZIP：同时包含全部现有档案和公共设置，可与 Android 互导。\r\n导入前自动备份当前三槽位；请先退出游戏。",30,492,675,55);
-            var exportZip=new Button {Text="导出三槽位 ZIP",Location=new Point(30,558),Size=new Size(300,38)};
-            var importZip=new Button {Text="导入 ZIP 并恢复三槽位",Location=new Point(348,558),Size=new Size(330,38)};
+            LabelText(page, "切换位置不会自动合并进度；空目录会新建进度。复制只接受空目标，保留源档并逐文件校验。\r\n复制方向：另一模式 → 当前所选模式。请先退出游戏；已有目标存档时拒绝覆盖。", 30, 482, 675, 65);
+            LabelText(page, "三个槽位，一个 ZIP：同时包含全部现有档案和公共设置，可与 Android 互导。\r\n导入前自动备份当前三槽位；请先退出游戏。",30,560,675,55);
+            var exportZip=new Button {Text="导出三槽位 ZIP",Location=new Point(30,626),Size=new Size(300,38)};
+            var importZip=new Button {Text="导入 ZIP 并恢复三槽位",Location=new Point(348,626),Size=new Size(330,38)};
             page.Controls.Add(exportZip);page.Controls.Add(importZip);
             exportZip.Click+=delegate {using(var dialog=new SaveFileDialog {Filter="三槽位存档包 (*.zip)|*.zip",FileName="DeadSpace-Three-Slots-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".zip",OverwritePrompt=false})
                 {if(dialog.ShowDialog(this)!=DialogResult.OK)return;try {SaveBundle.Export(SelectedDataRoot(),dialog.FileName);status.Text="已导出全部三槽位及公共设置："+dialog.FileName;}catch(Exception error){status.Text="未导出："+error.Message;}}};

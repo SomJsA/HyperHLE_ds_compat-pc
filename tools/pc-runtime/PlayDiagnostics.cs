@@ -252,7 +252,7 @@ namespace DeadSpaceBootstrap
                     implementation_commit=StartupReviewData.Text(manifest,"implementation_commit"),distribution_id=StartupReviewData.Text(manifest,"distribution_id"),cpu=detectedHardware.CpuName,gpu=detectedHardware.GpuName,
                     dedicated_gpu_bytes=detectedHardware.DedicatedBytes,os=Environment.OSVersion.ToString(),cpu_logical_count=Environment.ProcessorCount,resources=resources,
                     requested=new {render_scale=SelectedRenderScale(),render_resolution=RenderResolutionDiagnostic(),output=SelectedOutputSize()??"internal",fps_cap=Convert.ToString(fpsCap.SelectedItem),msaa=Convert.ToString(msaaSamples.SelectedItem),anisotropy=Convert.ToString(anisotropy.SelectedItem),
-                        texture_scale=hdTextures.Checked?(texture8x.Checked?8:texture4x.Checked?4:2):1,texture_pack_manifest_sha256=packHash,fsr=Convert.ToString(fsrMode.SelectedItem),gpu_copy=gpuPresentCopy.Checked,gpu_text=gpuTextOverlay.Checked},
+                        texture_scale=hdTextures.Checked?(texture6x.Checked?6:texture4x.Checked?4:2):1,texture_pack_manifest_sha256=packHash,fsr=Convert.ToString(fsrMode.SelectedItem),gpu_copy=gpuPresentCopy.Checked,gpu_text=gpuTextOverlay.Checked},
                     resources_identity_scope="packaged fingerprints; native mounted text fingerprint recorded by runtime; unknown resource acceptance remains unknown",
                     privacy=new {automatic_screenshots=false,explicit_F7_game_frame=true,recording=false,keystrokes=false,saves=false,automatic_upload=false,full_personal_paths=false}});
                 diagnosticSession=session;startupReportPath=Path.Combine(session,"startup.json");

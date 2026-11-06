@@ -12,20 +12,20 @@ namespace DeadSpaceBootstrap
         private readonly CheckBox hdTextures = new CheckBox();
         private readonly RadioButton texture2x = new RadioButton();
         private readonly RadioButton texture4x = new RadioButton();
-        private readonly RadioButton texture8x = new RadioButton();
+        private readonly RadioButton texture6x = new RadioButton();
         private readonly Panel textureChoices = new Panel();
         private readonly Label textureMemory = new Label();
         private readonly Dictionary<string, string> textureRoots = new Dictionary<string, string>();
 
         private string TextureScale()
-        { return texture8x.Checked ? "8" : texture4x.Checked ? "4" : "2"; }
+        { return texture6x.Checked ? "6" : texture4x.Checked ? "4" : "2"; }
 
         private void BuildTextureOptions(Control page, int y)
         {
             AddCheck(page, hdTextures, y, "启用高清纹理包", false);
             textureChoices.SetBounds(174, y + 34, 490, 32);
-            RadioButton[] buttons = { texture2x, texture4x, texture8x };
-            string[] labels = { "2×", "4×", "8×" };
+            RadioButton[] buttons = { texture2x, texture4x, texture6x };
+            string[] labels = { "2×", "4×", "6×" };
             for (int i = 0; i < buttons.Length; i++)
             {
                 buttons[i].Text = labels[i];
@@ -42,22 +42,24 @@ namespace DeadSpaceBootstrap
         }
 
         private void ResetTextureSettings()
-        { hdTextures.Checked = true; texture2x.Checked = false; texture4x.Checked = true; texture8x.Checked = false; UpdateTextureDescription(); }
+        { hdTextures.Checked = true; texture2x.Checked = false; texture4x.Checked = true; texture6x.Checked = false; UpdateTextureDescription(); }
 
         private void UpdateTextureDescription()
         {
             textureChoices.Enabled = hdTextures.Checked;
-            var buttons = new[] { texture2x, texture4x, texture8x };
-            var scales = new[] { "2", "4", "8" };
+            var buttons = new[] { texture2x, texture4x, texture6x };
+            var scales = new[] { "2", "4", "6" };
             for (int i = 0; i < buttons.Length; i++)
             {
                 bool installed = TexturePackInstalled(scales[i]);
                 buttons[i].Text = scales[i] + "× · " + (installed ? "已安装" : "未安装");
             }
-            string estimate = TextureScale() == "8" ? "9.42 GiB" : TextureScale() == "4" ? "2.96 GiB" : "0.82 GiB";
+            string estimate = TextureScale() == "6"
+                ? "由实际 marker 资源和驱动统计，本启动器不预填峰值"
+                : TextureScale() == "4" ? "2.96 GiB" : "0.82 GiB";
             textureMemory.Text = "全量 mip 显存估算：2× 约 0.82 GiB · 4× 约 2.96 GiB · 8× 约 9.42 GiB。\r\n"
                 + (hdTextures.Checked ? "当前 " + TextureScale() + "×：约 " + estimate + "。" : "未启用：使用原版纹理。")
-                + "另需 CPU 解码和驱动空间；不是实测关卡峰值。\r\n8× 包两张大图受 8192 上限约束为 4×；5 张 spec 保留原版。";
+                + "另需 CPU 解码和驱动空间；不是实测关卡峰值。\r\n6× marker 资源由独立安装记录管理。";
         }
 
         private string ResolveTexturePath(string path)
@@ -81,12 +83,20 @@ namespace DeadSpaceBootstrap
 
         private void LoadTextureSettings(Dictionary<string, string> values)
         {
-            foreach (string scale in new[] { "2", "4", "8" })
+            foreach (string scale in new[] { "2", "4", "6" })
                 textureRoots[scale] = Get(values, "texture_root_" + scale, Path.Combine(DistributionLayout.Assets(baseDir), "texture-packs", scale));
             string selected = Get(values, "texture_scale", "4");
-            texture2x.Checked = selected != "4" && selected != "8";
+            if (selected == "8")
+            {
+                selected = "6";
+                textureRoots["6"] = Get(
+                    values,
+                    "texture_root_8",
+                    textureRoots["6"]);
+            }
+            texture2x.Checked = selected != "4" && selected != "6";
             texture4x.Checked = selected == "4";
-            texture8x.Checked = selected == "8";
+            texture6x.Checked = selected == "6";
             hdTextures.Checked = GetBool(values, "hd_textures", true);
             UpdateTextureDescription();
         }
@@ -95,7 +105,7 @@ namespace DeadSpaceBootstrap
         {
             lines.Add("hd_textures=" + (hdTextures.Checked ? "1" : "0"));
             lines.Add("texture_scale=" + TextureScale());
-            foreach (string scale in new[] { "2", "4", "8" })
+            foreach (string scale in new[] { "2", "4", "6" })
             {
                 string path;
                 if (textureRoots.TryGetValue(scale, out path))

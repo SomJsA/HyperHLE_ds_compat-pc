@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
@@ -17,14 +18,33 @@ namespace DeadSpaceBootstrap
             firstConfiguration=false;
             // An existing root INI is the legacy explicit configuration. Never
             // silently migrate it or switch the user's old save location.
-            string legacy=Path.Combine(packageRoot,"DeadSpace-Launcher.ini");
-            SaveStorage.RequireNoLinks(legacy);
-            if(File.Exists(legacy))return legacy;
+            // New English-layout packages always keep user configuration in
+            // Documents and do not allow a root INI to redirect it.
+            bool packagedLayout=File.Exists(Path.Combine(packageRoot,"Game","manifest.json"));
+            if(!packagedLayout){
+                string legacy=Path.Combine(packageRoot,"DeadSpace-Launcher.ini");
+                SaveStorage.RequireNoLinks(legacy);
+                if(File.Exists(legacy))return legacy;
+            }
             string root=SaveStorage.Root(packageRoot,documents,true);
             string previous=Path.Combine(documents,"DeadSpace IOS移植");SaveStorage.RequireNoLinks(previous);
             if(!Directory.Exists(root) && !File.Exists(root) && Directory.Exists(previous))SaveStorage.CopyDataRoot(previous,root);
             EnsureLayout(root);
             string config=Path.Combine(root,"config","pc");SaveStorage.RequireNoLinks(config);Directory.CreateDirectory(config);
+            string launcherConfig=Path.Combine(config,"DeadSpace-Launcher.ini");
+            if(!File.Exists(launcherConfig))
+            {
+                // Recover only a recent local atomic-save backup. Unknown marker
+                // files, links, oversized content and non-text entries are ignored.
+                string backup=Directory.GetFiles(config,"DeadSpace-Launcher.ini.backup-*")
+                    .Select(path=>new FileInfo(path))
+                    .Where(info=>info.Length<=1024*1024)
+                    .OrderByDescending(info=>info.LastWriteTimeUtc)
+                    .Select(info=>info.FullName)
+                    .FirstOrDefault();
+                if(backup!=null)
+                    try{SaveStorage.RequireNoLinks(backup);File.Copy(backup,launcherConfig,false);}catch(IOException){}
+            }
             firstConfiguration=!File.Exists(Path.Combine(config,"DeadSpace-Launcher.ini"));
             foreach(string name in ConfigurationNames)
             {
