@@ -170,13 +170,18 @@ def eagl_transfer_cache_contract(source):
             'runtime_required': 'real shared/unshared GL contexts, pixels and current-context release'}
 
 
-def implementation_snapshot(root, commit):
+def implementation_snapshot(root, commit, allowed_untracked=None):
     require(re.fullmatch(r'[0-9a-f]{8,40}', commit or ''), 'Missing/invalid implementation commit')
     git(root, 'merge-base', '--is-ancestor', commit, 'HEAD')
     # Include uncommitted changes too. Documentation/test additions do not
     # pretend that the native binary was rebuilt from a later documentation HEAD.
     changed = git(root, 'diff', '--name-only', commit, '--').splitlines()
-    changed += git(root, 'ls-files', '--others', '--exclude-standard').splitlines()
+    allowed_untracked = allowed_untracked or {}
+    for name in git(root, 'ls-files', '--others', '--exclude-standard').splitlines():
+        expected = allowed_untracked.get(name)
+        if expected and sha(root/name) == expected:
+            continue
+        changed.append(name)
     runtime = [name for name in changed if
                (name.startswith(('src/', 'android/app/src/', 'tools/pc-runtime/')) and not name.endswith('.md'))
                or name in ['Cargo.toml', 'Cargo.lock', 'build.rs', 'android/app/build.gradle']]
@@ -287,12 +292,13 @@ def pc_layout(folder):
     return {'game': folder/'Game', 'defaults': folder/'Defaults', 'schema': 2}
 
 
-def pc_package_checks(report, folder, pc, contract):
+def pc_package_checks(report, folder, pc, contract, allowed_untracked=None):
     def check():
         layout = pc_layout(folder)
         game = layout['game']
         manifest = read_json(game/'manifest.json')
-        implementation_snapshot(pc, manifest['implementation_commit'])
+        implementation_snapshot(
+            pc, manifest['implementation_commit'], allowed_untracked)
         for name, expected in manifest['source_sha256'].items():
             verify_hash(inside(pc, name), expected)
         for name, expected in manifest['files'].items():
@@ -305,7 +311,12 @@ def pc_package_checks(report, folder, pc, contract):
             require(not (folder/'Assets/texture-packs').exists(), 'Marker package must not embed texture packs')
             require(re.fullmatch(r'[0-9a-f]{64}', str(manifest.get('marker_id', ''))) is not None, 'Marker package marker_id invalid')
             require(re.fullmatch(r'[0-9a-f]{64}', str(manifest.get('marker_sha256', ''))) is not None, 'Marker package marker_sha256 invalid')
-            require(manifest.get('marker_install_root') == 'Documents/DeadSpaceLegacy/marker-content/<marker_id>', 'Marker install root changed')
+            marker_root = manifest.get('marker_install_root')
+            allowed_roots = {
+                'Documents/DeadSpaceLegacy/marker-content/<marker_id>',
+                '%LOCALAPPDATA%\\DeadSpaceLegacy\\GameData\\marker-content\\<marker_id>',
+            }
+            require(marker_root in allowed_roots, 'Marker install root changed')
         else:
             require((game/'DeadSpace.ipa').is_file(), 'PC package has no game IPA')
             require(sha(game/'DeadSpace.ipa') in contract['accepted_ipa_sha256'], 'Unknown/derived PC IPA')
@@ -318,7 +329,8 @@ def pc_package_checks(report, folder, pc, contract):
             require(font_path.read_bytes() in executable, 'PC executable lacks current role font: ' + relative)
         require(manifest['native_bank_sha256'] == hashlib.sha256(bank).hexdigest(), 'PC bank manifest drift')
         return {'files': len(manifest['files']), 'declared_source_files': len(manifest['source_sha256']), 'embedded_native_bank': True,
-                'marker_required': bool(manifest.get('marker_required'))}
+                'marker_required': bool(manifest.get('marker_required')),
+                'exact_untracked_exclusions': len(allowed_untracked or {})}
     report.check('pc.package', check)
 
 
@@ -364,6 +376,7 @@ def main(argv=None):
     parser.add_argument('--android-package', type=Path)
     parser.add_argument('--apksigner', type=Path)
     parser.add_argument('--protected-manifest', type=Path)
+    parser.add_argument('--pc-artifact-exclude', type=Path)
     parser.add_argument('--report', type=Path)
     args = parser.parse_args(argv)
     if args.report and args.report.exists():
@@ -371,8 +384,19 @@ def main(argv=None):
     contract = read_json(Path(__file__).with_name('contract.json'))
     report = Report(contract)
     source_checks(report, args.pc_root.resolve(), args.android_root.resolve(), contract)
+    allowed_untracked = {}
+    if args.pc_artifact_exclude:
+        allowed_untracked = read_json(args.pc_artifact_exclude)
+        require(isinstance(allowed_untracked, dict), 'PC artifact exclude must be a JSON object')
+        for name, expected in allowed_untracked.items():
+            require(isinstance(name, str) and name and not PureWindowsPath(name).is_absolute() and '..' not in Path(name).parts,
+                    'Unsafe PC artifact exclusion path: ' + str(name))
+            require(isinstance(expected, str) and re.fullmatch(r'[0-9a-f]{64}', expected),
+                    'PC artifact exclusion hash invalid: ' + name)
     if args.pc_package:
-        pc_package_checks(report, args.pc_package.resolve(), args.pc_root.resolve(), contract)
+        pc_package_checks(
+            report, args.pc_package.resolve(), args.pc_root.resolve(),
+            contract, allowed_untracked)
     else:
         report.data['skipped'].append('PC release artifacts not supplied')
     if args.android_package:

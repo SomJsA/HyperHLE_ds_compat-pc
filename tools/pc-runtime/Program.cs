@@ -15,6 +15,11 @@ namespace DeadSpaceBootstrap
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            if (args.Length > 0 && args[0] == "--install-resource")
+            {
+                Environment.ExitCode = LauncherForm.InstallResourceCommand(args);
+                return;
+            }
             int processId;
             if (args.Length == 2 && args[0] == "--confirm-quit" && int.TryParse(args[1], out processId)) {
                 Environment.ExitCode = QuitConfirmation.Run(processId);
@@ -150,8 +155,63 @@ namespace DeadSpaceBootstrap
                 }
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    ipaPath.Text = dialog.FileName;
+                    directIpaSource = dialog.FileName;
+                    markerSourcePath = String.Empty;
+                    UpdateMarkerStatus();
+                    status.Text = "已选择 IPA；点击“安装游戏资源”继续。";
                 }
+            }
+        }
+
+        internal static int InstallResourceCommand(string[] args)
+        {
+            try
+            {
+                string marker = null;
+                string ipa = null;
+                string root = null;
+                string tier = "4";
+                string result = null;
+                for (int index = 1; index < args.Length; index += 2)
+                {
+                    if (index + 1 >= args.Length)
+                        throw new ArgumentException("missing option value");
+                    switch (args[index])
+                    {
+                        case "--marker": marker = args[index + 1]; break;
+                        case "--ipa": ipa = args[index + 1]; break;
+                        case "--install-root": root = args[index + 1]; break;
+                        case "--tier": tier = args[index + 1]; break;
+                        case "--result": result = args[index + 1]; break;
+                        default: throw new ArgumentException("unknown option");
+                    }
+                }
+                if (String.IsNullOrWhiteSpace(root))
+                    throw new ArgumentException("missing install root");
+                if ((marker == null) == (ipa == null))
+                    throw new ArgumentException("select exactly one source");
+                string installed = marker != null
+                    ? VandalMarker.Install(
+                        VandalMarker.Read(marker), root, tier)
+                    : VandalMarker.InstallIpa(ipa, root);
+                string report = result ?? Path.Combine(
+                    installed, "installer-result.json");
+                Directory.CreateDirectory(Path.GetDirectoryName(
+                    Path.GetFullPath(report)));
+                File.WriteAllText(report,
+                    "{\"status\":\"installed\",\"installed_root\":"
+                        + new System.Web.Script.Serialization.JavaScriptSerializer()
+                            .Serialize(installed)
+                        + ",\"source\":"
+                        + new System.Web.Script.Serialization.JavaScriptSerializer()
+                            .Serialize(marker ?? ipa)
+                        + "}");
+                return 0;
+            }
+            catch (Exception error)
+            {
+                Console.Error.WriteLine(error.Message);
+                return 2;
             }
         }
 
@@ -195,6 +255,7 @@ namespace DeadSpaceBootstrap
             lookGain.Text = "1.0";
             aimPoint.Text = "360,200";
             stickGain.Text = "2.0";
+            installRoot.Text = DefaultInstallRoot();
             fastPresent.Checked = true;
             skipFinish.Checked = false;
             gpuPresentCopy.Checked = true;
@@ -266,6 +327,7 @@ namespace DeadSpaceBootstrap
             lookGain.Text = Get(values, "look_gain", "1.0");
             aimPoint.Text = Get(values, "aim_xy", "360,200");
             stickGain.Text = Get(values, "stick_gain", "2.0");
+            installRoot.Text = Get(values, "install_root", DefaultInstallRoot());
             fastPresent.Checked = GetBool(values, "fast_present", true);
             skipFinish.Checked = GetBool(values, "skip_finish", false);
             int textureSyncIndex;
@@ -349,6 +411,7 @@ namespace DeadSpaceBootstrap
                 "look_gain=" + lookGain.Text.Trim(),
                 "aim_xy=" + aimPoint.Text.Trim(),
                 "stick_gain=" + stickGain.Text.Trim(),
+                "install_root=" + installRoot.Text.Trim(),
                 "fast_present=" + (fastPresent.Checked ? "1" : "0"),
                 "skip_finish=" + (skipFinish.Checked ? "1" : "0"),
                 "texture_sync_index=" + textureSync.SelectedIndex,

@@ -116,10 +116,11 @@ namespace DeadSpaceBootstrap
 
 
             Heading(library, "游戏文件与存档", "选择游戏文件和存档位置；迁移不会覆盖已有进度。", 22);
-            LabelText(library, "游戏资源（marker / IPA）", 30, 96, 330, 24);
+            LabelText(library, "已安装游戏数据", 30, 96, 330, 24);
             ipaPath.Location = new Point(30, 134); ipaPath.Size = new Size(650, 28);
+            ipaPath.ReadOnly = true;
             library.Controls.Add(ipaPath);
-            var browse = new Button { Text = "选择游戏文件", Location = new Point(30, 182), Size = new Size(160, 38) };
+            var browse = new Button { Text = "选择 IPA 安装源", Location = new Point(30, 182), Size = new Size(160, 38) };
             browse.Click += delegate { BrowseIpa(); }; library.Controls.Add(browse);
             BuildMarkerControls(library);
             BuildStorageControls(library);

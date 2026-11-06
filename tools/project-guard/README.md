@@ -10,6 +10,11 @@ python tools/project-guard/guard.py --pc-root E:/CodexProjects/DeadSpaceLegacy/w
 
 可追加 `--pc-package <解压发布目录>`、`--android-package <含manifest.json与APK的目录>`、`--protected-manifest <路径到SHA256的JSON>`。报告路径必须全新，拒绝覆盖。检查失败返回1；参数/输出冲突返回2。未指定的范围明确 skipped。`scoped-checks-passed` 只表示本次文件检查通过，绝不是全项目验收。
 
+如果项目树中存在必须保留、但不属于构建输入的已知未跟踪备份，可向
+`--pc-artifact-exclude` 传入 JSON 对象 `{相对路径: 64位SHA256}`。Guard只对
+`git ls-files --others` 返回的同一路径且哈希完全一致时排除；已跟踪改动、
+未知新运行时文件或哈希变化仍失败。该参数用于精确冻结备份，不允许通配符。
+
 检查：工作树/submodule清单、SBIN与JSON键值一致、当前资源指纹/文本修正/章节藏头、PC/Android样式与字体副本、Android既有光照实现、有限API21禁用模式、发布清单文件/声明源码快照、编译后内嵌文本、APK字体/样式/native库/原IPA、受保护文件。Git未提交改动作为工作中信息记录；发布检查会拒绝有未提交的声明编译输入或实现提交后改过的运行时代码。新增规则不应依赖源码排版/行号。
 
 契约更新要说明用户要求、资源来源和重验范围。不要为消除失败而抄当前文件的哈希；先查明变化是否授权、是否需要重新构建。`contract.json` 的光照指纹是当前平台专属基线，变化需要有对应场景证据。历史工作台预设不会作为正式默认参与比对。

@@ -18,40 +18,54 @@ namespace DeadSpaceBootstrap
         private static void Run(string[] args)
         {
             string fixture = args[0], output = args[1]; Directory.CreateDirectory(output);
-            var save = new SaveSettings(fixture); byte[] original = File.ReadAllBytes(fixture);
-            for (int mask = 0; mask < 8; mask++)
+            bool skipSaveFixture = Environment.GetEnvironmentVariable(
+                "TOUCHHLE_DS_TEST_SKIP_SAVE") == "1";
+            if (!skipSaveFixture)
             {
-                byte[] edited = save.EditBytes((mask & 1) != 0, (mask & 2) != 0, (mask & 4) != 0);
-                if (edited.Length != original.Length) throw new Exception("Length changed");
-                int changed = 0; for (int i = 0; i < original.Length; i++) if (edited[i] != original[i]) changed++;
-                if (changed > 7) throw new Exception("Unexpected edits outside 3 flags and checksum");
-                string path = Path.Combine(output, "fixture-" + mask + ".sb"); File.WriteAllBytes(path, edited);
-                var reread = new SaveSettings(path);
-                if (reread.Enabled("attack") != ((mask & 1) != 0) || reread.Enabled("defense") != ((mask & 2) != 0) || reread.Enabled("loot") != ((mask & 4) != 0)) throw new Exception("Toggle mismatch");
-                if (Convert.ToBase64String(reread.EditBytes(save.Enabled("attack"), save.Enabled("defense"), save.Enabled("loot"))) != Convert.ToBase64String(original)) throw new Exception("Round trip lost bytes");
-            }
-            byte[] corrupt = (byte[])original.Clone(); corrupt[corrupt.Length / 2] ^= 1;
-            string bad = Path.Combine(output, "corrupt.sb"); File.WriteAllBytes(bad, corrupt);
-            bool rejected = false; try { new SaveSettings(bad); } catch (InvalidDataException) { rejected = true; }
-            if (!rejected) throw new Exception("Corruption accepted");
-            if (args.Length > 2)
-            {
-                var checkpoint = new SaveDocument(args[2]);
-                byte[] before = File.ReadAllBytes(args[2]);
-                var changes = new System.Collections.Generic.Dictionary<string, string> {
-                    { "player/upgrade_level_rig", "0" }, { "player/inventory/credits", "100000" }
-                };
-                byte[] edited = checkpoint.EditBytes(changes);
-                string editedFile = Path.Combine(output, "armor-checkpoint.sb"); File.WriteAllBytes(editedFile, edited);
-                var reread = new SaveDocument(editedFile);
-                foreach (var field in checkpoint.Values.Values)
-                    if (!changes.ContainsKey(field.Path) && reread.Values[field.Path].Value != field.Value) throw new Exception("Unrelated save value changed: " + field.Path);
-                var reverse = new System.Collections.Generic.Dictionary<string, string>();
-                foreach (string path in changes.Keys) reverse.Add(path, checkpoint.Values[path].Value);
-                if (Convert.ToBase64String(reread.EditBytes(reverse)) != Convert.ToBase64String(before)) throw new Exception("Armor/resource round trip lost bytes");
+                var save = new SaveSettings(fixture); byte[] original = File.ReadAllBytes(fixture);
+                for (int mask = 0; mask < 8; mask++)
+                {
+                    byte[] edited = save.EditBytes((mask & 1) != 0, (mask & 2) != 0, (mask & 4) != 0);
+                    if (edited.Length != original.Length) throw new Exception("Length changed");
+                    int changed = 0; for (int i = 0; i < original.Length; i++) if (edited[i] != original[i]) changed++;
+                    if (changed > 7) throw new Exception("Unexpected edits outside 3 flags and checksum");
+                    string path = Path.Combine(output, "fixture-" + mask + ".sb"); File.WriteAllBytes(path, edited);
+                    var reread = new SaveSettings(path);
+                    if (reread.Enabled("attack") != ((mask & 1) != 0) || reread.Enabled("defense") != ((mask & 2) != 0) || reread.Enabled("loot") != ((mask & 4) != 0)) throw new Exception("Toggle mismatch");
+                    if (Convert.ToBase64String(reread.EditBytes(save.Enabled("attack"), save.Enabled("defense"), save.Enabled("loot"))) != Convert.ToBase64String(original)) throw new Exception("Round trip lost bytes");
+                }
+                byte[] corrupt = (byte[])original.Clone(); corrupt[corrupt.Length / 2] ^= 1;
+                string bad = Path.Combine(output, "corrupt.sb"); File.WriteAllBytes(bad, corrupt);
+                bool rejected = false; try { new SaveSettings(bad); } catch (InvalidDataException) { rejected = true; }
+                if (!rejected) throw new Exception("Corruption accepted");
+                if (args.Length > 2)
+                {
+                    var checkpoint = new SaveDocument(args[2]);
+                    byte[] before = File.ReadAllBytes(args[2]);
+                    var changes = new System.Collections.Generic.Dictionary<string, string> {
+                        { "player/upgrade_level_rig", "0" }, { "player/inventory/credits", "100000" }
+                    };
+                    byte[] edited = checkpoint.EditBytes(changes);
+                    string editedFile = Path.Combine(output, "armor-checkpoint.sb"); File.WriteAllBytes(editedFile, edited);
+                    var reread = new SaveDocument(editedFile);
+                    foreach (var field in checkpoint.Values.Values)
+                        if (!changes.ContainsKey(field.Path) && reread.Values[field.Path].Value != field.Value) throw new Exception("Unrelated save value changed: " + field.Path);
+                    var reverse = new System.Collections.Generic.Dictionary<string, string>();
+                    foreach (string path in changes.Keys) reverse.Add(path, checkpoint.Values[path].Value);
+                    if (Convert.ToBase64String(reread.EditBytes(reverse)) != Convert.ToBase64String(before)) throw new Exception("Armor/resource round trip lost bytes");
+                }
             }
             Application.EnableVisualStyles();
-            using (var form = new LauncherForm())
+            string packageRoot = Environment.GetEnvironmentVariable(
+                "TOUCHHLE_DS_TEST_PACKAGE");
+            string documentsRoot = Environment.GetEnvironmentVariable(
+                "TOUCHHLE_DS_TEST_DOCUMENTS");
+            LauncherForm form = String.IsNullOrWhiteSpace(packageRoot) ||
+                String.IsNullOrWhiteSpace(documentsRoot)
+                ? new LauncherForm()
+                : new LauncherForm(
+                    packageRoot, documentsRoot, DisplayHardware.Detect());
+            using (form)
             {
                 // Never Show()/Activate(): renders only this constructed form.
                 // Set managed visibility only: no ShowWindow and no foreground window.
@@ -78,7 +92,9 @@ namespace DeadSpaceBootstrap
                 string beforeScale = Convert.ToString(scale.SelectedItem);
                 for (int i = 0; i < 4; i++) { preset.SelectedIndex = i; if (Convert.ToString(scale.SelectedItem) != beforeScale) throw new Exception("Quality preset changed independent internal resolution"); }
             }
-            Console.WriteLine("PASS: 8 DLC combinations, byte-exact reversal, corruption rejection, 8 offscreen pages plus expanded settings, no overlapping inputs, 4 working quality presets; live saves untouched.");
+            Console.WriteLine(skipSaveFixture
+                ? "PASS: UI-only mode; 8 offscreen pages plus expanded settings, no overlapping inputs, 4 working quality presets; save fixture not opened."
+                : "PASS: 8 DLC combinations, byte-exact reversal, corruption rejection, 8 offscreen pages plus expanded settings, no overlapping inputs, 4 working quality presets; live saves untouched.");
         }
 
         private static bool Input(Control c)

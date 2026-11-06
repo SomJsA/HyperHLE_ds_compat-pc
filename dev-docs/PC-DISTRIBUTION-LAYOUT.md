@@ -11,6 +11,28 @@ Docs/                  # notices, instructions and reports
 diagnostics/play-sessions/  # all new sessions, issue PNG/JSON and export inputs
 ```
 
+The 2026-11-06 internal delivery wraps the lean program layout in one
+self-contained installer executable. The delivery is:
+
+```
+DeadSpace-R15-PC-Installer-<date>.exe
+vandal.marker
+```
+
+The installer embeds the program payload and installs it under a user-selected
+program root (default `%LOCALAPPDATA%\Programs\DeadSpaceLegacy`). It separately
+selects a GameData root (default `%LOCALAPPDATA%\DeadSpaceLegacy\GameData`) and
+passes that root to the launcher's resource installer. The first installation
+requires `vandal.marker` or an IPA. A marker adjacent to the installer is
+detected but is not installed until the user confirms.
+
+GameData is never placed under Documents. Documents remains the configuration
+and original three-slot save root. Program updates preserve the selected
+GameData, Documents state and unknown files in the program directory. The
+source marker is opened read-only and is not required after its selected base
+data and 2x/4x/6x tier have been installed. See
+`PC-INSTALLER-DISTRIBUTION.md`.
+
 The default user root is Documents/DeadSpaceLegacy. Configuration is config/pc;
 native saves and editor backups retain the existing touchHLE_sandbox profile
 format. Editor imports are copied to this user root too. Portable storage remains

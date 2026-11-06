@@ -137,16 +137,17 @@ namespace DeadSpaceBootstrap
             string baseFile = System.IO.Path.Combine(
                 destination,
                 marker.BasePath.Replace('/', System.IO.Path.DirectorySeparatorChar));
-            if (File.Exists(installationPath) && File.Exists(baseFile))
+            if (Directory.Exists(destination))
             {
+                if (!File.Exists(installationPath) || !File.Exists(baseFile))
+                    throw new InvalidDataException(
+                        "已存在的 marker 内容不完整或缺少安装记录。");
                 string tierPack = System.IO.Path.Combine(
                     destination, "payload", "texture-packs", tier);
                 if (File.Exists(System.IO.Path.Combine(tierPack, "PACK.json")))
                     return destination;
+                return AddTextureTier(marker, destination, tier);
             }
-            if (Directory.Exists(destination))
-                throw new InvalidDataException(
-                    "已存在的 marker 内容不完整或缺少安装记录。");
 
             string prefix = "payload/texture-packs/" + tier + "/";
             var selected = marker.Entries.Where(
@@ -154,7 +155,8 @@ namespace DeadSpaceBootstrap
                 entry.Path.StartsWith(prefix, StringComparison.Ordinal)).ToList();
             string temporary = System.IO.Path.Combine(
                 contentRoot,
-                ".install-" + marker.MarkerId + "-" + Guid.NewGuid().ToString("N"));
+                ".i-" + marker.MarkerId.Substring(0, 12) + "-"
+                    + Guid.NewGuid().ToString("N").Substring(0, 12));
             Directory.CreateDirectory(temporary);
             try
             {
@@ -176,7 +178,6 @@ namespace DeadSpaceBootstrap
                         FileAccess.Write,
                         FileShare.None))
                         source.CopyTo(target, 4 * 1024 * 1024);
-                    var files = new List<object>();
                     foreach (var entry in selected)
                     {
                         var zipEntry = archive.GetEntry(entry.Path);
@@ -210,33 +211,9 @@ namespace DeadSpaceBootstrap
                         if (actual != entry.Sha256)
                             throw new InvalidDataException(
                                 "marker SHA-256 不匹配：" + entry.Path);
-                        files.Add(new
-                        {
-                            path = entry.Path,
-                            size = entry.Size,
-                            sha256 = actual
-                        });
                     }
-                    var installation = new
-                    {
-                        schema = 2,
-                        marker_id = marker.MarkerId,
-                        marker_version = marker.MarkerVersion,
-                        source_marker = marker.Path,
-                        installed_utc = DateTime.UtcNow.ToString("o"),
-                        base_data = new
-                        {
-                            installed = true,
-                            path = marker.BasePath
-                        },
-                        texture_tiers = new[] { tier },
-                        files,
-                        marker_file_modified = false
-                    };
-                    File.WriteAllText(
-                        System.IO.Path.Combine(temporary, "installation.json"),
-                        new JavaScriptSerializer().Serialize(installation));
                 }
+                WriteInstallationRecord(temporary, marker);
                 Directory.Move(temporary, destination);
                 return destination;
             }
@@ -245,6 +222,253 @@ namespace DeadSpaceBootstrap
                 if (Directory.Exists(temporary))
                     Directory.Delete(temporary, true);
             }
+        }
+
+        internal static string InstallIpa(string ipaPath, string dataRoot)
+        {
+            string source = System.IO.Path.GetFullPath(ipaPath);
+            if (!File.Exists(source))
+                throw new FileNotFoundException("IPA 不存在。", source);
+            string digest = HashFile(source);
+            string contentRoot = System.IO.Path.Combine(dataRoot, "marker-content");
+            Directory.CreateDirectory(contentRoot);
+            string markerId = "direct-" + digest;
+            string destination = System.IO.Path.Combine(contentRoot, markerId);
+            string installed = System.IO.Path.Combine(
+                destination, "payload", "DeadSpace.ipa");
+            string installation = System.IO.Path.Combine(
+                destination, "installation.json");
+            if (Directory.Exists(destination))
+            {
+                if (!File.Exists(installed) || !File.Exists(installation))
+                    throw new InvalidDataException("直接 IPA 安装目录不完整。");
+                if (HashFile(installed) != digest)
+                    throw new InvalidDataException(
+                        "已安装 IPA 的 SHA-256 与当前安装记录不一致。");
+                return destination;
+            }
+            string temporary = System.IO.Path.Combine(
+                contentRoot, ".d-" +
+                    Guid.NewGuid().ToString("N").Substring(0, 12));
+            Directory.CreateDirectory(System.IO.Path.Combine(temporary, "payload"));
+            try
+            {
+                string target = System.IO.Path.Combine(
+                    temporary, "payload", "DeadSpace.ipa");
+                File.Copy(source, target, false);
+                if (HashFile(target) != digest)
+                    throw new InvalidDataException("复制后的 IPA SHA-256 不匹配。");
+                WriteDirectIpaRecord(temporary, source, digest);
+                Directory.Move(temporary, destination);
+                return destination;
+            }
+            finally
+            {
+                if (Directory.Exists(temporary))
+                    Directory.Delete(temporary, true);
+            }
+        }
+
+        private static string AddTextureTier(
+            VandalMarkerPackage marker,
+            string destination,
+            string tier)
+        {
+            if (!File.Exists(marker.Path))
+                throw new FileNotFoundException(
+                    "安装其他纹理档位需要重新选择原始 marker。", marker.Path);
+            string targetTier = System.IO.Path.Combine(
+                destination, "payload", "texture-packs", tier);
+            if (Directory.Exists(targetTier))
+                throw new InvalidDataException(
+                    "目标纹理档位目录已存在但缺少 PACK.json，请检查安装目录。");
+            string prefix = "payload/texture-packs/" + tier + "/";
+            var selected = marker.Entries.Where(
+                entry => entry.Path.StartsWith(prefix, StringComparison.Ordinal))
+                .ToList();
+            if (selected.Count == 0)
+                throw new InvalidDataException("marker 的纹理档位没有文件。");
+            string contentRoot = System.IO.Path.GetDirectoryName(destination);
+            string temporary = System.IO.Path.Combine(
+                contentRoot,
+                ".t-" + marker.MarkerId.Substring(0, 12) + "-" + tier + "-"
+                    + Guid.NewGuid().ToString("N").Substring(0, 12));
+            Directory.CreateDirectory(temporary);
+            try
+            {
+                using (var stream = new FileStream(
+                    marker.Path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read))
+                using (var archive = new ZipArchive(
+                    stream, ZipArchiveMode.Read, false))
+                {
+                    foreach (var entry in selected)
+                    {
+                        var zipEntry = archive.GetEntry(entry.Path);
+                        if (zipEntry == null || zipEntry.Length != entry.Size)
+                            throw new InvalidDataException(
+                                "marker 文件大小不匹配：" + entry.Path);
+                        string extracted = SafeTarget(temporary, entry.Path);
+                        Directory.CreateDirectory(
+                            System.IO.Path.GetDirectoryName(extracted));
+                        string actual;
+                        using (var source = zipEntry.Open())
+                        using (var target = new FileStream(
+                            extracted,
+                            FileMode.CreateNew,
+                            FileAccess.Write,
+                            FileShare.None))
+                        using (var digest = SHA256.Create())
+                        {
+                            byte[] block = new byte[4 * 1024 * 1024];
+                            int count;
+                            while ((count = source.Read(
+                                block, 0, block.Length)) > 0)
+                            {
+                                digest.TransformBlock(
+                                    block, 0, count, null, 0);
+                                target.Write(block, 0, count);
+                            }
+                            digest.TransformFinalBlock(new byte[0], 0, 0);
+                            actual = BitConverter.ToString(digest.Hash)
+                                .Replace("-", "").ToLowerInvariant();
+                        }
+                        if (actual != entry.Sha256)
+                            throw new InvalidDataException(
+                                "marker SHA-256 不匹配：" + entry.Path);
+                    }
+                }
+                foreach (var entry in selected)
+                {
+                    string extracted = SafeTarget(temporary, entry.Path);
+                    string target = SafeTarget(destination, entry.Path);
+                    Directory.CreateDirectory(
+                        System.IO.Path.GetDirectoryName(target));
+                    File.Move(extracted, target);
+                }
+                WriteInstallationRecord(destination, marker);
+                return destination;
+            }
+            finally
+            {
+                if (Directory.Exists(temporary))
+                    Directory.Delete(temporary, true);
+            }
+        }
+
+        private static void WriteDirectIpaRecord(
+            string destination,
+            string source,
+            string digest)
+        {
+            var files = new List<object>
+            {
+                new
+                {
+                    path = "payload/DeadSpace.ipa",
+                    size = new FileInfo(System.IO.Path.Combine(
+                        destination, "payload", "DeadSpace.ipa")).Length,
+                    sha256 = digest
+                }
+            };
+            var record = new
+            {
+                schema = 2,
+                marker_id = "direct-" + digest,
+                marker_version = "direct-ipa",
+                source_marker = source,
+                installed_utc = DateTime.UtcNow.ToString("o"),
+                base_data = new
+                {
+                    installed = true,
+                    path = "payload/DeadSpace.ipa"
+                },
+                texture_tiers = new string[0],
+                files,
+                marker_file_modified = false
+            };
+            File.WriteAllText(
+                System.IO.Path.Combine(destination, "installation.json"),
+                new JavaScriptSerializer().Serialize(record));
+        }
+
+        private static void WriteInstallationRecord(
+            string destination,
+            VandalMarkerPackage marker)
+        {
+            var files = new List<object>();
+            foreach (string path in Directory.GetFiles(
+                destination, "*", SearchOption.AllDirectories))
+            {
+                string relative = path.Substring(destination.Length)
+                    .TrimStart(System.IO.Path.DirectorySeparatorChar)
+                    .Replace(System.IO.Path.DirectorySeparatorChar, '/');
+                if (relative == "installation.json" ||
+                    relative == "installer-result.json")
+                    continue;
+                files.Add(new
+                {
+                    path = relative,
+                    size = new FileInfo(path).Length,
+                    sha256 = HashFile(path)
+                });
+            }
+            var tiers = Directory.GetDirectories(
+                System.IO.Path.Combine(destination, "payload", "texture-packs"))
+                .Where(path => File.Exists(
+                    System.IO.Path.Combine(path, "PACK.json")))
+                .Select(path => System.IO.Path.GetFileName(path))
+                .OrderBy(path => path)
+                .ToArray();
+            var record = new
+            {
+                schema = 2,
+                marker_id = marker.MarkerId,
+                marker_version = marker.MarkerVersion,
+                source_marker = marker.Path,
+                installed_utc = DateTime.UtcNow.ToString("o"),
+                base_data = new
+                {
+                    installed = true,
+                    path = marker.BasePath
+                },
+                texture_tiers = tiers,
+                files,
+                marker_file_modified = false
+            };
+            string installPath = System.IO.Path.Combine(
+                destination, "installation.json");
+            string temporary = installPath + "." + Guid.NewGuid().ToString("N")
+                + ".tmp";
+            try
+            {
+                File.WriteAllText(
+                    temporary,
+                    new JavaScriptSerializer().Serialize(record));
+                if (File.Exists(installPath))
+                {
+                    File.Replace(temporary, installPath, null);
+                }
+                else
+                {
+                    File.Move(temporary, installPath);
+                }
+            }
+            finally
+            {
+                if (File.Exists(temporary))
+                    File.Delete(temporary);
+            }
+        }
+
+        private static string HashFile(string path)
+        {
+            using (var sha = SHA256.Create())
+            using (var stream = File.OpenRead(path))
+                return BitConverter.ToString(sha.ComputeHash(stream))
+                    .Replace("-", "").ToLowerInvariant();
         }
 
         private static string SafeRelative(string value)
@@ -310,17 +534,34 @@ namespace DeadSpaceBootstrap
     {
         private readonly Label markerStatus = new Label();
         private readonly Button importMarker = new Button();
+        private readonly TextBox installRoot = new TextBox();
+        private readonly Button chooseInstallRoot = new Button();
+        private readonly Button installAction = new Button();
         private string installedMarkerRoot;
+        private string markerSourcePath;
+        private string directIpaSource;
 
         private void BuildMarkerControls(Control page)
         {
-            importMarker.Text = "导入 vandal.marker";
+            importMarker.Text = "选择 vandal.marker";
             importMarker.SetBounds(200, 182, 190, 38);
-            importMarker.Click += delegate { ChooseMarker(); };
+            importMarker.Click += delegate { InstallOrChangeMarker(); };
             page.Controls.Add(importMarker);
             markerStatus.SetBounds(30, 222, 680, 42);
             markerStatus.ForeColor = Muted;
             page.Controls.Add(markerStatus);
+            LabelText(page, "安装位置", 30, 270, 135, 24);
+            installRoot.SetBounds(174, 266, 330, 28);
+            installRoot.Text = DefaultInstallRoot();
+            page.Controls.Add(installRoot);
+            chooseInstallRoot.Text = "选择目录";
+            chooseInstallRoot.SetBounds(514, 262, 100, 36);
+            chooseInstallRoot.Click += delegate { ChooseInstallRoot(); };
+            page.Controls.Add(chooseInstallRoot);
+            installAction.Text = "安装游戏资源";
+            installAction.SetBounds(30, 306, 230, 38);
+            installAction.Click += delegate { InstallOrChangeMarker(); };
+            page.Controls.Add(installAction);
             UpdateMarkerStatus();
         }
 
@@ -335,11 +576,12 @@ namespace DeadSpaceBootstrap
             string nearby = FindNearbyMarker();
             if (nearby != null)
             {
-                ImportMarker(nearby, true);
+                markerSourcePath = nearby;
+                UpdateMarkerStatus();
                 return;
             }
-            string ipa = ipaPath.Text.Trim();
-            if (ipa.Length > 0 && File.Exists(ipa))
+            if (!String.IsNullOrEmpty(directIpaSource) &&
+                File.Exists(directIpaSource))
             {
                 UpdateMarkerStatus();
                 return;
@@ -347,10 +589,40 @@ namespace DeadSpaceBootstrap
             if (userRequested ||
                 MessageBox.Show(
                     this,
-                    "需要资源文件 vandal.marker。\n\n请选择 marker，启动器会校验并安装，之后不再修改 marker。",
+                    "尚未安装游戏资源。请选择 vandal.marker 或 IPA 进行安装；安装后可更改或升级，marker 只读且不会被修改。",
                     "需要游戏资源",
                     MessageBoxButtons.OKCancel,
                     MessageBoxIcon.Information) == DialogResult.OK)
+                ChooseMarker();
+        }
+
+        private void InstallOrChangeMarker()
+        {
+            if (!String.IsNullOrEmpty(installedMarkerRoot))
+            {
+                string tier = TextureScale();
+                string tierPath = System.IO.Path.Combine(
+                    installedMarkerRoot,
+                    "payload",
+                    "texture-packs",
+                    tier);
+                if (File.Exists(System.IO.Path.Combine(tierPath, "PACK.json")))
+                {
+                    textureRoots[tier] = tierPath;
+                    hdTextures.Checked = true;
+                    UpdateTextureDescription();
+                    UpdateMarkerStatus();
+                    status.Text = "已切换为已安装的 " + tier + "× 纹理。";
+                    return;
+                }
+            }
+            if (!String.IsNullOrEmpty(markerSourcePath) &&
+                File.Exists(markerSourcePath))
+                ImportMarker(markerSourcePath, false);
+            else if (!String.IsNullOrEmpty(directIpaSource) &&
+                File.Exists(directIpaSource))
+                InstallDirectIpa();
+            else
                 ChooseMarker();
         }
 
@@ -361,7 +633,62 @@ namespace DeadSpaceBootstrap
                 dialog.Title = "选择 vandal.marker";
                 dialog.Filter = "Vandal marker (*.marker)|*.marker|所有文件 (*.*)|*.*";
                 if (dialog.ShowDialog(this) == DialogResult.OK)
-                    ImportMarker(dialog.FileName, false);
+                {
+                    markerSourcePath = dialog.FileName;
+                    directIpaSource = String.Empty;
+                    UpdateMarkerStatus();
+                    status.Text = "已选择 marker；点击“安装游戏资源”继续。";
+                }
+            }
+        }
+
+        private void ChooseInstallRoot()
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "选择游戏数据安装目录；不要选择存档目录";
+                if (Directory.Exists(installRoot.Text))
+                    dialog.SelectedPath = installRoot.Text;
+                if (dialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    installRoot.Text = dialog.SelectedPath;
+                    installedMarkerRoot = null;
+                    ipaPath.Text = String.Empty;
+                    foreach (string tier in new[] { "2", "4", "6" })
+                        textureRoots.Remove(tier);
+                    string installed = FindInstalledMarker();
+                    if (installed != null)
+                    {
+                        ApplyInstalledMarker(installed);
+                        status.Text = "已载入该目录中的游戏资源。";
+                    }
+                    else
+                    {
+                        hdTextures.Checked = false;
+                        installAction.Text = "安装游戏资源";
+                        UpdateTextureDescription();
+                        UpdateMarkerStatus();
+                        status.Text = "该目录尚未安装游戏资源。";
+                    }
+                }
+            }
+        }
+
+        private void InstallDirectIpa()
+        {
+            try
+            {
+                string root = VandalMarker.InstallIpa(
+                    directIpaSource,
+                    InstallRoot());
+                ApplyInstalledMarker(root);
+                directIpaSource = String.Empty;
+                SaveSettings();
+                status.Text = "IPA 安装完成；程序 ZIP 更新不会覆盖该目录。";
+            }
+            catch (Exception error)
+            {
+                status.Text = "IPA 安装失败：" + error.Message;
             }
         }
 
@@ -384,11 +711,12 @@ namespace DeadSpaceBootstrap
                     Application.DoEvents();
                     string root = VandalMarker.Install(
                         marker,
-                        SelectedDataRoot(),
+                        InstallRoot(),
                         tier);
                     ApplyInstalledMarker(root);
+                    markerSourcePath = String.Empty;
                     SaveSettings();
-                    status.Text = "marker 已安装；后续运行不再依赖 marker 文件。";
+                    status.Text = "游戏资源安装完成；后续运行不依赖 marker 文件。";
                 }
                 finally
                 {
@@ -417,19 +745,27 @@ namespace DeadSpaceBootstrap
                 "payload",
                 "DeadSpace.ipa");
             if (!File.Exists(ipa))
-                throw new InvalidDataException("已安装 marker 缺少基座数据。");
+                throw new InvalidDataException("已安装游戏资源缺少基座数据。");
             ipaPath.Text = ipa;
             foreach (string tier in new[] { "2", "4", "6" })
             {
+                textureRoots.Remove(tier);
                 string path = System.IO.Path.Combine(
                     installedMarkerRoot,
                     "payload",
                     "texture-packs",
                     tier);
-                textureRoots[tier] = path;
+                if (File.Exists(System.IO.Path.Combine(path, "PACK.json")))
+                    textureRoots[tier] = path;
             }
-            hdTextures.Checked = true;
+            hdTextures.Checked = textureRoots.ContainsKey(TextureScale());
             UpdateTextureDescription();
+            DirectoryInfo content = Directory.GetParent(installedMarkerRoot);
+            if (content != null && content.Name.Equals(
+                "marker-content", StringComparison.OrdinalIgnoreCase) &&
+                content.Parent != null)
+                installRoot.Text = content.Parent.FullName;
+            installAction.Text = "更改 / 升级安装";
             UpdateMarkerStatus();
         }
 
@@ -438,7 +774,7 @@ namespace DeadSpaceBootstrap
             try
             {
                 string content = System.IO.Path.Combine(
-                    SelectedDataRoot(), "marker-content");
+                    InstallRoot(), "marker-content");
                 if (!Directory.Exists(content))
                     return null;
                 foreach (string directory in Directory.GetDirectories(content)
@@ -471,17 +807,65 @@ namespace DeadSpaceBootstrap
             return null;
         }
 
+        private string DefaultInstallRoot()
+        {
+            string installed = System.IO.Path.Combine(baseDir, "installer.json");
+            try
+            {
+                if (File.Exists(installed) &&
+                    new FileInfo(installed).Length <= 64 * 1024)
+                {
+                    var values = new JavaScriptSerializer
+                    {
+                        MaxJsonLength = 64 * 1024,
+                        RecursionLimit = 8
+                    }.DeserializeObject(File.ReadAllText(installed))
+                        as Dictionary<string, object>;
+                    object selected;
+                    if (values != null &&
+                        values.TryGetValue("game_data_root", out selected) &&
+                        selected != null &&
+                        !String.IsNullOrWhiteSpace(Convert.ToString(selected)))
+                        return System.IO.Path.GetFullPath(
+                            Convert.ToString(selected));
+                }
+            }
+            catch (ArgumentException) { }
+            catch (InvalidOperationException) { }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            string root = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData);
+            if (String.IsNullOrWhiteSpace(root))
+                throw new IOException("无法确定 LocalAppData 安装目录。");
+            return System.IO.Path.Combine(root, "DeadSpaceLegacy", "GameData");
+        }
+
+        private string InstallRoot()
+        {
+            string value = installRoot.Text.Trim();
+            if (value.Length == 0)
+                value = DefaultInstallRoot();
+            return System.IO.Path.GetFullPath(value);
+        }
+
         private void UpdateMarkerStatus()
         {
             if (!String.IsNullOrEmpty(installedMarkerRoot))
                 markerStatus.Text =
                     "已安装资源：" + installedMarkerRoot +
-                    "\r\nmarker 不会被修改；切换分辨率不需要重新导入。";
-            else if (ipaPath.Text.Trim().Length > 0)
-                markerStatus.Text = "直接 IPA 模式；不会安装或修改 marker。";
+                    "\r\nmarker 不会被修改；程序 ZIP 更新不会覆盖此安装。";
+            else if (!String.IsNullOrEmpty(markerSourcePath))
+                markerStatus.Text =
+                    "发现资源来源：" + markerSourcePath +
+                    "\r\n点击“安装游戏资源”后安装；marker 只读且不会被修改。";
+            else if (!String.IsNullOrEmpty(directIpaSource))
+                markerStatus.Text =
+                    "已选择 IPA 安装源：" + directIpaSource +
+                    "\r\n点击“安装游戏资源”复制到选定安装位置。";
             else
                 markerStatus.Text =
-                    "未安装游戏资源。可点击“导入 vandal.marker”，或把 marker 放在启动器同目录。";
+                    "尚未安装游戏资源。选择 marker 或 IPA；也可把 marker 放在启动器同目录。";
         }
     }
 }

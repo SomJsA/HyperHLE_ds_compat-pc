@@ -180,6 +180,11 @@ class ProvenanceTests(unittest.TestCase):
             (root/'src/untracked.rs').write_text('new runtime', encoding='utf-8')
             with self.assertRaises(guard.GuardError):
                 guard.implementation_snapshot(root, implementation)
+            exact = {'src/untracked.rs': guard.sha(root/'src/untracked.rs')}
+            guard.implementation_snapshot(root, implementation, exact)
+            with self.assertRaises(guard.GuardError):
+                guard.implementation_snapshot(
+                    root, implementation, {'src/untracked.rs': '0' * 64})
             (root/'src/untracked.rs').unlink()
             (root/'src/runtime.rs').write_text('version2', encoding='utf-8')
             with self.assertRaises(guard.GuardError):

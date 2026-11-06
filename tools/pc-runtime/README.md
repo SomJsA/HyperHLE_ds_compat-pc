@@ -8,6 +8,11 @@ the historical outer bootstrap as the latest source.
 Latest validation, deployment boundary and critical save-schema corrections:
 `dev-docs/session-2026-10-25/PC-HANDOFF-NOW.md`. New binaries are not deployed.
 
+The 2026-11-06 user delivery is the self-contained installer plus
+`vandal.marker`, built from `tools/pc-installer`. GameData and the program root
+are selected separately; Documents remains configuration and save storage. See
+`dev-docs/PC-INSTALLER-DISTRIBUTION.md`.
+
 These files are versioned copies of the outer DeadSpaceLegacy project's
 `run-host/pc-bootstrap/Program.cs`, `run-host/shake-dialog.ps1`, and
 `tools/install_pc_runtime.ps1` from 2026-10-25. The launcher clears opening
