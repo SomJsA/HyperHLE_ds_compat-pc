@@ -1,0 +1,74 @@
+/target
+/vendor/boost
+/touchHLE_sandbox
+/DCIM
+/touchHLE_apps/*.ipa
+/touchHLE_apps/*.app
+touchHLE_log.txt
+touchHLE_wallpaper.*
+
+# Xcode (integration testing app)
+
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+
+# Android
+
+*.iml
+.gradle
+/local.properties
+.idea/
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+android/app/src/main/jniLibs/*
+!android/app/src/main/jniLibs/arm64-v8a/
+android/app/src/main/jniLibs/arm64-v8a/*
+!android/app/src/main/jniLibs/arm64-v8a/libdsfsr3bridge.so
+android/app/build
+android/build
+android/app/src/main/assets/touchHLE_bundled/*.ipa
+android/app/src/main/assets/touchHLE_bundled/bundle.id
+
+# The FSR3 bridge is a separately built, opt-in JNI library. Keep only that
+# tested library trackable; generated SDL/touchHLE/runtime libraries remain
+# ignored even though their parent directories are traversable.
+
+# macOS
+
+.DS_Store
+
+# Default developer dump file
+
+DUMP.txt
+
+# Local debug junk
+*.log
+touchHLE_apps/
+target/
+*.ipa
+touchHLE_pvrtc_cache/
+
+# --- additions for this fork (Dead Space compatibility work) ---
+
+# vendored dependency archives / scratch copies
+/vendor/*.tar.gz
+/vendor/*.tar.xz
+/vendor/*.7z
+/vendor/*.zip
+/vendor/_partial_backup*/
+
+# local tooling / build artifacts
+tools/rust/
+__pycache__/
+*.pyc
+*.pdb
+*.ilk
+
+# Track the app-picker fallback note without allowing bundled game data.
+!touchHLE_apps/
+!touchHLE_apps/README.txt

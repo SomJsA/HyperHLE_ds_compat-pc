@@ -1,0 +1,108 @@
+{
+  "captured_at": "2026-10-25T02:40:16.816142+08:00",
+  "repository": "E:\\CodexProjects\\DeadSpaceLegacy\\repo\\HyperHLE_ds_compat",
+  "branch": "codex/android-mainline-merge",
+  "base_commit": "2ac477c47e87aac5d5bd83d8a985cbc0080e8729",
+  "status_before_handoff_commit": " M src/ds_texid.rs\n M src/frameworks/core_animation/ca_layer.rs\n M src/frameworks/core_animation/composition.rs\n M src/frameworks/core_graphics/cg_font.rs\n M src/frameworks/core_text.rs\n M src/frameworks/store_kit.rs\n M src/frameworks/store_kit/sk_payment_queue.rs\n M src/frameworks/store_kit/sk_product.rs\n M src/frameworks/uikit/ui_touch.rs\n M src/frameworks/uikit/ui_view.rs\n M src/gdb.rs\n M src/gles/present.rs\n M src/gles/util.rs\n M src/libc/posix_io.rs\n M src/options.rs\n m vendor/SDL\n?? dev-docs/session-2026-10-25/TAKEOVER.md\n?? target-local-verify/\n?? target-verify/\n",
+  "tracked_numstat": "0\t0\tvendor/SDL\n",
+  "raw_file_backups": [
+    {
+      "path": "src/ds_texid.rs",
+      "bytes": 4222,
+      "sha256": "910b6ce24bb7171be5b9d9a4d5cec59e2ac1eface0fbeb46edd9f3c36237118b",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\ds_texid.rs"
+    },
+    {
+      "path": "src/frameworks/core_animation/ca_layer.rs",
+      "bytes": 57124,
+      "sha256": "3dbeb9de6d55047ebf14c4a7ccfb8419dcab097ba49de53e42267ee25f47277d",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\core_animation\\ca_layer.rs"
+    },
+    {
+      "path": "src/frameworks/core_animation/composition.rs",
+      "bytes": 33891,
+      "sha256": "7031095de6b341dda9804a97c78c723f3acc5d9b81ec43300531ce73f958dbe2",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\core_animation\\composition.rs"
+    },
+    {
+      "path": "src/frameworks/core_graphics/cg_font.rs",
+      "bytes": 36816,
+      "sha256": "11c6abd6f364d286deca4b13d08cc03c71ffbeff261e4d665c2968b1513007db",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\core_graphics\\cg_font.rs"
+    },
+    {
+      "path": "src/frameworks/core_text.rs",
+      "bytes": 43322,
+      "sha256": "51717b9bea371b321d26cf56fce881e36f7b82e79bc39e11013b5a2316151f94",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\core_text.rs"
+    },
+    {
+      "path": "src/frameworks/store_kit.rs",
+      "bytes": 6180,
+      "sha256": "89a41766f83584c980114b7906e9cfd57b33c06d8a51adf3739714d856e63978",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\store_kit.rs"
+    },
+    {
+      "path": "src/frameworks/store_kit/sk_payment_queue.rs",
+      "bytes": 9456,
+      "sha256": "bebd75f1a9f9d79313a88dcbc9f78675853ed0f812e1d996d2138cc2b2c303a2",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\store_kit\\sk_payment_queue.rs"
+    },
+    {
+      "path": "src/frameworks/store_kit/sk_product.rs",
+      "bytes": 7151,
+      "sha256": "f8b4af32d768f2e8783ae5444e9ddff1952d0c6bdd2516c304fd2c5e364602d7",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\store_kit\\sk_product.rs"
+    },
+    {
+      "path": "src/frameworks/uikit/ui_touch.rs",
+      "bytes": 32403,
+      "sha256": "515699d6d5e6790075db4d150ef3c490b7f51d1b2aad48646d8c4f62cf93a6e6",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\uikit\\ui_touch.rs"
+    },
+    {
+      "path": "src/frameworks/uikit/ui_view.rs",
+      "bytes": 79540,
+      "sha256": "602b964e22e01a42cf3a2ba10125091cfca83e029ea2d885642142120bd41d2d",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\frameworks\\uikit\\ui_view.rs"
+    },
+    {
+      "path": "src/gdb.rs",
+      "bytes": 18620,
+      "sha256": "1662a84c771b9145e0190d60487a09a5fae391b62aa34c7570c32b5a0f81827c",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\gdb.rs"
+    },
+    {
+      "path": "src/gles/present.rs",
+      "bytes": 40066,
+      "sha256": "ccbaf54a88ba0f45fe1959e18bce8c738b928f146dc51432547808082e8efcbc",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\gles\\present.rs"
+    },
+    {
+      "path": "src/gles/util.rs",
+      "bytes": 21259,
+      "sha256": "a8514788b1fc52e37dadc61b44a866cb2f2b2ecc77ec400bed7a8c8a4b9aecda",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\gles\\util.rs"
+    },
+    {
+      "path": "src/libc/posix_io.rs",
+      "bytes": 51698,
+      "sha256": "5847c7e3332445103441830cfddc5e5118d09b1a956197ee49e1f897d4625f57",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\libc\\posix_io.rs"
+    },
+    {
+      "path": "src/options.rs",
+      "bytes": 19491,
+      "sha256": "209dfa262eba19faed3dd42bfe533f5daadb667c02d4337fb81543d8d1bdbdb0",
+      "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\src\\options.rs"
+    }
+  ],
+  "sdl": {
+    "head": "07d0f51fa292895443f563f0cbde4cb3802d87fa",
+    "status": " M android-project/app/src/main/java/org/libsdl/app/SDLActivity.java\n",
+    "source_sha256": "59db1d087219c953809560f45978ebb5abab91279c06c5365436dbb200ddb64c",
+    "backup": "E:\\CodexProjects\\DeadSpaceLegacy\\logs\\handoff-20261025\\tracked-worktree\\vendor\\SDL\\android-project\\app\\src\\main\\java\\org\\libsdl\\app\\SDLActivity.java"
+  },
+  "note": "Status snapshot precedes the documentation commit; existing source changes preserved. No reset, cleanup or submodule commit.",
+  "raw_backups_completed_at": "2026-10-25T02:41:11.841337+08:00"
+}

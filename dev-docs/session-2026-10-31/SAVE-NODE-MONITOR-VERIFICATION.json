@@ -1,0 +1,22 @@
+{
+  "offline_export_roundtrip": true,
+  "nodes_verified": 4,
+  "versions_verified": 3,
+  "events_observed": 4,
+  "intentionally_corrupt_version_rejected": true,
+  "interrupted_journal_recovered": true,
+  "chinese_label_roundtrip": true,
+  "original_fixture_files_unchanged": 15,
+  "default_enabled": false,
+  "device_install_performed": false,
+  "live_file_observer_tested": false,
+  "pixel_copy_tested": false,
+  "full_playthrough_coverage_tested": false,
+  "python_tests_passed": 27,
+  "java_probe": "save_node_archive_probe=ok",
+  "android_release_build_passed": true,
+  "optional_switch_default": false,
+  "device_actions_this_change": [],
+  "build_apk_sha256": "3efd59de6ac59c0d77fb40d0a6952f57f02ba2812e89d0ccb557859224bbafeb",
+  "built_apk_deployed": false
+}

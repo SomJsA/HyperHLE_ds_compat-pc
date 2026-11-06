@@ -1,0 +1,378 @@
+{
+  "package": "org.touchhle.android.savelab",
+  "serial": "10.31.0.232:42417",
+  "device_model": "2405CRPFDC",
+  "android_version": "14",
+  "source_documents_unchanged": true,
+  "source_file_count": 15,
+  "final_apk": {
+    "apk": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\repo\\android\\app\\build\\outputs\\apk\\release\\app-release.apk",
+    "sha256": "72068c4f959f5363b637f711d31576eebb3be262147866cdf03e60d9e338c38b",
+    "package": "org.touchhle.android.savelab",
+    "native_libs": {
+      "lib/arm64-v8a/libSDL2.so": "b3a2cc4daaa53161b3e6e8617932e7292545c4af2439236af85d01e896c173e0",
+      "lib/arm64-v8a/libc++_shared.so": "33f661fc80c90913fe365a2bb6ee0bb7ed4c01b9c797fcecf1e60070e00019d6",
+      "lib/arm64-v8a/libdsfsr3bridge.so": "37998d5e23a4e3055810f66537096268efcb2179a6649dddaf78d8e315f491d9",
+      "lib/arm64-v8a/libtouchHLE.so": "798afb000180db2d793c407348d2678c7228584ce57ee3a01be4452c4fb0594d"
+    }
+  },
+  "installed_apk_sha256": "72068c4f959f5363b637f711d31576eebb3be262147866cdf03e60d9e338c38b",
+  "native_libraries_unchanged": true,
+  "matrix_note": "Screens were captured before later ZIP-import/guard additions; native renderer/game libraries and MainActivity data-root/control setup are unchanged. Final APK has separate baseline smoke verification.",
+  "field_change_reference": "B-canonical; A is an unchanged tablet copy, not an edit of the original source",
+  "cases": [
+    {
+      "id": "A-tablet",
+      "title": "A 平板现状：关卡与剧情状态不配套",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\A-tablet",
+      "labels": [
+        "未改字段（现有档对照）",
+        "level_id=01_gov_01",
+        "objectives=OBJ_MINES_02_*；actors=矿区状态"
+      ],
+      "level_id": "01_gov_01",
+      "checkpoint_sha256": "b6ba6fe9fd3d52760b8068182fdee67e144d4facf0d7b8e25197a73952d635d2",
+      "changed_paths": 8,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\A-tablet-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "黑色空场景：只有角色和HUD",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\A-tablet\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\A-tablet\\after-8s.jpg",
+        "png_sha256": "1e769e9c36d4a893dc5ecdd040e61af34e6c62a787b5844dbb7703ec585fb99b",
+        "jpg_bytes": 79989
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\A-tablet\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\A-tablet\\arrival.jpg",
+        "png_sha256": "f53c598bf0adecc4c6226102fc238d2f8a9aa04ecfc69a3cdff297c89a3ecad5",
+        "jpg_bytes": 96644
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32a0bb50(vptr 0x00a7b2f8) w0=0x32755ce0(vptr 0x00a7ace8) selobj=0x32846d60(vptr 0x00a8a498)",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32a0bb50(vptr 0x00a7b2f8) w0=0x32755ce0(vptr 0x00a7ace8) selobj=0x32846d60(vptr 0x00a8a498)"
+      ]
+    },
+    {
+      "id": "B-canonical",
+      "title": "B 原始检查点：完整矿区对照",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\B-canonical",
+      "labels": [
+        "Checkpoint + Level = 原2012槽00",
+        "level_id=02_mines_02；XYZ=(-12.7793,1,5.3407)",
+        "actors/objectives/triggers 保持配套"
+      ],
+      "level_id": "02_mines_02",
+      "checkpoint_sha256": "e7ad2343ddcd4fa81e7308ff03518293a8836d032dc058bdcb08115fe39d5050",
+      "changed_paths": 0,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\B-canonical-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "可见矿区结构",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\B-canonical\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\B-canonical\\after-8s.jpg",
+        "png_sha256": "c941d1d8bbc3c116bc0ad4b60b8cdaa04641381bcc0e4ccee60ab37f9897deb2",
+        "jpg_bytes": 154403
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\B-canonical\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\B-canonical\\arrival.jpg",
+        "png_sha256": "b4fe11eecda6903570113b9704d33571805813db0b2b47bd7fe3f4d2ae438388",
+        "jpg_bytes": 152721
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x321456f0(vptr 0x00a7b2f8) w0=0x31cf9b50(vptr 0x00a7ace8) selobj=0x3206f740(vptr 0x00a8a498)",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x321456f0(vptr 0x00a7b2f8) w0=0x31cf9b50(vptr 0x00a7ace8) selobj=0x3206f740(vptr 0x00a8a498)"
+      ]
+    },
+    {
+      "id": "C-level-only",
+      "title": "C 仅改关卡 ID",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\C-level-only",
+      "labels": [
+        "Checkpoint + Level: current_level/level_id=01_gov_02",
+        "XYZ仍=(-12.7793,1,5.3407)",
+        "actors/objectives/triggers 仍为 MINES_02"
+      ],
+      "level_id": "01_gov_02",
+      "checkpoint_sha256": "701cb569ff8a3f433aed8e2a03cf2b1e4b18e24cefe24449ca5d506ebb80ab73",
+      "changed_paths": 2,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\C-level-only-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "黑色空场景：只有角色和HUD",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\C-level-only\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\C-level-only\\after-8s.jpg",
+        "png_sha256": "e880ea96bad044b168a4806016cdcba682701145703905420eaaa89f6f345e8b",
+        "jpg_bytes": 78809
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\C-level-only\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\C-level-only\\arrival.jpg",
+        "png_sha256": "4167eb35001d4928c555e5fe4bccb3de6bcca162b4ace46a5f869ada5cafe84b",
+        "jpg_bytes": 81284
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32216d40(vptr 0x00a7b2f8) w0=0x31e02bf0(vptr 0x00a7ace8) selobj=0x3213d650(vptr 0x00a8a498)",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32216d40(vptr 0x00a7b2f8) w0=0x31e02bf0(vptr 0x00a7ace8) selobj=0x3213d650(vptr 0x00a8a498)"
+      ]
+    },
+    {
+      "id": "D-position-only",
+      "title": "D 仅移植坐标",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\D-position-only",
+      "labels": [
+        "level_id 仍=02_mines_02",
+        "player/transform/[9,10,11]=(19.7084,1,-44.0500)",
+        "Checkpoint/Level 坐标取各自原02槽；剧情状态不改"
+      ],
+      "level_id": "02_mines_02",
+      "checkpoint_sha256": "e2ccc12d77993dbd17dc072173b6579d747008f3c4fc0405a071bf5721206f1b",
+      "changed_paths": 6,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\D-position-only-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "黑色空场景：只有角色和HUD",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\D-position-only\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\D-position-only\\after-8s.jpg",
+        "png_sha256": "afe7f83a82644417d643db04bf9a7aa692d54a37c7e041777c35b6eeecd38614",
+        "jpg_bytes": 78962
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\D-position-only\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\D-position-only\\arrival.jpg",
+        "png_sha256": "63d2c0ef1849deb4d802a9616588f237694f9cc9e560d70ebb176d30d5ae2b48",
+        "jpg_bytes": 66636
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32148b80(vptr 0x00a7b2f8) w0=0x31cf98f0(vptr 0x00a7ace8) selobj=0x3206f340(vptr 0x00a8a498)",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32148b80(vptr 0x00a7b2f8) w0=0x31cf98f0(vptr 0x00a7ace8) selobj=0x3206f340(vptr 0x00a8a498)"
+      ]
+    },
+    {
+      "id": "E-no-triggers",
+      "title": "E 清空待处理剧情触发器",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\E-no-triggers",
+      "labels": [
+        "Checkpoint: triggers.count=0（原为1）",
+        "移除 mine_02_tunnels / OBJ_MINES_02_01",
+        "level_id、坐标、objectives、actors 均不改"
+      ],
+      "level_id": "02_mines_02",
+      "checkpoint_sha256": "3bf47a71d1c1535503cc3d23445db056de9c3fabb2990035233293771e0bae61",
+      "changed_paths": 5,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\E-no-triggers-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "可见矿区结构，后续触发未验证",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\E-no-triggers\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\E-no-triggers\\after-8s.jpg",
+        "png_sha256": "74ac46ea866a776c589b8e13ce056755ef48968b29361aac3f7f93e64f22226b",
+        "jpg_bytes": 154616
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\E-no-triggers\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\E-no-triggers\\arrival.jpg",
+        "png_sha256": "6d0f3b1a6306da32ba1a0e25d004a0f760de44bde56224549f7fe049fef48b50",
+        "jpg_bytes": 137404
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32149000(vptr 0x00a7b2f8) w0=0x31cf9d10(vptr 0x00a7ace8) selobj=0x3206f700(vptr 0x00a8a498)",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32149000(vptr 0x00a7b2f8) w0=0x31cf9d10(vptr 0x00a7ace8) selobj=0x3206f700(vptr 0x00a8a498)"
+      ]
+    },
+    {
+      "id": "F-grouped",
+      "title": "F 成组移植剧情锚点，保留玩家装备",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\F-grouped",
+      "labels": [
+        "源=原02槽：current_level + actors + objectives",
+        "+ triggers + misc + player/transform；CP/Level配套",
+        "level_id=01_gov_02；XYZ=(19.7084,1,-44.0500)",
+        "保留原00槽武器、资源、升级"
+      ],
+      "level_id": "01_gov_02",
+      "checkpoint_sha256": "181a9d9088e56fe9280f1f54c254614da347f3c768c55baf366f5c0aaf4d8c79",
+      "changed_paths": 273,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\F-grouped-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "可见政府区门厅，保留原00槽装备",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\F-grouped\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\F-grouped\\after-8s.jpg",
+        "png_sha256": "767ffa671ef83a3b3437be75d76c1a4593d60e58e2984b38216f832edb455619",
+        "jpg_bytes": 174095
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\F-grouped\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\F-grouped\\arrival.jpg",
+        "png_sha256": "b8c728333e6cf2c56ec1a6c7898544e0fbb343767b085696aeab0062af805071",
+        "jpg_bytes": 153497
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32219000(vptr 0x00a7b2f8) w0=0x31e04d70(vptr 0x00a7ace8) selobj=0x3213f780(vptr 0x00a8a498)",
+        "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x32219000(vptr 0x00a7b2f8) w0=0x31e04d70(vptr 0x00a7ace8) selobj=0x3213f780(vptr 0x00a8a498)"
+      ]
+    },
+    {
+      "id": "G-full-slot",
+      "title": "G 完整槽02移到槽00",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\G-full-slot",
+      "labels": [
+        "00_{Checkpoint,Level,Survival}Save = 原02槽整套",
+        "level_id=01_gov_02；XYZ=(19.7084,1,-44.0500)",
+        "剧情、玩家装备、难度=原02槽；共享settings不改"
+      ],
+      "level_id": "01_gov_02",
+      "checkpoint_sha256": "ff8a82f56d0d39e7979e26a48ed583496d3785f84e5eebac77247d13772ef242",
+      "changed_paths": 569,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\G-full-slot-fields.json",
+      "runner_status": "gameplay",
+      "visual_observation": "可见政府区门厅，使用原02槽装备",
+      "frame": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\G-full-slot\\after-8s.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\G-full-slot\\after-8s.jpg",
+        "png_sha256": "f53929482e4cc74340fb342a288369f7cfeb5f0166aeba68f6eb12471cab388f",
+        "jpg_bytes": 161813
+      },
+      "arrival": {
+        "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\G-full-slot\\arrival.png",
+        "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-runs-v4\\G-full-slot\\arrival.jpg",
+        "png_sha256": "10ba6554c16ff35ed053ee3007de04eb67ad5e7234cff98afac93bfcfe9b0867",
+        "jpg_bytes": 142845
+      },
+      "gauges": [
+        "[DSgauge] probe: no player-owned action forwarder yet",
+        "[DSgauge] probe aiming=0 stasis=1.0000/1.0000 ammo0=13 clip=9/10 sel=0 state=0 flags=0x0 use=0x322148b0(vptr 0x00a7b2f8) w0=0x31dff6b0(vptr 0x00a7ace8) selobj=0x31dff6b0(vptr 0x00a7ace8)",
+        "[DSgauge] probe aiming=0 stasis=1.0000/1.0000 ammo0=13 clip=9/10 sel=0 state=0 flags=0x0 use=0x322148b0(vptr 0x00a7b2f8) w0=0x31dff6b0(vptr 0x00a7ace8) selobj=0x31dff6b0(vptr 0x00a7ace8)"
+      ]
+    }
+  ],
+  "native_import": {
+    "package": "org.touchhle.android.savelab",
+    "serial": "10.31.0.232:42417",
+    "source_files": 15,
+    "supported_zip_files": 14,
+    "filtered_files": [
+      "adtrackingevents"
+    ],
+    "valid": {
+      "status": "ok",
+      "sbin_files": 12,
+      "total_files": 14,
+      "backup": "Documents-20261031-113508-e9cc1d5d-b51f-4eb2-8ae7-1bb6103428c8.zip"
+    },
+    "corrupt": {
+      "status": "error",
+      "error": "java.io.IOException: SBIN checksum mismatch"
+    },
+    "operation_lock": {
+      "status": "error",
+      "error": "java.io.IOException: ADB save operation is running"
+    },
+    "game_start_blocked_by_lock": true,
+    "running_game": {
+      "status": "error",
+      "error": "java.io.IOException: Stop the game before importing saves"
+    },
+    "passed": true
+  },
+  "tests": {
+    "python": 24,
+    "java_probe": "save_import_probe=ok"
+  },
+  "game_processes_stopped": true,
+  "final_profile": "B-canonical, original frontendnav package never written",
+  "limits": [
+    "仅观测入场并静置8秒；未移动或通关",
+    "HUD state=0 不能表示剧情/几何状态正确",
+    "E组后续任务和触发逻辑未验证",
+    "矩阵APK完整SHA未单独记录；已记录最终APK及未变更的原生库SHA"
+  ],
+  "final_apk_smoke": {
+    "case": {
+      "id": "B-canonical",
+      "title": "B 原始检查点：完整矿区对照",
+      "entry": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\bank\\B-canonical",
+      "labels": [
+        "Checkpoint + Level = 原2012槽00",
+        "level_id=02_mines_02；XYZ=(-12.7793,1,5.3407)",
+        "actors/objectives/triggers 保持配套"
+      ],
+      "level_id": "02_mines_02",
+      "checkpoint_sha256": "e7ad2343ddcd4fa81e7308ff03518293a8836d032dc058bdcb08115fe39d5050",
+      "changed_paths": 0,
+      "fields_json": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\story-round1\\B-canonical-fields.json"
+    },
+    "package": "org.touchhle.android.savelab",
+    "serial": "10.31.0.232:42417",
+    "status": "gameplay",
+    "navigation": [
+      {
+        "page": 5,
+        "buttons": [
+          "BTN_PLAY"
+        ]
+      },
+      {
+        "page": 6,
+        "buttons": [
+          "BTN_PROFILE1",
+          "BTN_OK"
+        ]
+      },
+      {
+        "page": 9,
+        "buttons": [
+          "BTN_STORY",
+          "BTN_OK"
+        ]
+      }
+    ],
+    "input_after_gameplay": false,
+    "activation": {
+      "serial": "10.31.0.232:42417",
+      "package": "org.touchhle.android.savelab",
+      "backup": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\final-apk-smoke\\backups\\adb-pre-6361303aa4144703952db2f86e6021a9",
+      "remote_rollback": "/data/user/0/org.touchhle.android.savelab/files/save-lab/touchHLE_sandbox/com.ea.deadspace.bv/.save-lab-rollback-6361303aa4144703952db2f86e6021a9",
+      "files": 15
+    },
+    "arrival": {
+      "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\final-apk-smoke\\B-canonical\\arrival.png",
+      "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\final-apk-smoke\\B-canonical\\arrival.jpg",
+      "png_sha256": "58642bc761ba342a0c07ed049e4dd0e5c5471d24140f2eee779d034817313e1f",
+      "jpg_bytes": 143445
+    },
+    "frame": {
+      "png": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\final-apk-smoke\\B-canonical\\after-8s.png",
+      "jpg": "C:\\Users\\somjs\\Documents\\ChatGPT\\DEMObile\\save-lab-20261031\\android-experiments\\final-apk-smoke\\B-canonical\\after-8s.jpg",
+      "png_sha256": "9cc7dd9817af3c84a09b25ee7dd2a0ce2aa63942a11933e2b9aa2b8f460826fd",
+      "jpg_bytes": 154667
+    },
+    "gauges": [
+      "[DSgauge] probe: no player-owned action forwarder yet",
+      "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x3214ac80(vptr 0x00a7b2f8) w0=0x31cfb8a0(vptr 0x00a7ace8) selobj=0x32071460(vptr 0x00a8a498)",
+      "[DSgauge] probe aiming=0 stasis=4.0000/4.0000 ammo0=110 clip=0/10 sel=4 state=0 flags=0x0 use=0x3214ac80(vptr 0x00a7b2f8) w0=0x31cfb8a0(vptr 0x00a7ace8) selobj=0x32071460(vptr 0x00a8a498)"
+    ],
+    "queued_controls": [
+      "[DScontrol] ready; existing command ignored; publish a new sequence",
+      "[DScontrol] sequence=1 queued Touch(\"tap 60.0 285.5\")",
+      "[DScontrol] sequence=2 queued Touch(\"tap 88.0 149.0\")",
+      "[DScontrol] sequence=3 queued Touch(\"tap 421.0 295.5\")",
+      "[DScontrol] sequence=4 queued Touch(\"tap 150.5 95.5\")",
+      "[DScontrol] sequence=5 queued Touch(\"tap 421.0 295.5\")",
+      "[DScontrol] sequence=6 queued Probe",
+      "[DScontrol] sequence=7 queued Probe",
+      "[DScontrol] sequence=8 queued Probe",
+      "[DScontrol] sequence=9 queued Probe",
+      "[DScontrol] sequence=10 queued Touch(\"tap 240 285\")",
+      "[DScontrol] sequence=11 queued Probe"
+    ]
+  }
+}

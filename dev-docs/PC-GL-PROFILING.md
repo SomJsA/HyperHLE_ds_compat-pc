@@ -1,0 +1,9 @@
+# PC GL wall-span profiler candidate
+
+`TOUCHHLE_DS_GL_PROFILE=1` only. DefaultOFF. Native algorithms, data, GL ordering and thread ownership remain unchanged; no guest/GL pointer capture, screenshot, host input, shader modification or worker transfer. Current immutable v5 (4652/c50) does not contain this new candidate.
+
+Purpose: attribute the remaining rendering path before optimization. Logs carry nanosecond elapsed wall spans on the rendering owner thread, local thread tag (not OS TID), wall timestamp, last-observed native-present serial range, calls/vertices/output sizes and bounded16format signatures. DrawElements/DrawArrays include nested IndexRange, Skin and SkinSubmit; do NOT sum nested totals or call them exclusive CPU or GPU/compile time. Skin query+map preparation, math+output allocation, and post/unmap phases are partitioned. No extra GL query/map or guest read is introduced. Unknown/early-return work remains counted; layouts over16 are explicit. Report ~1Hz while work occurs, stderr errors ignored; last partial <1s is not automatically emitted on abrupt exit. Every native raw long frame remains in independent frame journal.
+
+IndexRange includes required index min/max scanning, not screen recognition. Format signature fields are vsize/vtype/vstride/wsize/wtype/wstride/isize/itype/istride/buffer-mask/units; no addresses. Buffer mask bits vertex/weight/index. Instrumented runs are diagnostics, not performance gain certification; compare future optimized release with profiler OFF and actual high-quality readbacks.
+
+Actual std-only module regressions preserve nested/aborted phase accounting and bounded layout collection; report JSON parsed independently. Full normal build and actual native profile observation remain required. Full single-core/passive door-elevator/content/input/audio/hardware/R15 final acceptance stays open.

@@ -1,0 +1,39 @@
+{
+  "ceiling": {
+    "raw": {
+      "median": 0.0,
+      "p95": 1.86,
+      "zero_percent": 83.07
+    },
+    "screen": {
+      "median": 0.0,
+      "p95": 1.86,
+      "zero_percent": 81.9
+    }
+  },
+  "front_wall": {
+    "raw": {
+      "median": 0.0,
+      "p95": 12.14,
+      "zero_percent": 64.71
+    },
+    "screen": {
+      "median": 0.0,
+      "p95": 12.14,
+      "zero_percent": 63.47
+    }
+  },
+  "floor": {
+    "raw": {
+      "median": 56.12,
+      "p95": 177.27,
+      "zero_percent": 0.21
+    },
+    "screen": {
+      "median": 56.19,
+      "p95": 175.7,
+      "zero_percent": 0.02
+    }
+  },
+  "orientation": "Android raw framebuffer rotates +90 degrees; initial -90 analysis discarded."
+}

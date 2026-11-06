@@ -1,0 +1,1491 @@
+{
+  "created_utc": "2026-10-30T23:55:23.057904+00:00",
+  "fixture_root": "E:\\CodexProjects\\DeadSpaceLegacy\\savebank",
+  "parser_sha256": "c1b37e9f7e0955ffd54b5f45f8e2ed21dd7e5065e7ce55fd390c5605d1957493",
+  "files": [
+    {
+      "file": "20261007-031303-tooltest/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261007-031303-tooltest/Documents/var/settings.sb",
+      "sha256": "259b18e5c15163823225d34ca1c882a411f71cb2dd30b79cfce3e0fb9015628a",
+      "bytes": 844,
+      "objects": 4,
+      "scalar_paths": 21,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-203922-launcher/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-204540-launcher/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-204738-launcher/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/00_CheckpointSave.sb",
+      "sha256": "e7ad2343ddcd4fa81e7308ff03518293a8836d032dc058bdcb08115fe39d5050",
+      "bytes": 4884,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/00_LevelSave.sb",
+      "sha256": "71ca88857eaade5d467787a46d1e2c50a6c4fca7dbf49c502e36713699232b7a",
+      "bytes": 2836,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/01_CheckpointSave.sb",
+      "sha256": "0fdf8ce8f8e9c500df678b6eb1558b7e2a676182f711cccb1bddadac689a1bf2",
+      "bytes": 8032,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/01_LevelSave.sb",
+      "sha256": "b5f8ebb823f1e5b5b5882b7af0970db87084677585af0ce84f52771fa1485359",
+      "bytes": 2796,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/02_CheckpointSave.sb",
+      "sha256": "ff8a82f56d0d39e7979e26a48ed583496d3785f84e5eebac77247d13772ef242",
+      "bytes": 4188,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/02_LevelSave.sb",
+      "sha256": "c9d04cebfbe2740bd305342d68cd2daacb057366feae0efca37dfe181a62082a",
+      "bytes": 2004,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/AchievementsSave.sb",
+      "sha256": "b240f96ac6542182ec25582da20ca28746348fcf5a3a83d559db5c50e2548a48",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261008-211413-launcher/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/00_CheckpointSave.sb",
+      "sha256": "e7ad2343ddcd4fa81e7308ff03518293a8836d032dc058bdcb08115fe39d5050",
+      "bytes": 4884,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/00_LevelSave.sb",
+      "sha256": "71ca88857eaade5d467787a46d1e2c50a6c4fca7dbf49c502e36713699232b7a",
+      "bytes": 2836,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/01_CheckpointSave.sb",
+      "sha256": "0fdf8ce8f8e9c500df678b6eb1558b7e2a676182f711cccb1bddadac689a1bf2",
+      "bytes": 8032,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/01_LevelSave.sb",
+      "sha256": "b5f8ebb823f1e5b5b5882b7af0970db87084677585af0ce84f52771fa1485359",
+      "bytes": 2796,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/02_CheckpointSave.sb",
+      "sha256": "ff8a82f56d0d39e7979e26a48ed583496d3785f84e5eebac77247d13772ef242",
+      "bytes": 4188,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/02_LevelSave.sb",
+      "sha256": "c9d04cebfbe2740bd305342d68cd2daacb057366feae0efca37dfe181a62082a",
+      "bytes": 2004,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/AchievementsSave.sb",
+      "sha256": "b240f96ac6542182ec25582da20ca28746348fcf5a3a83d559db5c50e2548a48",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261009-211123-launcher/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/00_CheckpointSave.sb",
+      "sha256": "b6ba6fe9fd3d52760b8068182fdee67e144d4facf0d7b8e25197a73952d635d2",
+      "bytes": 4896,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/00_LevelSave.sb",
+      "sha256": "1472d8b383d0819488979fcdf4b1d2d1f9079e71ec45f4b465aa947712aaad38",
+      "bytes": 2852,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/01_CheckpointSave.sb",
+      "sha256": "37f98c1c54e417de26f0ec28a4c7fe67733b7a4c74fb3dc9866989cd58934a8d",
+      "bytes": 8044,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/01_LevelSave.sb",
+      "sha256": "91682869608979c003fb7070f1e51f844e0ce3ddb951adc77f4e2feb26d3ba72",
+      "bytes": 2812,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/02_CheckpointSave.sb",
+      "sha256": "96fd9bb343c92d146ec6312371bcf1b040ec43dcafa00cc1b31ef3352ab3ddc7",
+      "bytes": 4200,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/02_LevelSave.sb",
+      "sha256": "dd66684d2815795c3b62061c6171fd432e73341ecafbdf87a785f4020a6639e1",
+      "bytes": 2020,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/AchievementsSave.sb",
+      "sha256": "b240f96ac6542182ec25582da20ca28746348fcf5a3a83d559db5c50e2548a48",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/00_CheckpointSave.sb",
+      "sha256": "6c2e620baaf1aa4da9b62aaa8c699fb1f59e1cbc561c56222bcce00740add9f0",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/00_LevelSave.sb",
+      "sha256": "e5f18fab08eca2ee6ce80b7e66f2612266beb2ed85eb40ff67db4406f4e370a0",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/00_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/AchievementsSave.sb",
+      "sha256": "d1296b42d3adba152d3760674aecfa11155285a65a13d1a11bfb9a0fff948848",
+      "bytes": 1544,
+      "objects": 9,
+      "scalar_paths": 58,
+      "root_offset": 1000
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/Core.sb",
+      "sha256": "ff41bb0793f1c4d637f7a53c4ef500cffc4662aa79ca60527a40291d3e1db1e1",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-005928-before-manual-checkpoint-20261025/Documents/var-backup-agent-render-20261023-121529/settings.sb",
+      "sha256": "227ce6a541a5b3ad0c8c26d975f80ada94b4896c799556269e46b73c4dd89bd8",
+      "bytes": 432,
+      "objects": 1,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/00_CheckpointSave.sb",
+      "sha256": "b6ba6fe9fd3d52760b8068182fdee67e144d4facf0d7b8e25197a73952d635d2",
+      "bytes": 4896,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/00_LevelSave.sb",
+      "sha256": "1472d8b383d0819488979fcdf4b1d2d1f9079e71ec45f4b465aa947712aaad38",
+      "bytes": 2852,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/01_CheckpointSave.sb",
+      "sha256": "37f98c1c54e417de26f0ec28a4c7fe67733b7a4c74fb3dc9866989cd58934a8d",
+      "bytes": 8044,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/01_LevelSave.sb",
+      "sha256": "91682869608979c003fb7070f1e51f844e0ce3ddb951adc77f4e2feb26d3ba72",
+      "bytes": 2812,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/02_CheckpointSave.sb",
+      "sha256": "96fd9bb343c92d146ec6312371bcf1b040ec43dcafa00cc1b31ef3352ab3ddc7",
+      "bytes": 4200,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/02_LevelSave.sb",
+      "sha256": "dd66684d2815795c3b62061c6171fd432e73341ecafbdf87a785f4020a6639e1",
+      "bytes": 2020,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/AchievementsSave.sb",
+      "sha256": "b240f96ac6542182ec25582da20ca28746348fcf5a3a83d559db5c50e2548a48",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "b4a07648486ef05109a6cf63bc6ec1a7e6e4a74419b8b8cd68555c2ba5e674bc",
+      "bytes": 11932,
+      "objects": 2,
+      "scalar_paths": 130,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/00_CheckpointSave.sb",
+      "sha256": "6c2e620baaf1aa4da9b62aaa8c699fb1f59e1cbc561c56222bcce00740add9f0",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/00_LevelSave.sb",
+      "sha256": "e5f18fab08eca2ee6ce80b7e66f2612266beb2ed85eb40ff67db4406f4e370a0",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/00_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/AchievementsSave.sb",
+      "sha256": "d1296b42d3adba152d3760674aecfa11155285a65a13d1a11bfb9a0fff948848",
+      "bytes": 1544,
+      "objects": 9,
+      "scalar_paths": 58,
+      "root_offset": 1000
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/Core.sb",
+      "sha256": "ff41bb0793f1c4d637f7a53c4ef500cffc4662aa79ca60527a40291d3e1db1e1",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "20261025-020809-paused-near-boss-bug-20261025/Documents/var-backup-agent-render-20261023-121529/settings.sb",
+      "sha256": "227ce6a541a5b3ad0c8c26d975f80ada94b4896c799556269e46b73c4dd89bd8",
+      "bytes": 432,
+      "objects": 1,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/00_CheckpointSave.sb",
+      "sha256": "b6ba6fe9fd3d52760b8068182fdee67e144d4facf0d7b8e25197a73952d635d2",
+      "bytes": 4896,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/00_LevelSave.sb",
+      "sha256": "1472d8b383d0819488979fcdf4b1d2d1f9079e71ec45f4b465aa947712aaad38",
+      "bytes": 2852,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/01_CheckpointSave.sb",
+      "sha256": "37f98c1c54e417de26f0ec28a4c7fe67733b7a4c74fb3dc9866989cd58934a8d",
+      "bytes": 8044,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/01_LevelSave.sb",
+      "sha256": "91682869608979c003fb7070f1e51f844e0ce3ddb951adc77f4e2feb26d3ba72",
+      "bytes": 2812,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/02_CheckpointSave.sb",
+      "sha256": "96fd9bb343c92d146ec6312371bcf1b040ec43dcafa00cc1b31ef3352ab3ddc7",
+      "bytes": 4200,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/02_LevelSave.sb",
+      "sha256": "dd66684d2815795c3b62061c6171fd432e73341ecafbdf87a785f4020a6639e1",
+      "bytes": 2020,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/AchievementsSave.sb",
+      "sha256": "b240f96ac6542182ec25582da20ca28746348fcf5a3a83d559db5c50e2548a48",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "boss-repro-20261025/20261025-010746-943050900-64cb1c7945/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "host-20261007-ch1-0845/Documents/var/settings.sb",
+      "sha256": "259b18e5c15163823225d34ca1c882a411f71cb2dd30b79cfce3e0fb9015628a",
+      "bytes": 844,
+      "objects": 4,
+      "scalar_paths": 21,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "pre-rarload-20261008-205105/Documents/var/settings.sb",
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3",
+      "bytes": 968,
+      "objects": 7,
+      "scalar_paths": 24,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/00_CheckpointSave.sb",
+      "sha256": "4a9c666fcc58fe5251094da7acc74afc6bfefd101935e1c8e2da49aedeef2e81",
+      "bytes": 5416,
+      "objects": 92,
+      "scalar_paths": 179,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/00_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/00_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/01_CheckpointSave.sb",
+      "sha256": "547e31cd05f72e526caed223f9845d2e0b33e9174672854579968c525577ac53",
+      "bytes": 3344,
+      "objects": 54,
+      "scalar_paths": 133,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/01_LevelSave.sb",
+      "sha256": "ae8532619456ef89a6aad1e1a9fa20757d482af211bf9ed8798ff9aeee382118",
+      "bytes": 972,
+      "objects": 23,
+      "scalar_paths": 11,
+      "root_offset": 4
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/01_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/02_SurvivalSave.sb",
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35",
+      "bytes": 108,
+      "objects": 1,
+      "scalar_paths": 0,
+      "root_offset": 0
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/AchievementsSave.sb",
+      "sha256": "5dcbc0c5bb130ea547b8ea092236c4be3663c8be6fbccfd9eaaf56307c2b3ae1",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "pre-restore-20261007-031312/Documents/var/settings.sb",
+      "sha256": "259b18e5c15163823225d34ca1c882a411f71cb2dd30b79cfce3e0fb9015628a",
+      "bytes": 844,
+      "objects": 4,
+      "scalar_paths": 21,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/00_CheckpointSave.sb",
+      "sha256": "e7ad2343ddcd4fa81e7308ff03518293a8836d032dc058bdcb08115fe39d5050",
+      "bytes": 4884,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/00_LevelSave.sb",
+      "sha256": "71ca88857eaade5d467787a46d1e2c50a6c4fca7dbf49c502e36713699232b7a",
+      "bytes": 2836,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/01_CheckpointSave.sb",
+      "sha256": "0fdf8ce8f8e9c500df678b6eb1558b7e2a676182f711cccb1bddadac689a1bf2",
+      "bytes": 8032,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/01_LevelSave.sb",
+      "sha256": "b5f8ebb823f1e5b5b5882b7af0970db87084677585af0ce84f52771fa1485359",
+      "bytes": 2796,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/02_CheckpointSave.sb",
+      "sha256": "ff8a82f56d0d39e7979e26a48ed583496d3785f84e5eebac77247d13772ef242",
+      "bytes": 4188,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/02_LevelSave.sb",
+      "sha256": "c9d04cebfbe2740bd305342d68cd2daacb057366feae0efca37dfe181a62082a",
+      "bytes": 2004,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/AchievementsSave.sb",
+      "sha256": "230694b2f3ccd7c8d86e602696159448c19a2081bf672d0035891ea59cfdf6a6",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "rar-2012-ios/死亡空间ios存档/var/settings.sb",
+      "sha256": "28295a6c9b35b9bac4c1b054968291ad55a05ffa1aa1b2a95e46e37a10a5d696",
+      "bytes": 844,
+      "objects": 4,
+      "scalar_paths": 21,
+      "root_offset": 4
+    }
+  ],
+  "failures": [],
+  "operations": {
+    "identity": 183,
+    "scalar_same_value": 15425,
+    "root_graph_relocation": 183,
+    "inventory_resize": 104,
+    "player_transplant": 68
+  },
+  "types": {
+    "scalar-0x0a": 3786,
+    "scalar-0x06": 547,
+    "scalar-0x09": 4703,
+    "scalar-0x05": 3032,
+    "scalar-0x0d": 3357,
+    "list-0x0a": 295,
+    "list-0x10": 52,
+    "list-0x0d": 544,
+    "list-0x0f": 234,
+    "list-0x05": 498
+  }
+}

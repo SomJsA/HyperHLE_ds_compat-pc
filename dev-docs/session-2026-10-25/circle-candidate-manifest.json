@@ -1,0 +1,9 @@
+{
+  "built_at": "2026-10-25T02:09:25.1826823+08:00",
+  "executable_sha256": "bffb6d57b018c7e7c70fcddf97e032a99b897ab4815420208af18076a42e9eef",
+  "installed_in_runtime": false,
+  "reason": "User paused PID 63752 near the boss rendering repro; preserve foreground and OBS recording",
+  "tests": "4 shape/visibility regression tests passed; release build passed",
+  "playtest": "pending",
+  "runtime_still": "aea05e3dd4da18680213ee6d503bea6dcc2fb8404c0c25bc590a7c4d803e1462"
+}

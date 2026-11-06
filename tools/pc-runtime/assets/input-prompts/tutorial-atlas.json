@@ -1,0 +1,607 @@
+{
+  "size": [
+    1024,
+    2048
+  ],
+  "sprites": {
+    "key/a": [
+      8,
+      8,
+      96,
+      96
+    ],
+    "key/b": [
+      112,
+      8,
+      96,
+      96
+    ],
+    "key/c": [
+      216,
+      8,
+      96,
+      96
+    ],
+    "key/d": [
+      320,
+      8,
+      96,
+      96
+    ],
+    "key/e": [
+      424,
+      8,
+      96,
+      96
+    ],
+    "key/f": [
+      528,
+      8,
+      96,
+      96
+    ],
+    "key/g": [
+      632,
+      8,
+      96,
+      96
+    ],
+    "key/h": [
+      736,
+      8,
+      96,
+      96
+    ],
+    "key/i": [
+      840,
+      8,
+      96,
+      96
+    ],
+    "key/j": [
+      8,
+      112,
+      96,
+      96
+    ],
+    "key/k": [
+      112,
+      112,
+      96,
+      96
+    ],
+    "key/l": [
+      216,
+      112,
+      96,
+      96
+    ],
+    "key/m": [
+      320,
+      112,
+      96,
+      96
+    ],
+    "key/n": [
+      424,
+      112,
+      96,
+      96
+    ],
+    "key/o": [
+      528,
+      112,
+      96,
+      96
+    ],
+    "key/p": [
+      632,
+      112,
+      96,
+      96
+    ],
+    "key/q": [
+      736,
+      112,
+      96,
+      96
+    ],
+    "key/r": [
+      840,
+      112,
+      96,
+      96
+    ],
+    "key/s": [
+      8,
+      216,
+      96,
+      96
+    ],
+    "key/t": [
+      112,
+      216,
+      96,
+      96
+    ],
+    "key/u": [
+      216,
+      216,
+      96,
+      96
+    ],
+    "key/v": [
+      320,
+      216,
+      96,
+      96
+    ],
+    "key/w": [
+      424,
+      216,
+      96,
+      96
+    ],
+    "key/x": [
+      528,
+      216,
+      96,
+      96
+    ],
+    "key/y": [
+      632,
+      216,
+      96,
+      96
+    ],
+    "key/z": [
+      736,
+      216,
+      96,
+      96
+    ],
+    "key/0": [
+      840,
+      216,
+      96,
+      96
+    ],
+    "key/1": [
+      8,
+      320,
+      96,
+      96
+    ],
+    "key/2": [
+      112,
+      320,
+      96,
+      96
+    ],
+    "key/3": [
+      216,
+      320,
+      96,
+      96
+    ],
+    "key/4": [
+      320,
+      320,
+      96,
+      96
+    ],
+    "key/5": [
+      424,
+      320,
+      96,
+      96
+    ],
+    "key/6": [
+      528,
+      320,
+      96,
+      96
+    ],
+    "key/7": [
+      632,
+      320,
+      96,
+      96
+    ],
+    "key/8": [
+      736,
+      320,
+      96,
+      96
+    ],
+    "key/9": [
+      840,
+      320,
+      96,
+      96
+    ],
+    "key/space": [
+      8,
+      424,
+      96,
+      56
+    ],
+    "key/shift": [
+      112,
+      424,
+      96,
+      64
+    ],
+    "key/enter": [
+      216,
+      424,
+      96,
+      96
+    ],
+    "key/escape": [
+      320,
+      424,
+      96,
+      96
+    ],
+    "key/tab": [
+      424,
+      424,
+      96,
+      72
+    ],
+    "key/ctrl": [
+      528,
+      424,
+      96,
+      72
+    ],
+    "key/alt": [
+      632,
+      424,
+      96,
+      72
+    ],
+    "key/backspace": [
+      736,
+      424,
+      96,
+      72
+    ],
+    "key/delete": [
+      840,
+      424,
+      96,
+      96
+    ],
+    "key/insert": [
+      8,
+      528,
+      96,
+      96
+    ],
+    "key/home": [
+      112,
+      528,
+      96,
+      96
+    ],
+    "key/end": [
+      216,
+      528,
+      96,
+      96
+    ],
+    "key/page_up": [
+      320,
+      528,
+      96,
+      96
+    ],
+    "key/page_down": [
+      424,
+      528,
+      96,
+      96
+    ],
+    "key/capslock": [
+      528,
+      528,
+      96,
+      70
+    ],
+    "key/f1": [
+      632,
+      528,
+      96,
+      96
+    ],
+    "key/f2": [
+      736,
+      528,
+      96,
+      96
+    ],
+    "key/f3": [
+      840,
+      528,
+      96,
+      96
+    ],
+    "key/f4": [
+      8,
+      632,
+      96,
+      96
+    ],
+    "key/f5": [
+      112,
+      632,
+      96,
+      96
+    ],
+    "key/f6": [
+      216,
+      632,
+      96,
+      96
+    ],
+    "key/f7": [
+      320,
+      632,
+      96,
+      96
+    ],
+    "key/f8": [
+      424,
+      632,
+      96,
+      96
+    ],
+    "key/f9": [
+      528,
+      632,
+      96,
+      96
+    ],
+    "key/f10": [
+      632,
+      632,
+      96,
+      96
+    ],
+    "key/f11": [
+      736,
+      632,
+      96,
+      96
+    ],
+    "key/f12": [
+      840,
+      632,
+      96,
+      96
+    ],
+    "key/arrow_up": [
+      8,
+      736,
+      96,
+      96
+    ],
+    "key/arrow_down": [
+      112,
+      736,
+      96,
+      96
+    ],
+    "key/arrow_left": [
+      216,
+      736,
+      96,
+      96
+    ],
+    "key/arrow_right": [
+      320,
+      736,
+      96,
+      96
+    ],
+    "pad/a": [
+      424,
+      736,
+      96,
+      96
+    ],
+    "pad/b": [
+      528,
+      736,
+      96,
+      96
+    ],
+    "pad/x": [
+      632,
+      736,
+      96,
+      96
+    ],
+    "pad/y": [
+      736,
+      736,
+      96,
+      96
+    ],
+    "pad/lb": [
+      840,
+      736,
+      96,
+      64
+    ],
+    "pad/rb": [
+      8,
+      840,
+      96,
+      64
+    ],
+    "pad/lt": [
+      112,
+      840,
+      96,
+      88
+    ],
+    "pad/rt": [
+      216,
+      840,
+      96,
+      88
+    ],
+    "pad/start": [
+      320,
+      840,
+      96,
+      64
+    ],
+    "pad/back": [
+      424,
+      840,
+      96,
+      64
+    ],
+    "pad/ls": [
+      528,
+      840,
+      96,
+      104
+    ],
+    "pad/rs": [
+      632,
+      840,
+      96,
+      104
+    ],
+    "pad/left-stick": [
+      736,
+      840,
+      96,
+      96
+    ],
+    "pad/right-stick": [
+      840,
+      840,
+      96,
+      96
+    ],
+    "pad/dpad": [
+      8,
+      952,
+      96,
+      96
+    ],
+    "mouse/left": [
+      112,
+      952,
+      68,
+      88
+    ],
+    "mouse/right": [
+      188,
+      952,
+      68,
+      88
+    ],
+    "mouse/move": [
+      264,
+      952,
+      92,
+      104
+    ]
+  },
+  "source": "https://kenney.nl/assets/input-prompts",
+  "source_pack_sha256": "ac2fcf599080b0f3ba2d174c9474db6df1a0e96ff0662580e2da79a122ab78a1",
+  "selected_source_files": {
+    "key/a": "Keyboard & Mouse/Double/keyboard_a.png",
+    "key/b": "Keyboard & Mouse/Double/keyboard_b.png",
+    "key/c": "Keyboard & Mouse/Double/keyboard_c.png",
+    "key/d": "Keyboard & Mouse/Double/keyboard_d.png",
+    "key/e": "Keyboard & Mouse/Double/keyboard_e.png",
+    "key/f": "Keyboard & Mouse/Double/keyboard_f.png",
+    "key/g": "Keyboard & Mouse/Double/keyboard_g.png",
+    "key/h": "Keyboard & Mouse/Double/keyboard_h.png",
+    "key/i": "Keyboard & Mouse/Double/keyboard_i.png",
+    "key/j": "Keyboard & Mouse/Double/keyboard_j.png",
+    "key/k": "Keyboard & Mouse/Double/keyboard_k.png",
+    "key/l": "Keyboard & Mouse/Double/keyboard_l.png",
+    "key/m": "Keyboard & Mouse/Double/keyboard_m.png",
+    "key/n": "Keyboard & Mouse/Double/keyboard_n.png",
+    "key/o": "Keyboard & Mouse/Double/keyboard_o.png",
+    "key/p": "Keyboard & Mouse/Double/keyboard_p.png",
+    "key/q": "Keyboard & Mouse/Double/keyboard_q.png",
+    "key/r": "Keyboard & Mouse/Double/keyboard_r.png",
+    "key/s": "Keyboard & Mouse/Double/keyboard_s.png",
+    "key/t": "Keyboard & Mouse/Double/keyboard_t.png",
+    "key/u": "Keyboard & Mouse/Double/keyboard_u.png",
+    "key/v": "Keyboard & Mouse/Double/keyboard_v.png",
+    "key/w": "Keyboard & Mouse/Double/keyboard_w.png",
+    "key/x": "Keyboard & Mouse/Double/keyboard_x.png",
+    "key/y": "Keyboard & Mouse/Double/keyboard_y.png",
+    "key/z": "Keyboard & Mouse/Double/keyboard_z.png",
+    "key/0": "Keyboard & Mouse/Double/keyboard_0.png",
+    "key/1": "Keyboard & Mouse/Double/keyboard_1.png",
+    "key/2": "Keyboard & Mouse/Double/keyboard_2.png",
+    "key/3": "Keyboard & Mouse/Double/keyboard_3.png",
+    "key/4": "Keyboard & Mouse/Double/keyboard_4.png",
+    "key/5": "Keyboard & Mouse/Double/keyboard_5.png",
+    "key/6": "Keyboard & Mouse/Double/keyboard_6.png",
+    "key/7": "Keyboard & Mouse/Double/keyboard_7.png",
+    "key/8": "Keyboard & Mouse/Double/keyboard_8.png",
+    "key/9": "Keyboard & Mouse/Double/keyboard_9.png",
+    "key/space": "Keyboard & Mouse/Double/keyboard_space.png",
+    "key/shift": "Keyboard & Mouse/Double/keyboard_shift.png",
+    "key/enter": "Keyboard & Mouse/Double/keyboard_enter.png",
+    "key/escape": "Keyboard & Mouse/Double/keyboard_escape.png",
+    "key/tab": "Keyboard & Mouse/Double/keyboard_tab.png",
+    "key/ctrl": "Keyboard & Mouse/Double/keyboard_ctrl.png",
+    "key/alt": "Keyboard & Mouse/Double/keyboard_alt.png",
+    "key/backspace": "Keyboard & Mouse/Double/keyboard_backspace.png",
+    "key/delete": "Keyboard & Mouse/Double/keyboard_delete.png",
+    "key/insert": "Keyboard & Mouse/Double/keyboard_insert.png",
+    "key/home": "Keyboard & Mouse/Double/keyboard_home.png",
+    "key/end": "Keyboard & Mouse/Double/keyboard_end.png",
+    "key/page_up": "Keyboard & Mouse/Double/keyboard_page_up.png",
+    "key/page_down": "Keyboard & Mouse/Double/keyboard_page_down.png",
+    "key/capslock": "Keyboard & Mouse/Double/keyboard_capslock.png",
+    "key/f1": "Keyboard & Mouse/Double/keyboard_f1.png",
+    "key/f2": "Keyboard & Mouse/Double/keyboard_f2.png",
+    "key/f3": "Keyboard & Mouse/Double/keyboard_f3.png",
+    "key/f4": "Keyboard & Mouse/Double/keyboard_f4.png",
+    "key/f5": "Keyboard & Mouse/Double/keyboard_f5.png",
+    "key/f6": "Keyboard & Mouse/Double/keyboard_f6.png",
+    "key/f7": "Keyboard & Mouse/Double/keyboard_f7.png",
+    "key/f8": "Keyboard & Mouse/Double/keyboard_f8.png",
+    "key/f9": "Keyboard & Mouse/Double/keyboard_f9.png",
+    "key/f10": "Keyboard & Mouse/Double/keyboard_f10.png",
+    "key/f11": "Keyboard & Mouse/Double/keyboard_f11.png",
+    "key/f12": "Keyboard & Mouse/Double/keyboard_f12.png",
+    "key/arrow_up": "Keyboard & Mouse/Double/keyboard_arrow_up.png",
+    "key/arrow_down": "Keyboard & Mouse/Double/keyboard_arrow_down.png",
+    "key/arrow_left": "Keyboard & Mouse/Double/keyboard_arrow_left.png",
+    "key/arrow_right": "Keyboard & Mouse/Double/keyboard_arrow_right.png",
+    "pad/a": "Xbox Series/Double/xbox_button_color_a_outline.png",
+    "pad/b": "Xbox Series/Double/xbox_button_color_b_outline.png",
+    "pad/x": "Xbox Series/Double/xbox_button_color_x_outline.png",
+    "pad/y": "Xbox Series/Double/xbox_button_color_y_outline.png",
+    "pad/lb": "Xbox Series/Double/xbox_lb_outline.png",
+    "pad/rb": "Xbox Series/Double/xbox_rb_outline.png",
+    "pad/lt": "Xbox Series/Double/xbox_lt_outline.png",
+    "pad/rt": "Xbox Series/Double/xbox_rt_outline.png",
+    "pad/start": "Xbox Series/Double/xbox_button_start_outline.png",
+    "pad/back": "Xbox Series/Double/xbox_button_back_outline.png",
+    "pad/ls": "Xbox Series/Double/xbox_stick_l_press.png",
+    "pad/rs": "Xbox Series/Double/xbox_stick_r_press.png",
+    "pad/left-stick": "Xbox Series/Double/xbox_stick_l.png",
+    "pad/right-stick": "Xbox Series/Double/xbox_stick_r.png",
+    "pad/dpad": "Xbox Series/Double/xbox_dpad_none.png",
+    "mouse/left": "Keyboard & Mouse/Double/mouse_left.png",
+    "mouse/right": "Keyboard & Mouse/Double/mouse_right.png",
+    "mouse/move": "Keyboard & Mouse/Double/mouse_move.png"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "size": [
+    512,
+    384
+  ],
+  "sprites": {
+    "E": [
+      8,
+      8,
+      96,
+      96
+    ],
+    "Q": [
+      120,
+      8,
+      96,
+      96
+    ],
+    "Enter": [
+      232,
+      8,
+      96,
+      96
+    ],
+    "A": [
+      344,
+      8,
+      96,
+      96
+    ],
+    "X": [
+      8,
+      120,
+      96,
+      96
+    ],
+    "Delete": [
+      8,
+      264,
+      96,
+      96
+    ],
+    "Start": [
+      120,
+      264,
+      96,
+      64
+    ],
+    "Arrows": [
+      120,
+      120,
+      192,
+      128
+    ],
+    "Dpad": [
+      320,
+      120,
+      96,
+      96
+    ],
+    "Select": [
+      420,
+      142,
+      88,
+      60
+    ],
+    "Press": [
+      232,
+      264,
+      40,
+      60
+    ],
+    "Continue": [
+      280,
+      264,
+      168,
+      60
+    ]
+  },
+  "source": "https://kenney.nl/assets/input-prompts",
+  "source_pack_sha256": "ac2fcf599080b0f3ba2d174c9474db6df1a0e96ff0662580e2da79a122ab78a1",
+  "selected_source_files": [
+    "Keyboard & Mouse/Double/keyboard_e.png",
+    "Keyboard & Mouse/Double/keyboard_q.png",
+    "Keyboard & Mouse/Double/keyboard_enter.png",
+    "Xbox Series/Double/xbox_button_color_a_outline.png",
+    "Xbox Series/Double/xbox_button_color_x_outline.png",
+    "Keyboard & Mouse/Double/keyboard_delete.png",
+    "Xbox Series/Double/xbox_button_start_outline.png",
+    "Keyboard & Mouse/Double/keyboard_arrow_up.png",
+    "Keyboard & Mouse/Double/keyboard_arrow_left.png",
+    "Keyboard & Mouse/Double/keyboard_arrow_down.png",
+    "Keyboard & Mouse/Double/keyboard_arrow_right.png",
+    "Xbox Series/Double/xbox_dpad_none.png"
+  ],
+  "label_font": "msyh.ttc"
+}

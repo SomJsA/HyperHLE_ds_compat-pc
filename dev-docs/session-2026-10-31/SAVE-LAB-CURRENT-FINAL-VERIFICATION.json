@@ -1,0 +1,139 @@
+{
+  "created_utc": "2026-10-30T23:55:25.064234+00:00",
+  "fixture_root": "E:\\CodexProjects\\DeadSpaceLegacy\\builds\\pc-frontend-fix-20261030\\touchHLE_sandbox\\com.ea.deadspace.bv\\Documents\\var",
+  "parser_sha256": "c1b37e9f7e0955ffd54b5f45f8e2ed21dd7e5065e7ce55fd390c5605d1957493",
+  "files": [
+    {
+      "file": "00_CheckpointSave.sb",
+      "sha256": "e7ad2343ddcd4fa81e7308ff03518293a8836d032dc058bdcb08115fe39d5050",
+      "bytes": 4884,
+      "objects": 64,
+      "scalar_paths": 312,
+      "root_offset": 4
+    },
+    {
+      "file": "00_LevelSave.sb",
+      "sha256": "71ca88857eaade5d467787a46d1e2c50a6c4fca7dbf49c502e36713699232b7a",
+      "bytes": 2836,
+      "objects": 33,
+      "scalar_paths": 177,
+      "root_offset": 4
+    },
+    {
+      "file": "00_SurvivalSave.sb",
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d",
+      "bytes": 504,
+      "objects": 2,
+      "scalar_paths": 7,
+      "root_offset": 180
+    },
+    {
+      "file": "01_CheckpointSave.sb",
+      "sha256": "0fdf8ce8f8e9c500df678b6eb1558b7e2a676182f711cccb1bddadac689a1bf2",
+      "bytes": 8032,
+      "objects": 119,
+      "scalar_paths": 508,
+      "root_offset": 4
+    },
+    {
+      "file": "01_LevelSave.sb",
+      "sha256": "b5f8ebb823f1e5b5b5882b7af0970db87084677585af0ce84f52771fa1485359",
+      "bytes": 2796,
+      "objects": 33,
+      "scalar_paths": 169,
+      "root_offset": 4
+    },
+    {
+      "file": "01_SurvivalSave.sb",
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2",
+      "bytes": 984,
+      "objects": 5,
+      "scalar_paths": 13,
+      "root_offset": 540
+    },
+    {
+      "file": "02_CheckpointSave.sb",
+      "sha256": "ff8a82f56d0d39e7979e26a48ed583496d3785f84e5eebac77247d13772ef242",
+      "bytes": 4188,
+      "objects": 69,
+      "scalar_paths": 110,
+      "root_offset": 4
+    },
+    {
+      "file": "02_LevelSave.sb",
+      "sha256": "c9d04cebfbe2740bd305342d68cd2daacb057366feae0efca37dfe181a62082a",
+      "bytes": 2004,
+      "objects": 33,
+      "scalar_paths": 58,
+      "root_offset": 4
+    },
+    {
+      "file": "02_SurvivalSave.sb",
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17",
+      "bytes": 196,
+      "objects": 1,
+      "scalar_paths": 3,
+      "root_offset": 20
+    },
+    {
+      "file": "AchievementsSave.sb",
+      "sha256": "230694b2f3ccd7c8d86e602696159448c19a2081bf672d0035891ea59cfdf6a6",
+      "bytes": 8344,
+      "objects": 153,
+      "scalar_paths": 216,
+      "root_offset": 6408
+    },
+    {
+      "file": "Core.sb",
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018",
+      "bytes": 3992,
+      "objects": 2,
+      "scalar_paths": 90,
+      "root_offset": 8
+    },
+    {
+      "file": "Dead Space/Debug Toggles.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "Dead Space/Tweaks.sb",
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2",
+      "bytes": 144,
+      "objects": 2,
+      "scalar_paths": 0,
+      "root_offset": 8
+    },
+    {
+      "file": "settings.sb",
+      "sha256": "28295a6c9b35b9bac4c1b054968291ad55a05ffa1aa1b2a95e46e37a10a5d696",
+      "bytes": 844,
+      "objects": 4,
+      "scalar_paths": 21,
+      "root_offset": 4
+    }
+  ],
+  "failures": [],
+  "operations": {
+    "identity": 14,
+    "scalar_same_value": 1684,
+    "root_graph_relocation": 14,
+    "inventory_resize": 12,
+    "player_transplant": 6
+  },
+  "types": {
+    "scalar-0x0a": 455,
+    "scalar-0x06": 60,
+    "scalar-0x09": 409,
+    "scalar-0x05": 286,
+    "scalar-0x0d": 474,
+    "list-0x0a": 37,
+    "list-0x10": 6,
+    "list-0x0d": 48,
+    "list-0x0f": 20,
+    "list-0x05": 42
+  }
+}

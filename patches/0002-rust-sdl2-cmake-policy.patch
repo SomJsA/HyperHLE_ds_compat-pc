@@ -1,0 +1,10 @@
+--- a/vendor/rust-sdl2/sdl2-sys/build.rs
++++ b/vendor/rust-sdl2/sdl2-sys/build.rs
+@@ -101,6 +101,7 @@ fn compile_sdl2(sdl2_build_path: &Path, target_os: &str) -> PathBuf {
+     } else {
+         cfg.profile("Release");
+         cfg.define("CMAKE_CONFIGURATION_TYPES", "Release");
++        cfg.define("CMAKE_POLICY_VERSION_MINIMUM", "3.5");
+     }
+ 
+     // Allow specifying custom toolchain specifically for SDL2.

@@ -1,0 +1,63 @@
+{
+  "snapshot": "state-1792865422-f039261.dsstate",
+  "carrie": 1,
+  "player": "0x370f04a0",
+  "rows": [
+    {
+      "address": "0x30f5e9c0",
+      "name": "MESH_isaac_suit_helmet_02",
+      "appearance": "nodim_eyes_level_02",
+      "visible": 1,
+      "complete_cleanup_selects": true
+    },
+    {
+      "address": "0x31824db0",
+      "name": "MESH_isaac_suit_helmet_03",
+      "appearance": "nodim_eyes_level_03",
+      "visible": 1,
+      "complete_cleanup_selects": true
+    },
+    {
+      "address": "0x319e4df0",
+      "name": "MESH_isaac_suit_body_04",
+      "appearance": "isaac_stasis_gauge",
+      "visible": 1,
+      "complete_cleanup_selects": false
+    },
+    {
+      "address": "0x319e5780",
+      "name": "MESH_isaac_suit_body_04",
+      "appearance": "isaac_health_4_bars",
+      "visible": 1,
+      "complete_cleanup_selects": false
+    },
+    {
+      "address": "0x319e6610",
+      "name": "MESH_isaac_suit_helmet_04",
+      "appearance": "nodim_eyes_level_04",
+      "visible": 1,
+      "complete_cleanup_selects": true
+    },
+    {
+      "address": "0x319e6c80",
+      "name": "MESH_isaac_suit_body_04",
+      "appearance": "isaac_suit_04",
+      "visible": 1,
+      "complete_cleanup_selects": false
+    },
+    {
+      "address": "0x319e6fb0",
+      "name": "MESH_isaac_suit_helmet_04",
+      "appearance": "isaac_suit_04",
+      "visible": 0,
+      "complete_cleanup_selects": true
+    },
+    {
+      "address": "0x319e7940",
+      "name": "MESH_isaac_suit_helmet_01",
+      "appearance": "nodim_eyes_level_01",
+      "visible": 1,
+      "complete_cleanup_selects": true
+    }
+  ]
+}

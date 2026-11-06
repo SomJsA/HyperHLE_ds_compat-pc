@@ -1,0 +1,32 @@
+{
+  "process_id": 63752,
+  "runtime_sha256": "aea05e3dd4da18680213ee6d503bea6dcc2fb8404c0c25bc590a7c4d803e1462",
+  "state_restore_verified": false,
+  "files": {
+    "state-1792865354-f036252.dsstate": {
+      "role": "boss-phase-near-repro",
+      "bytes": 60356628,
+      "sha256": "0e0f732bd766872b06ec812e1749e2aa5417140394255f0ef823566197e3d9b7"
+    },
+    "state-1792865381-f037353.dsstate": {
+      "role": "last-attack-before-ending-CG",
+      "bytes": 60427516,
+      "sha256": "aff5de13bea3f6ffce879d36949fe6451b5ef5661a308a311af7fec5fb428d91"
+    },
+    "state-1792865422-f039261.dsstate": {
+      "role": "face-visible-with-helmet-glow-overlay",
+      "bytes": 60621644,
+      "sha256": "d93cf0f7f6c6b869e424f18b7da99438988ccb94854361769e3503584a472a3d"
+    },
+    "boss-ending-obs.mp4": {
+      "role": "sealed OBS clip; face visible around 90-100s",
+      "bytes": 37850535,
+      "sha256": "0e764cbaaf9f4d7da8ceb615c5298d18871aac6e4cc014027988c312d744cc41"
+    },
+    "user-face-original.png": {
+      "role": "user supplied face screenshot",
+      "bytes": 645992,
+      "sha256": "5be5b298074e53fb58f4d04bdc329501c9c8d5f853d216933a76535f589dcc27"
+    }
+  }
+}

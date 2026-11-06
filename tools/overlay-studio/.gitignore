@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+current-style*.json
+pc-style*.json
+assets/tablet-current*

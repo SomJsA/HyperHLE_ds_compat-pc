@@ -1,0 +1,13 @@
+ChapterEnglish.ttf: RussellSquare Regular. Original glyph outlines and copyright preserved.
+Compatibility repair: rebuilt SFNT directory, added missing OS/2 metrics and Unicode
+cmap from the original MacRoman mapping; discarded an unsupported legacy kern table.
+Original 1991 file is rejected by modern browser OTS without these required tables.
+Requested by the user for this non-commercial project on 2026-10-30.
+Source: https://www.fonts100.com/87333/russellsquareregular.zip
+Listing: https://www.fonts100.com/font%2B87333_RussellSquare.html
+SHA256: 9910ca639073f11c2643c51794a7e1660f84cf38b51c2f327e6b1c1a0e241ab7
+Original embedded copyright:
+Copyright (c) 1990 Adobe Systems Incorporated. All Rights Reserved.
+Russell Square is a trademark of Visual Graphics Corporation.
+No license text was included in this download. This provenance record is not a license grant.
+The user will attach the applicable permission statement when distributing the project.

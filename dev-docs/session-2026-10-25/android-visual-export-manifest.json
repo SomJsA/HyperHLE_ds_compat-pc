@@ -1,0 +1,273 @@
+{
+  "source_commit": "ef5ed43951279c6225e50094ef64c4da37589424",
+  "renderer_baseline": "358c57318da0c26e19cbfb5dd6fb3c047a6aba12",
+  "branch": "codex/android-mainline-merge",
+  "submodules": [
+    {
+      "path": "vendor/SDL",
+      "revision": "07d0f51fa292895443f563f0cbde4cb3802d87fa",
+      "working_patch": true
+    },
+    {
+      "path": "vendor/dynarmic",
+      "revision": "e0f6bd9d0b48ed6e536672c0c9abbe87961be861",
+      "working_patch": false
+    },
+    {
+      "path": "vendor/libxml2",
+      "revision": "02d577715e1951cf114ca4e9adaf5605156c4f4c",
+      "working_patch": false
+    },
+    {
+      "path": "vendor/openal-soft",
+      "revision": "23c8a35505fe6ab7a5c87754911a133b23ac75cf",
+      "working_patch": false
+    },
+    {
+      "path": "vendor/stb",
+      "revision": "9f1776a36d2a3d63c52f705c3a84b372cfed4340",
+      "working_patch": false
+    }
+  ],
+  "visual_history": [
+    {
+      "commit": "5adc70faba81a563536da3f6052707ab1f232e2b",
+      "subject": "Fix opening atlas wrap and split space depth handling",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs"
+      ]
+    },
+    {
+      "commit": "a518ca65566a6fd985b9455af1d722be6ea0c877",
+      "subject": "fix: roll back regressed opening render hacks",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs",
+        "src/frameworks/opengles/gles_guest.rs"
+      ]
+    },
+    {
+      "commit": "9b8d476a44c084ead49ef69ad0771829f8cce259",
+      "subject": "fix: restore distance fog and add mip A/B control",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs",
+        "src/frameworks/opengles/gles_guest.rs"
+      ]
+    },
+    {
+      "commit": "261fe7a4e11ce4ce07f3a69f8f23763e793d75e4",
+      "subject": "fix: isolate opening porthole fog and poster filtering",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs"
+      ]
+    },
+    {
+      "commit": "38ec3ce690c5c4388e785e66ec587a09c7ce20cb",
+      "subject": "fix: cover iPad2 opening resource keys",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs",
+        "src/frameworks/opengles/gles_guest.rs"
+      ]
+    },
+    {
+      "commit": "b3fad9db6a3d590fa1a523e2f01819ed08efd4d2",
+      "subject": "fix: skip malformed opening triangles",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs",
+        "src/frameworks/opengles/gles_guest.rs"
+      ]
+    },
+    {
+      "commit": "173574de522c6149a06584e84d4cb12af50c9772",
+      "subject": "fix: gate transparent cover depth repair by scene",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs"
+      ]
+    },
+    {
+      "commit": "87a23def1bf72719a0c67d17287e3fa4b3dc376c",
+      "subject": "fix: allow transparent wall repair only outside opening camera",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs"
+      ]
+    },
+    {
+      "commit": "bb420b34bfcf8fecd14be92f379d5a3831d5326e",
+      "subject": "fix: restore opening station foundation rock",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs",
+        "src/frameworks/opengles/gles_guest.rs"
+      ]
+    },
+    {
+      "commit": "d4c65100f01e97b72ea8edac01003f9af0bad435",
+      "subject": "fix: restore foreground asteroid during opening fly-through",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs"
+      ]
+    },
+    {
+      "commit": "75587095a4fc69db33a86cc115cdd95751f9bc8a",
+      "subject": "fix: preserve asteroid depth and correct Dead Space keyboard actions",
+      "paths": [
+        "src/gles/gles1_on_gl2.rs"
+      ]
+    }
+  ],
+  "checks": [
+    "zip CRC",
+    "bundle verify",
+    "renderer patch check against baseline"
+  ],
+  "files": [
+    {
+      "path": "android-mainline.bundle",
+      "bytes": 56310860,
+      "sha256": "2ceafc1fb47552bc050d33575b9ec87d554fac8e86719e647f73650952d27392"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4401,
+      "sha256": "95fb9cb0a0be45b06fc8e237bde558e6fd58b1c92b4b910a1b46601024a4f411"
+    },
+    {
+      "path": "source.zip",
+      "bytes": 54355726,
+      "sha256": "b627e8c1b7835ddf7ebb56faac257734b826b4affbd9a66359509cd3919cc84a"
+    },
+    {
+      "path": "vendor-dynarmic.zip",
+      "bytes": 4823902,
+      "sha256": "d78b0488ac7606e63f4af99f1dc28cd711eb9149aedad4f5c20b2521679938b5"
+    },
+    {
+      "path": "vendor-libxml2.zip",
+      "bytes": 4808531,
+      "sha256": "03b64b9aca7843a8e02792098b2c874d52efd70e19be5439802f5bc5f2378cb9"
+    },
+    {
+      "path": "vendor-openal-soft.zip",
+      "bytes": 989130,
+      "sha256": "ebc10df71011c27e138559bad26c22e65fb392c7027093395ca28e1091e1e750"
+    },
+    {
+      "path": "vendor-SDL-working.patch",
+      "bytes": 1647,
+      "sha256": "a94b7cff57e9019a18020fd54e7d03502cbda29c6675938b001d9fa5fa5d0dc8"
+    },
+    {
+      "path": "vendor-SDL.zip",
+      "bytes": 9631883,
+      "sha256": "0f5e82e07ca4ef9729db85629e728cf39a75d26fcb156891305acf266de17652"
+    },
+    {
+      "path": "vendor-stb.zip",
+      "bytes": 1596937,
+      "sha256": "061e4eca9324676f780bd309852d3244ff45ae7f3c0437a69f65e7613763632b"
+    },
+    {
+      "path": "verification.index",
+      "bytes": 310650,
+      "sha256": "4c63dc49e3197b9e7a3d39d3c3563a1b55c132a97d3023841ffa3f92979ede8d"
+    },
+    {
+      "path": "visual-fixes/carrie-head.patch",
+      "bytes": 4453,
+      "sha256": "f8793e08c347c09b161c011170b671f8397c79c4cf85ed0ac6ea10a2e82ae289"
+    },
+    {
+      "path": "visual-fixes/history/173574de.patch",
+      "bytes": 2777,
+      "sha256": "677311f77f629d5a14f6f9ad50366e29de31e2e314d6d27ead2b4e279dbf7efe"
+    },
+    {
+      "path": "visual-fixes/history/261fe7a4.patch",
+      "bytes": 6283,
+      "sha256": "7a6363185e50e791176b02fd3738ac31b83aaa21aebca0c6d3546395ff7431d1"
+    },
+    {
+      "path": "visual-fixes/history/38ec3ce6.patch",
+      "bytes": 1170,
+      "sha256": "be69623b2d41dbc0b8c3f2f273fd5b6c9670b1f65810f723a48bd17c4eb2c4a5"
+    },
+    {
+      "path": "visual-fixes/history/5adc70fa.patch",
+      "bytes": 25971,
+      "sha256": "b88e495e202f84401c8bddfe70906b809703fcff207d55e20ce6474efe530770"
+    },
+    {
+      "path": "visual-fixes/history/75587095.patch",
+      "bytes": 28812,
+      "sha256": "50b0c3525798d95964874ee42fbe1c7415f13af5573b74f4267c08fb758213e8"
+    },
+    {
+      "path": "visual-fixes/history/87a23def.patch",
+      "bytes": 1412,
+      "sha256": "8f598ddfdc925d20baa5eb4c6aa71f43988a65faac728308b8e8920af62d3354"
+    },
+    {
+      "path": "visual-fixes/history/9b8d476a.patch",
+      "bytes": 1951,
+      "sha256": "d9856a005a40a7ba2be119b29982d9551ec06a334e91c7bf346564c927e55ff3"
+    },
+    {
+      "path": "visual-fixes/history/a518ca65.patch",
+      "bytes": 6605,
+      "sha256": "087a832eea7c67922c70c6df0dd1ae59aaf97cf677d4a30e8f49cb3046770441"
+    },
+    {
+      "path": "visual-fixes/history/b3fad9db.patch",
+      "bytes": 47984,
+      "sha256": "8c911061bcf60594d7c9cfa09b3cb1e5ec991336eeb509807f421993a5b940a0"
+    },
+    {
+      "path": "visual-fixes/history/bb420b34.patch",
+      "bytes": 197467,
+      "sha256": "5f8a306d5efbb4f87bde78a69500d4387f0f35bb7fcc535c0a7920eb1662b5d3"
+    },
+    {
+      "path": "visual-fixes/history/d4c65100.patch",
+      "bytes": 4596,
+      "sha256": "e831edef698853996cf4099281a3f2e9a180b608839cb073045b67617130a65d"
+    },
+    {
+      "path": "visual-fixes/README.md",
+      "bytes": 4401,
+      "sha256": "95fb9cb0a0be45b06fc8e237bde558e6fd58b1c92b4b910a1b46601024a4f411"
+    },
+    {
+      "path": "visual-fixes/reference-source/src/ds_texid.rs",
+      "bytes": 4116,
+      "sha256": "9e2da27bd86bbfafc648809812f7e7dce99007cc33e71a919eaf04f9ac78ccca"
+    },
+    {
+      "path": "visual-fixes/reference-source/src/environment/ds_carrie_patch.rs",
+      "bytes": 2547,
+      "sha256": "77a95a66a15ccafc4440f9d3c299d71a062239f4a433d5a33c8833d8a3c73111"
+    },
+    {
+      "path": "visual-fixes/reference-source/src/environment.rs",
+      "bytes": 121029,
+      "sha256": "cc0b200745cf0c2192e87b19cfcf1b5d4ae35e976170d5caf25d5fe1fda4cf7d"
+    },
+    {
+      "path": "visual-fixes/reference-source/src/frameworks/opengles/gles_guest.rs",
+      "bytes": 426265,
+      "sha256": "e457c5458f388fa13958f462f1abd29186950ef6471227242721fa35ad898832"
+    },
+    {
+      "path": "visual-fixes/reference-source/src/gles/gles1_on_gl2.rs",
+      "bytes": 376713,
+      "sha256": "a07e87ad960bff9477d3cd2defe76bbfc551d53b6d194b95ad08498dafc830c4"
+    },
+    {
+      "path": "visual-fixes/reference-source/tools/pc-runtime/Program.cs",
+      "bytes": 29159,
+      "sha256": "633e59bb614b2bc361dd12544a63001fe8979d36c3b4646c91393a2dbc188fa4"
+    },
+    {
+      "path": "visual-fixes/renderer-net-from-358c5731.patch",
+      "bytes": 211103,
+      "sha256": "0b5552e59335f25510f5a4827a9f1496844116938a6b363eb461f7cc0c1a7646"
+    }
+  ]
+}

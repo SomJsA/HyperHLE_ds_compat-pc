@@ -1,0 +1,4987 @@
+{
+  "schema": 1,
+  "status": "user-revision-in-progress",
+  "sourceSha256": "747c8d14329582974a95bbcfc1d99d5a600b733af1192c11053e2ed9b4614609",
+  "entries": [
+    {
+      "id": "Suit_12",
+      "text": "正在进入政府区：下层区",
+      "english": "Now entering Government Sector: Underbelly"
+    },
+    {
+      "id": "Walla_14",
+      "text": "各位，听着！拿上工具，切断它们的四肢！只有这样才能让这帮混蛋慢下来！",
+      "english": "Everybody, listen up! Use your tools and take off their limbs! It's the only way to slow the bastards down!"
+    },
+    {
+      "id": "Walla_15",
+      "text": "照着关节切，伙计！让它们吃点苦头！",
+      "english": "Cut 'em off at the joints, man! They don't like that so much!"
+    },
+    {
+      "id": "Walla_16",
+      "text": "嘿，各位！这些东西杀得死！拿等离子切割器，或者随便什么能用的家伙，不停地切它们！",
+      "english": "Hey, everybody! You can kill these things! Just keep slicing with a plasma cutter, or whatever!"
+    },
+    {
+      "id": "Insid_01",
+      "text": "注意（干扰）RIG编号四（干扰）四二（干扰）我是（干扰）泰德曼（干扰）表明（干扰）你的身份",
+      "english": "Attention (static) RIG number four (static) four-two (static) This (static) Tiedemann (static) identify (static) yourself"
+    },
+    {
+      "id": "Insid_02",
+      "text": "RIG编号（干扰）八六（干扰）回答！（干扰）公共（干扰）区（干扰）破坏活动（干扰）",
+      "english": "RIG number (Static) eight-six (static) come in! (Static) The Pub-(static) Sector (static) sabotage (static)"
+    },
+    {
+      "id": "Insid_03",
+      "text": "注意，RIG编号438642。我是公共区的泰德曼主管。我们查到，最近几起破坏活动都和你有关。表明身份。",
+      "english": "Attention, RIG number 438642. This is Director Tiedemann, in the Public Sector. We've traced recent acts of sabotage to your suit. Identify yourself."
+    },
+    {
+      "id": "Van_04",
+      "text": "呃……叫我破坏者吧。听我说，他们压根没说会闹成这样！教会叫我做什么，我就做什么，结果那帮混蛋却把我丢在这儿等死！去他们的！你要我出庭作证都行！",
+      "english": "Uh... Call me Vandal. But listen, they didn't tell me what would happen! I just did what the Church told me, and now the bastards have left me for dead out here! So screw them, all right? I'll even testify if you want me to!"
+    },
+    {
+      "id": "Insid_04",
+      "text": "我那些同事恐怕不会买账。你闯的祸可不小，不过还有机会补救。跨区交通隧道A的紧急隔离封锁装置出了故障。你是工程师，手头的工具就能修好它。",
+      "english": "I don't think my colleagues will accept that. You've caused a lot of trouble. But there's a way to make up for some of the damage you've done. The emergency quarantine seal on Crossover Tube A has malfunctioned, and as an Engineer, you have the tools to repair it."
+    },
+    {
+      "id": "Van_05",
+      "text": "你们那边就找不出个人来修吗？我在下面光是保命都够呛！",
+      "english": "Isn't there someone on your side that can do it? I'm fighting for my life, down here!"
+    },
+    {
+      "id": "Insid_05",
+      "text": "公共区的人都没你离那里近。你要是真心悔过，就抓住这次将功补过的机会。修好隔离大门，这样就能挡住怪物，阻止它们接近居民区。到时候也许能对你从轻发落……当然，得看你能不能活下来。现在，动作快！",
+      "english": "You're much closer than anyone from the Public Sector. If you're truly remorseful, this is your chance to show it. Repair that seal, and it'll keep those monsters from reaching the population. It may even gain you some leniency... assuming you survive. Now hurry!"
+    },
+    {
+      "id": "Suit_43",
+      "text": "接入信息",
+      "english": "Incoming transmission"
+    },
+    {
+      "id": "Insid_07",
+      "text": "破坏者，我是泰德曼主管。你得快点了！怪物越来越快，你还得穿过水处理区和食品加工区，才能到跨区交通隧道！",
+      "english": "Vandal, this is Director Tiedemann. You must hurry! The monsters are gaining speed, and you still have Water and Food Processing between you and the Crossover Tubes."
+    },
+    {
+      "id": "Van_10",
+      "text": "我已经够快了，泰德曼。这路可没那么好走！",
+      "english": "Going as fast as I can, Tiedemann. It's not exactly an open road."
+    },
+    {
+      "id": "Insid_13",
+      "text": "我是泰德曼主管。破坏者，公共区这边已经人心惶惶了。你还在路上？",
+      "english": "This is Director Tiedemann. People are starting to panic over here in the Public Sector, Vandal. Are you still en route?"
+    },
+    {
+      "id": "Van_55",
+      "text": "主管，我这边也不是在度假啊。对，我还在往跨区交通隧道赶。还剩多少时间？",
+      "english": "I'm not exactly taking a vacation over here either, Director. But yes, I'm still heading for the Crossover Tube. How long do I have?"
+    },
+    {
+      "id": "Insid_14",
+      "text": "说不准，反正越快越好。别让任何人拦住你！今天可是你这辈子最重要的一天！",
+      "english": "It's impossible to say, but speed is of the essence. Don’t let anyone stop you! This is the most important day of your life!"
+    },
+    {
+      "id": "Van_56",
+      "text": "这么说，我还一点压力都没有，是吧？我得赶路了。",
+      "english": "So, no pressure, then? I've got to go."
+    },
+    {
+      "id": "Insid_09",
+      "text": "我是泰德曼主管。你到底干了什么？隔离封锁装置全断电了！我让你修好它们，你倒好，越弄越糟！",
+      "english": "This is Director Tiedemann. What the hell did you do? We've lost all power to the quarantine seals! You were supposed to fix them, but you've made it worse!"
+    },
+    {
+      "id": "Van_23",
+      "text": "我知道！天哪，对不起……他们骗了我！我本来是想启动应急程序……我真不知道会这样，我发誓！",
+      "english": "I know! God, I'm sorry -- they tricked me! I was trying to set off the emergency protocols... I didn't know, I swear!"
+    },
+    {
+      "id": "Insid_10",
+      "text": "你这个蠢货……我正在想办法。我相信我有办法对付那些怪物，但还需要点时间。现在又出了新问题。空间站那块石头上的反应堆核心不稳定，已经过热了……肯定是你破坏设备造成的！再不修好，反应堆就要失控了！",
+      "english": "You fool... I am working on a solution. I believe I have a way to defeat the monsters. But I need more time, and now there is another problem. The shard's reactor core has become unstable. It's overheating -- no doubt due to your sabotaged machinery! And if it isn't fixed soon, it will go critical!"
+    },
+    {
+      "id": "Van_24",
+      "text": "可那些系统……不该影响反应堆核心啊！",
+      "english": "But... Those systems shouldn't affect the reactor core!"
+    },
+    {
+      "id": "Insid_11",
+      "text": "可现在就是影响到了！核心一旦破裂，整个泰坦空间站都得完蛋！马上去修好核心。这回也许能将功补过！",
+      "english": "Well, they have! If the core breaches, the entire Sprawl will be destroyed! You must get to the core and repair it, and perhaps this time you can successfully redeem yourself!"
+    },
+    {
+      "id": "Van_25",
+      "text": "我回不去了，里面的怪物太多了！",
+      "english": "I can't go back inside. There's just too many monsters in there."
+    },
+    {
+      "id": "Insid_12",
+      "text": "不用回去。最快的路在外面，沿着矿区外围绕过去，就能到反应堆核心。",
+      "english": "You don't have to. The quickest route to the reactor core is to cross the shard itself, around the exterior."
+    },
+    {
+      "id": "PA_01",
+      "text": "注意！紧急隔离封锁正在启动。政府区与公共区之间的所有跨区交通隧道即刻关闭。",
+      "english": "Attention! Emergency quarantine lockdown is now commencing. All Crossover Tubes between Government and Public sectors will be closed immediately."
+    },
+    {
+      "id": "Walla_11",
+      "text": "解除封锁！这里面还有人！",
+      "english": "Open the lockdown! There are people still in here!"
+    },
+    {
+      "id": "Walla_12",
+      "text": "那帮混蛋把我们封死在这里了！",
+      "english": "Bastards have shut us off!"
+    },
+    {
+      "id": "Walla_13",
+      "text": "肯定还有出口！接着找！",
+      "english": "Gotta be a way out! Keep checking!"
+    },
+    {
+      "id": "Anchor_01",
+      "text": "各位早上好。今天节目的议题是：泰坦空间站的预算出问题了？",
+      "english": "Good morning, everyone. Coming up on today's show: budget problems for the Sprawl?"
+    },
+    {
+      "id": "Oper_02",
+      "text": "第三公共区，情况稳定。",
+      "english": "Stable in public sector 3."
+    },
+    {
+      "id": "Miner_02",
+      "text": "动作快点，今天的活还差半吨，干完就能回家了。",
+      "english": "Speed it up, we still got half a ton on our quota before we can all go home for the day."
+    },
+    {
+      "id": "Anchor_02",
+      "text": "六区的外界屏障仍有故障，居民们正准备联名请愿。",
+      "english": "Environment screen on sector 6 is still experiencing problems, and residents are preparing a petition."
+    },
+    {
+      "id": "Miner_01",
+      "text": "重力索已就位，采矿炸药准备就绪。",
+      "english": "Tethers in place, mining charges ready."
+    },
+    {
+      "id": "Oper_01",
+      "text": "环境检查：第一公共区，情况稳定。",
+      "english": "Environment check: stable in public sector 1."
+    },
+    {
+      "id": "Miner_03",
+      "text": "好了，接班的人来了。伙计们，回家吧。泰坦空间站美好的一天又过去了。",
+      "english": "All right, crew relief's here. Let's go home, guys. Just another beautiful day on the Sprawl."
+    },
+    {
+      "id": "Dain_01",
+      "text": "破坏者，我代表教会。听着，你眼前所见，就是对你今天功劳的奖赏。你有幸成为第一批荣获眷顾的人。当局正在封锁泰坦空间站，切断矿区通道……把你关在里面。但别害怕。你的死将无比光荣，带你踏上神圣的往生之路，通往教会许诺的死后新生。赞美阿尔特曼。",
+      "english": "Vandal, I represent the Church. Listen to me. What you see before you is your reward, for today's accomplishment. You're to be one of the first blessed with Ascension. The authorities are locking down the Sprawl, cutting off the mines -- locking you in. But don't be afraid. Your death will be glorious, a holy path to the life beyond death the Church promised you. Altman be praised."
+    },
+    {
+      "id": "Van_03",
+      "text": "你们早知道会这样？你们这群该死的骗子！是我们干的事……是我干的，是我害死了那些人！去你妈的！等政府知道你们干的好事，看你们还觉不觉得自己能好好的坐在这！",
+      "english": "You knew this would happen? You lying sons of bitches! People are dying because of what we did -- what I did! Fuck you! See how blessed you feel when the Government hears about what you've done!"
+    },
+    {
+      "id": "Walla_01",
+      "text": "嘿，怎么回事？",
+      "english": "Hey, what gives?"
+    },
+    {
+      "id": "Walla_02",
+      "text": "是不是出了什么故障？",
+      "english": "Some kind of breakdown?"
+    },
+    {
+      "id": "Walla_03",
+      "text": "那他妈是什么？从哪儿冒出来的？",
+      "english": "The hell is that? Where'd it come from?"
+    },
+    {
+      "id": "Walla_04",
+      "text": "我的天哪！",
+      "english": "Jesus Christ!"
+    },
+    {
+      "id": "Walla_05",
+      "text": "快叫警卫！快叫警卫！",
+      "english": "Call security! Call security!"
+    },
+    {
+      "id": "Walla_06",
+      "text": "跑！快跑！",
+      "english": "Run! Go!"
+    },
+    {
+      "id": "Suit_26",
+      "text": "正在接近跨区交通隧道A",
+      "english": "Now approaching Crossover Tube A"
+    },
+    {
+      "id": "Suit_25",
+      "text": "正在接近食品加工区",
+      "english": "Now approaching Food Processing"
+    },
+    {
+      "id": "Suit_23",
+      "text": "正在接近矿区",
+      "english": "Now approaching the Mines"
+    },
+    {
+      "id": "Suit_24",
+      "text": "正在接近水处理区",
+      "english": "Now approaching Water Processing"
+    },
+    {
+      "id": "Suit_22",
+      "text": "正在驶离车站",
+      "english": "Departing Terminal"
+    },
+    {
+      "id": "Suit_27",
+      "text": "已抵达目的地",
+      "english": "Destination Reached"
+    },
+    {
+      "id": "Suit_18",
+      "text": "正在进入跨区交通隧道A",
+      "english": "Now entering Crossover Tube A"
+    },
+    {
+      "id": "Suit_17",
+      "text": "正在进入食品加工区",
+      "english": "Now entering Food Processing"
+    },
+    {
+      "id": "Suit_13",
+      "text": "正在进入政府区",
+      "english": "Now entering Government Sector"
+    },
+    {
+      "id": "Suit_15",
+      "text": "正在进入医疗区",
+      "english": "Now entering Medical Bay"
+    },
+    {
+      "id": "Suit_14",
+      "text": "正在进入矿区",
+      "english": "Now entering Mines"
+    },
+    {
+      "id": "Suit_20",
+      "text": "正在进入反应堆核心",
+      "english": "Now entering Reactor Core"
+    },
+    {
+      "id": "Suit_19",
+      "text": "正在进入泰坦碎片外围",
+      "english": "Now entering Titan Shard Exterior"
+    },
+    {
+      "id": "Suit_21",
+      "text": "正在进入列车站",
+      "english": "Now entering Tram Station"
+    },
+    {
+      "id": "Suit_29",
+      "text": "正在进入真空环境",
+      "english": "Now entering vacuum"
+    },
+    {
+      "id": "Suit_16",
+      "text": "正在进入水处理区",
+      "english": "Now entering Water Processing"
+    },
+    {
+      "id": "Suit_28",
+      "text": "正在进入零重力环境",
+      "english": "Now entering Zero G"
+    },
+    {
+      "id": "Suit_31",
+      "text": "正在离开真空环境",
+      "english": "Now leaving vacuum"
+    },
+    {
+      "id": "Suit_30",
+      "text": "正在离开零重力环境",
+      "english": "Now leaving Zero G"
+    },
+    {
+      "id": "Suit_46",
+      "text": "泰德曼主管已更新你的定位器",
+      "english": "Director Tiedemann has updated your locator"
+    },
+    {
+      "id": "Suit_53",
+      "text": "系统已停用",
+      "english": "System de-activated"
+    },
+    {
+      "id": "Suit_47",
+      "text": "泰勒·瑞迪科夫已更新你的定位器",
+      "english": "Tyler Radikov has updated your locator"
+    },
+    {
+      "id": "Suit_48",
+      "text": "路点已设置",
+      "english": "Waypoint set"
+    },
+    {
+      "id": "Suit_71",
+      "text": "等离子切割器用途广、性能好，稍一充能就能快速发射。",
+      "english": "The Plasma Cutter is an excellent all-round tool, designed to fire rapidly with minimal charge."
+    },
+    {
+      "id": "Suit_06",
+      "text": "V-101岩石取芯器适用于各种取芯作业，可穿透65%的已知重元素。标准模式下，四束等离子光束协同作用，切取大型样本。副攻击模式会把四束光束合为一束，用于强度更高的作业。",
+      "english": "The V-101 Core Extractor is suitable for coring operations in all situations, and can penetrate sixty-five per cent of all known heavy elements. Standard mode uses four co-ordinated plasma beams to generate a large sample. Secondary mode combines all four beams, for extra-heavy use."
+    },
+    {
+      "id": "Suit_08",
+      "text": "动态牵引模块就像使用者手脚的延伸，可以隔空操控物体和设备。在人员密集区域作业时，请留意物体本身的重量。",
+      "english": "The kinesis module acts as an extension of the user's limbs, allowing for remote manipulation of objects and equipment. Personnel should be aware of objects' true weight when working in populated areas."
+    },
+    {
+      "id": "Suit_05",
+      "text": "遇到等离子切割器功率不足的切割作业，建议使用IM-822手持式矿石切割线性枪。标准模式只能水平切割，副攻击模式则可发射定时等离子炸弹。",
+      "english": "The IM-822 Handheld Ore Cutter Line Gun is recommended for cutting operations that require more power than a Plasma Cutter can provide. Standard mode is horizontal-only, and a secondary mode ejects a timed explosive plasma charge."
+    },
+    {
+      "id": "Suit_02",
+      "text": "211-V等离子切割器适合矿区日常的凿削和修整工作。标准模式可发射一道远程能量束。旋转设备即可在水平和垂直方向间切换，切割更精准。",
+      "english": "The 211-V Plasma Cutter is suitable for everyday chipping and trimming tasks in the mining environment. Standard mode projects a single long range energy blast. Rotation of the device switches between vertical and horizontal orientation, allowing for greater accuracy."
+    },
+    {
+      "id": "Suit_72",
+      "text": "切换到等离子切割器的副攻击模式，就能发射水平光束。",
+      "english": "Switch to the Plasma Cutter's secondary mode for an alternate horizontal beam."
+    },
+    {
+      "id": "Suit_03",
+      "text": "SH-B1等离子锯可用于切割重型材料，工地内外均可使用。使用时，请始终穿好防护服。",
+      "english": "The SH-B1 Plasma Saw is designed for dissection of heavy duty materials in both on and off-site locations. Users are advised to always wear protective clothing when the saw is in use."
+    },
+    {
+      "id": "Suit_01",
+      "text": "资源综合处理器，简称RIG，能让工作人员随时掌握健康状况等重要信息。内置的全息显示装置让同事即使隔着一段距离，也能随时看清你的状态。本设备可升级。",
+      "english": "Your Resource Integration Gear, or RIG, is designed to keep personnel aware of health and other vital information. Its integrated holographic displays ensure co-workers can always monitor your status, even from a distance. Upgrades are available."
+    },
+    {
+      "id": "Suit_04",
+      "text": "RC-DS遥控圆盘切割锯配备多片钛合金锯刃，每分钟最高转速可达一万七千转。标准模式适合重型切割作业，并能远距离精准操控。切换副攻击模式，则会牺牲操控性来换取速度。",
+      "english": "The RC-DS Remote Control Disc Ripper features multiple titanium blades and rotates at up to seventeen thousand RPM, for situations requiring heavy duty cuts and accurate ranged control in standard mode. An optional secondary mode sacrifices mobility for speed."
+    },
+    {
+      "id": "Suit_07",
+      "text": "静滞模块能减慢局部小范围内的相对时间流速。请避免对活体生物使用静滞，以免造成意想不到的后果。",
+      "english": "The stasis module allows its user to reduce relative temporal flow in a small, localised area. Personnel are advised to refrain from using stasis on live organisms, as this may have unforeseen consequences."
+    },
+    {
+      "id": "Suit_35",
+      "text": "生命值极低",
+      "english": "Health critical"
+    },
+    {
+      "id": "Suit_34",
+      "text": "生命值偏低",
+      "english": "Health low"
+    },
+    {
+      "id": "Suit_38",
+      "text": "氧气严重不足",
+      "english": "Oxygen critical"
+    },
+    {
+      "id": "Suit_37",
+      "text": "氧气不足",
+      "english": "Oxygen Low"
+    },
+    {
+      "id": "Suit_36",
+      "text": "静滞能量不足",
+      "english": "Stasis low"
+    },
+    {
+      "id": "Vill_31",
+      "text": "好，你到了。记住，代号是“破坏者”。无论发生什么，都不能把真名告诉别人，明白吗？万一碰上人，音频滤音器会帮你掩饰身份。",
+      "english": "OK, you're in position. Remember, your codename is VANDAL. Under no circumstances tell anyone your real name, understand? Your voice filter will keep you anonymous if you meet anyone."
+    },
+    {
+      "id": "Vill_99",
+      "text": "好，开始吧。这次行动关系重大，我会一步步带着你完成。先用等离子锯破坏屋里的电源箱，应该有3个。",
+      "english": "Now, let's get started. What we're doing here is vital to the cause, and I'll be with you every step of the way. Start by using your plasma saw to take out the power boxes in this room. There should be 3 of them."
+    },
+    {
+      "id": "Vill_32",
+      "text": "有几个得先转一下等离子切割器的方向，才能切开。",
+      "english": "You'll need to rotate your plasma cutter to take some of these out."
+    },
+    {
+      "id": "Vill_33",
+      "text": "漂亮！一个房间搞定。就按这个速度，去下一个。",
+      "english": "Perfect! One room down. Now you need to keep up the pace. Move on to the next."
+    },
+    {
+      "id": "Vill_34",
+      "text": "这就对了。好，继续，下一个。",
+      "english": "That's what I'm talking about. All right, on to the next."
+    },
+    {
+      "id": "Vill_35",
+      "text": "很好！离目标越来越近了，别分心。",
+      "english": "Excellent! We're getting closer, stay focused."
+    },
+    {
+      "id": "Vill_36",
+      "text": "干得好，破坏者。继续，没多远了。",
+      "english": "Good work, Vandal. Keep going, not far to go now."
+    },
+    {
+      "id": "Vill_38",
+      "text": "干得漂亮。这个房间也搞定了，还剩最后一个。",
+      "english": "Great job. That's it for this room. Just one more to go."
+    },
+    {
+      "id": "Vill_39",
+      "text": "干得好。接下来这个，得把切割器转个方向。",
+      "english": "You're doing great. You'll need to switch your cutter's orientation for this next one."
+    },
+    {
+      "id": "Vill_40",
+      "text": "这里小心点。用静滞让它们慢下来，你就能安全过去了。",
+      "english": "Be careful, here. Use your stasis charge to slow things down, so you can get by safely."
+    },
+    {
+      "id": "Vill_42",
+      "text": "破坏者！快跑！快去列车站！",
+      "english": "Vandal! Get out of there, quick! Make for the tram!"
+    },
+    {
+      "id": "Walla_07",
+      "text": "它们从墙里钻出来了！",
+      "english": "They're coming out of the walls!"
+    },
+    {
+      "id": "Walla_08",
+      "text": "妈的！快跑！",
+      "english": "Shit! Run for it!"
+    },
+    {
+      "id": "Walla_09",
+      "text": "快找个医生来！",
+      "english": "Somebody get a medic!"
+    },
+    {
+      "id": "Walla_10",
+      "text": "快跑啊！",
+      "english": "Just run!"
+    },
+    {
+      "id": "Vill_43",
+      "text": "破坏者！你在吗？破坏者，请回答！",
+      "english": "Vandal! Are you there? Vandal, come in!"
+    },
+    {
+      "id": "Van_07",
+      "text": "泰勒？你这个混蛋，竟然把我丢在那儿等死！",
+      "english": "Tyler? You son of a bitch, you left me for dead!"
+    },
+    {
+      "id": "Vill_44",
+      "text": "不！不，我发誓，我不知道他们在干什么！我也是刚知道，一直在找你！他们把这儿全封锁了！",
+      "english": "No! No, I swear, I didn't know what they were doing! I only just found out myself, I've been trying to reach you! They've locked the whole place down!"
+    },
+    {
+      "id": "Van_08",
+      "text": "还没全封死。跨区交通隧道A的隔离封锁装置坏了。我们可以先逃出去，再把身后的封锁装置修好！",
+      "english": "Not quite. The quarantine seal on Crossover Tube A is broken. We can get out, and fix it behind us!"
+    },
+    {
+      "id": "Vill_45",
+      "text": "你或许能出去，可我离你太远了，对不起。但我还能帮你！往隧道走，我会一路帮着你，我保证。也许咱俩都能活着出去。",
+      "english": "You can, maybe. I'm nowhere near your location, I'm sorry. But I can still help you! Make for the Tube, and I'll be with you every step of the way, I promise. Maybe we can both get out of this."
+    },
+    {
+      "id": "Van_09",
+      "text": "那帮混蛋真是把咱俩坑惨了，是吧？行，我这就过去。至少还能想办法拦住这些东西，不让它们扩散。",
+      "english": "Those bastards really screwed us, didn't they? All right, I'm heading that way now. At least maybe we can stop this thing from spreading."
+    },
+    {
+      "id": "Vill_47",
+      "text": "破坏者，那扇门是隔离封锁的一部分。你得先往回走大概300米，右拐穿过公用设施区，再越过矿井……逗你玩呢。现在试试，门开了。",
+      "english": "Vandal, that door's part of the quarantine lock. You'll have to backtrack about 300 meters, take a right through the utility area, get over the mine shaft... I'm just screwing with you. Try it now, it's open."
+    },
+    {
+      "id": "Vill_63",
+      "text": "好，仔细听。先把通往公共区的门打开。",
+      "english": "OK, listen carefully. The first thing you have to do is open the door to the public sector."
+    },
+    {
+      "id": "Van_17",
+      "text": "你疯了？全靠那扇门，怪物才没跑到空间站另一边去！",
+      "english": "Are you nuts? That door's the only thing keeping the monsters on this side of the Sprawl!"
+    },
+    {
+      "id": "Vill_64",
+      "text": "封锁装置都坏了，那扇门还能顶什么用！听我说！在隔离封锁期间开门，就会触发紧急保护，把所有门都锁死！不光是隧道，连枢纽也一样。这是最快的办法！去破坏门上的安保装置！",
+      "english": "Not if the seal's broken, it's not! Listen to me! Opening that door during a quarantine lockdown will set off the emergency failsafes and lock down ALL the doors -- not just the Tube, but the Hub as well. It's the quickest way! Just take out the door security!"
+    },
+    {
+      "id": "Van_18",
+      "text": "好……好，我明白了。我要动手了，等着。",
+      "english": "All right... All right, I get it. Here goes, stand by."
+    },
+    {
+      "id": "Vill_65",
+      "text": "干得漂亮，破坏者。果然人如其名。",
+      "english": "Excellent work, Vandal. You've truly lived up to your name."
+    },
+    {
+      "id": "Van_19",
+      "text": "什么……？天哪，断电了！所有门都卡住了，关不上！你到底干了什么？",
+      "english": "What--? Oh my God, the power's down! All the doors are jammed open! What have you done?"
+    },
+    {
+      "id": "Vill_66",
+      "text": "我什么都没做。是你做了正确的事……正义的事。帮你杀死那些已经飞升的灵魂，你知道我心里是什么滋味吗？！可我还是做了这个牺牲。现在，你也为自己赎罪了。谁也别想阻止转化继续传播！",
+      "english": "I didn't do anything. But you've done what's right... and just. How do you think I felt, helping you kill all those Ascended souls?! But I made that sacrifice. And now you've redeemed yourself, too. Nothing will stop the spread of enlightenment!"
+    },
+    {
+      "id": "Van_20",
+      "text": "泰勒，你这个混蛋！我要杀了你！",
+      "english": "You son of a bitch, Tyler! I'll kill you!"
+    },
+    {
+      "id": "Vill_67",
+      "text": "看，那些蒙受启迪的人来了。别怕！人类即将迎来新生，你的牺牲会被永远铭记！",
+      "english": "And here come the enlightened now. Don't be afraid! Your sacrifice will be remembered forever, as mankind moves to its new existence!"
+    },
+    {
+      "id": "Van_21",
+      "text": "我看未必。公共区还封锁着，没了电，谁也别想打开那扇门！",
+      "english": "I don't think so. The public sector's still on lockdown -- and without power, nothing's going to open that door!"
+    },
+    {
+      "id": "Vill_68",
+      "text": "哦，这个你就别操心了。我们只要把它们送进隧道就行。我得走了。记住，这就是许诺给我们所有人的死后新生……",
+      "english": "Oh, don't worry about that -- we just had to get them into the Tube. I've got to go. Remember this is the life beyond death we are all promised..."
+    },
+    {
+      "id": "Van_22",
+      "text": "去你妈的，泰勒！我才不会在这儿等死！一定还有办法……！",
+      "english": "Fuck you, Tyler! I'm not just going to sit here and die! There's got to be a way...!"
+    },
+    {
+      "id": "Vill_28",
+      "text": "记住，多看看定位器。它可比谁都熟悉这地方。",
+      "english": "Remember, always keep an eye on your locator. It knows this place better than anyone."
+    },
+    {
+      "id": "Vill_96",
+      "text": "只要检测到外来的活体生物组织，这里整套系统就会启动隔离消杀程序。",
+      "english": "This whole place is wired to lockdown if any live foreign biological material is detected."
+    },
+    {
+      "id": "Van_67",
+      "text": "那这些怪物肯定算“外来”了。",
+      "english": "Those creatures are definitely foreign material."
+    },
+    {
+      "id": "Vill_97",
+      "text": "想继续走，就得把它们全杀光。",
+      "english": "You'll need to kill everything to keep going."
+    },
+    {
+      "id": "Van_68",
+      "text": "真是太好了。",
+      "english": "Great."
+    },
+    {
+      "id": "Vill_98",
+      "text": "只要附近还有那种东西，眼前的门就会锁死。不过把它们全杀光，门好像就又开了。",
+      "english": "Doors will lock right in front of you if there are any of those things about. Killing 'em all seems to open them right back up again though."
+    },
+    {
+      "id": "Vill_95",
+      "text": "用动态牵引能量把这些破烂挪开。",
+      "english": "Use kinesis to clear this crap out of the way."
+    },
+    {
+      "id": "Vill_78",
+      "text": "怎么样，破坏者？还撑得住吗？",
+      "english": "How you hanging in there, Vandal? You coping?"
+    },
+    {
+      "id": "Van_54",
+      "text": "应该……还行吧，就是累坏了。我可没想到今天会闹成这样。",
+      "english": "Sure, I guess... just exhausted. This is not how I expected today to go."
+    },
+    {
+      "id": "Vill_79",
+      "text": "我也没想到。不过你干得不错，平安回来就好，行吗？",
+      "english": "Me either, but you're doing fine. Just get back safely, OK?"
+    },
+    {
+      "id": "Vill_53",
+      "text": "破坏者，听着。我已经碰上一只了。冷静点，集中精神。它正面全是硬甲，你得绕到背后把它切开。相信自己，你能行的。",
+      "english": "Vandal, listen up. I already met one of these things. Just stay calm, and focus. The front's covered in plating, so you need to get behind it and cut it up. You can do this, I know you can."
+    },
+    {
+      "id": "Vill_84",
+      "text": "这附近应该放着一把岩石取芯器，你会用得上。",
+      "english": "A core extractor should be stored somewhere around here. You're gonna need it."
+    },
+    {
+      "id": "Vill_54",
+      "text": "嘿，破坏者。我黑进了一个终端，给咱俩都弄了不少信用点。想买什么尽管买，我请客……好吧，算政府账上，管它呢。",
+      "english": "Hey, Vandal. I hacked a terminal and loaded us both up on credits. Feel free to go on a shopping spree, it's on me... Well, on the government, but who's counting?"
+    },
+    {
+      "id": "Vill_83",
+      "text": "这些柜子里应该有把线性枪，去找出来。",
+      "english": "There should be a Line Gun in one of these lockers. Go get it."
+    },
+    {
+      "id": "Vill_04",
+      "text": "等离子锯够不着远处的东西，不过只要贴近了，什么都能切烂！",
+      "english": "The Plasma Saw's got no real range, but if you can get in close it'll rip anything apart!"
+    },
+    {
+      "id": "Vill_05",
+      "text": "记住，得靠近了才能用等离子锯！",
+      "english": "Remember, you've got to move in close to use your Plasma Saw!"
+    },
+    {
+      "id": "Vill_06",
+      "text": "等离子锯尽管用，能量用不完！",
+      "english": "Don't be afraid to use your Plasma Saw -- it never runs out of charges!"
+    },
+    {
+      "id": "Vill_80",
+      "text": "我们给你准备了一些工具。前面的储物柜里有一把等离子锯。",
+      "english": "We've arranged some tools for you. You'll find a plasma saw in a locker up ahead."
+    },
+    {
+      "id": "Vill_81",
+      "text": "服务器机房旁边的柜子里，给你留了把等离子切割器。",
+      "english": "There's a plasma cutter waiting for you in a locker near the server room."
+    },
+    {
+      "id": "Vill_62",
+      "text": "破坏者！是我。抱歉，刚才躲着不敢说话。想修好装置，你得先进隧道。走吧，我一步步告诉你怎么做。",
+      "english": "Vandal! I'm here. Sorry, I couldn't talk, I was hiding. You need to get into the Tube to do the repair. Go on, I'll talk you through it."
+    },
+    {
+      "id": "Vill_07",
+      "text": "切割锯可好用了！把锯片射出去，再控制它四处切，够它们受的！",
+      "english": "That Ripper should be real handy! Once you fire it, steer the disc around for some mayhem!"
+    },
+    {
+      "id": "Vill_08",
+      "text": "试试切割锯的副攻击模式。虽说没法控制方向，但又快又狠！",
+      "english": "Try the Ripper's secondary mode -- you can't steer it, but it's fast and powerful!"
+    },
+    {
+      "id": "Vill_82",
+      "text": "附近有把圆盘切割锯，应该能派上用场。",
+      "english": "You'll find a disc ripper nearby. Should come in handy."
+    },
+    {
+      "id": "Vill_16",
+      "text": "它们动作太快，就用静滞模块！",
+      "english": "If they're too fast, use your stasis module!"
+    },
+    {
+      "id": "Vill_18",
+      "text": "给它们来一发静滞，让它们慢下来！",
+      "english": "Hit them with a blast of stasis, that'll slow them down!"
+    },
+    {
+      "id": "Vill_85",
+      "text": "这里有备用的静滞模块。拿一个，我去开门。",
+      "english": "Spare stasis modules are stored in here. Grab one and I'll get the door open."
+    },
+    {
+      "id": "Vill_86",
+      "text": "前面房间应该有些动态牵引模块。你找找看，我来开锁。",
+      "english": "Should be some kinesis modules in this room coming up. See if you can find one while I work on these locks."
+    },
+    {
+      "id": "Vill_70",
+      "text": "继续走，破坏者。列车就在前面。",
+      "english": "Keep going, Vandal. There's a tram up ahead."
+    },
+    {
+      "id": "Vill_73",
+      "text": "破坏者，你前面还有一辆列车。",
+      "english": "Vandal, there's another tram ahead of you."
+    },
+    {
+      "id": "Vill_01",
+      "text": "去商店看看能不能给RIG升个级。护甲厚点，总没坏处。",
+      "english": "You should check out the store, see if you can upgrade your RIG. Tougher armor wouldn't be a bad idea."
+    },
+    {
+      "id": "Vill_50",
+      "text": "破坏者，我是泰勒。给你送了份小礼物，就在维修滑槽里，应该能用得上。",
+      "english": "Vandal, this is Tyler. I sent a little present for you down the service chute. Should come in handy."
+    },
+    {
+      "id": "Vill_51",
+      "text": "嘿，破坏者，附近又给你留了点东西。去维修滑槽看看。",
+      "english": "Hey, Vandal, there's another little something waiting for you nearby. Check out the service chute."
+    },
+    {
+      "id": "Vill_52",
+      "text": "又一份爱心包裹，我的一点心意。别客气，回头再谢我。",
+      "english": "One more care package, care of me. Don't mention it, you can thank me later."
+    },
+    {
+      "id": "Vill_22",
+      "text": "在零重力环境中，基本上想跳哪儿都行。瞄准落脚的地方，跳过去就好。",
+      "english": "You can jump pretty much anywhere in zero-g. Just aim at where you want to land and jump."
+    },
+    {
+      "id": "Vill_23",
+      "text": "那个位置要是跳不过去，RIG会提醒你。换个安全点的落脚处，再试一次。",
+      "english": "Your rig will let you know if you can't jump to a location. Just aim at a safer surface and try again."
+    },
+    {
+      "id": "Vill_24",
+      "text": "看看周围，找个能落脚的地方。零重力跳跃可不是哪儿都能跳。",
+      "english": "Scan around for jump destinations, you can only get to certain locations with a zero-g jump."
+    },
+    {
+      "id": "Vill_49",
+      "text": "你跟这些锁着的门还真有缘，是吧？等一下……好了，应该能开了。",
+      "english": "You really like those locked doors, don't you? Hold on... That should do it."
+    },
+    {
+      "id": "Vill_14",
+      "text": "用过岩石取芯器的副攻击模式吗？那威力，简直就是上帝之拳。试试！",
+      "english": "You ever use the secondary mode on a Core Extractor? Packs a punch like god's own fist. Try it!"
+    },
+    {
+      "id": "Vill_13",
+      "text": "岩石取芯器可是个狠家伙。把四束光束全对准同一个地方，威力绝对够劲！",
+      "english": "That Core Extractor's a mean son of a bitch. Try lining up all four beams at once for some serious damage."
+    },
+    {
+      "id": "Vill_12",
+      "text": "记住，线性枪能打光束，也能射定时炸弹。切开那些东西还不是轻而易举！",
+      "english": "Remember, the Line Gun fires beams and timed charges. Should carve right through them things!"
+    },
+    {
+      "id": "Vill_11",
+      "text": "线性枪可真够猛的！碰到大家伙就用它！",
+      "english": "The Line Gun's pretty damn powerful! Use it on any big guys you come across!"
+    },
+    {
+      "id": "Van_01",
+      "text": "泰勒，我们到底在干什么？我拆的这些可都是基础设备，我怕会把泰坦空间站的系统弄出问题。",
+      "english": "Tyler, what exactly are we doing here? This is pretty low-level stuff I'm taking out. I'm worried we're endangering the Sprawl's systems."
+    },
+    {
+      "id": "Vill_37",
+      "text": "抱歉，破坏者，这事还不能告诉你。你的工程技术确实最执行这项任务的不二人选，可你毕竟才刚加入教会不久。别紧张，相信教会。我只能说，过了今天，政府就再也不能妨碍教会了。",
+      "english": "Sorry, Vandal, you're not authorised to know that. Your engineering skills make you perfect for this task, but you're still a new convert to Unitology. Relax, and have faith. All I can tell you is that after today, the Government will no longer stand in the way of the Church."
+    },
+    {
+      "id": "Van_02",
+      "text": "搞定了。周围一下子全安静了。",
+      "english": "Finished. And everything's gone real quiet."
+    },
+    {
+      "id": "Vill_41",
+      "text": "那就说明你成功了。干得漂亮，破坏者。你今天做的事，会永远写进教会的历史。你是个英雄。现在赶紧离开，去教会。",
+      "english": "That means you succeeded. Excellent job, Vandal. What you've done here today will stand in Church history forever. You're a hero. Now get out of there and head to the Church."
+    },
+    {
+      "id": "Van_16",
+      "text": "主管，我是破坏者。我到跨区交通隧道了。",
+      "english": "Director, this is Vandal. I've reached the Crossover Tube."
+    },
+    {
+      "id": "Insid_08",
+      "text": "干得好。记住，得赶紧修好封锁装置，别耽搁！快！",
+      "english": "Excellent work. Remember, you must still repair the seal before too late. Hurry."
+    },
+    {
+      "id": "Van_52",
+      "text": "嘿，泰勒，你还没说过你是哪儿的人。",
+      "english": "Hey Tyler -- you never told me where you're from."
+    },
+    {
+      "id": "Vill_76",
+      "text": "按理说不能告诉你，不过现在还保什么密……我是在火星出生的，早就巴不得离开那儿了。你呢？",
+      "english": "I shouldn't really say, but I guess secrecy's hardly important now... I was born on Mars. Couldn't wait to get off-world. How about you?"
+    },
+    {
+      "id": "Van_53",
+      "text": "我在太空出生，在一艘开往北极光的殖民船上。我没去过地球，也没去过火星。那边什么样？",
+      "english": "I was born in space. Colony ship to Borealis. I've never been to Earth, or Mars -- what's it like?"
+    },
+    {
+      "id": "Vill_77",
+      "text": "火星？烂地方一个，没去过一点都不可惜。",
+      "english": "Mars? It's a shithole. You're not missing anything."
+    },
+    {
+      "id": "Van_57",
+      "text": "不会吧。（干笑）这什么情况？",
+      "english": "No way. (Nervous laugh) What the hell?"
+    },
+    {
+      "id": "Van_58",
+      "text": "什……么……",
+      "english": "Whaaa…."
+    },
+    {
+      "id": "Van_59",
+      "text": "泰勒？",
+      "english": "Tyler?"
+    },
+    {
+      "id": "Van_60",
+      "text": "喂！谁在下面？",
+      "english": "Hey! Who's down here?"
+    },
+    {
+      "id": "Van_61",
+      "text": "我出现幻觉了……不，那不是真的。",
+      "english": "I'm seeing shit… That's not real."
+    },
+    {
+      "id": "Vill_88",
+      "text": "幻觉？你看到幻觉了？",
+      "english": "Visions? You're having visions?"
+    },
+    {
+      "id": "Van_62",
+      "text": "我要疯了。（抽泣）我他妈真要疯了。",
+      "english": "I'm losing it. (Sob) I'm fucking losing it."
+    },
+    {
+      "id": "Vill_94",
+      "text": "振作点，破坏者！别这么软弱！",
+      "english": "Snap out of it, Vandal. You're being weak!"
+    },
+    {
+      "id": "Van_63",
+      "text": "从我脑子里滚出去！",
+      "english": "Get out of my head!"
+    },
+    {
+      "id": "Vill_92",
+      "text": "冷静，破坏者！你得撑住！",
+      "english": "Calm down, Vandal! I need you to keep it together."
+    },
+    {
+      "id": "Van_64",
+      "text": "这他妈到底是怎么回事！",
+      "english": "What the fuck is going on!"
+    },
+    {
+      "id": "Vill_93",
+      "text": "你都快失控了！集中精神！",
+      "english": "You're being hysterical! I need you to focus."
+    },
+    {
+      "id": "Van_65",
+      "text": "泰勒，我不舒服。我感觉不太对劲。",
+      "english": "I'm sick, Tyler. Something's wrong with me."
+    },
+    {
+      "id": "Vill_91",
+      "text": "会过去的，先专心把任务完成。",
+      "english": "It'll pass. Just concentrate on the mission."
+    },
+    {
+      "id": "Van_66",
+      "text": "我已经分不清什么是真，什么是假了。",
+      "english": "I don't know what's real anymore"
+    },
+    {
+      "id": "Van_47",
+      "text": "音频日志，RIG：438642。我被教会选中去执行一项秘密任务，潜入位于泰坦空间站裂解核心上的系统中。我希望自己能成为教会引以为傲的人，赞美阿尔特曼。",
+      "english": "Audiolog, RIG number 438642. I've been selected for a secret mission, down in the core systems on the Shard. I hope I can do them proud. Altman be praised."
+    },
+    {
+      "id": "Van_48",
+      "text": "音频日志，RIG编号438642。哦，天啊...我很...我很抱歉！我不知道自己做了些什么...我曾无条件的信任教会。真是个傻逼。现在空间站已经完全失控，教会也抛弃我了！",
+      "english": "Audiolog, RIG number 438642. Oh, god... I'm sorry. I didn't know what I was doing... I placed my faith in the Church and trusted them. What an idiot. Now there's something loose on the Sprawl, and the Church has abandoned me here!"
+    },
+    {
+      "id": "Van_49",
+      "text": "音频日志，RIG编号438642。也许我还能亡羊补牢。主管泰德曼让我来我来维修跨区交通隧道A的紧急隔离系统。我不知道还能不能及时赶到那里，不过一人做事一人当，因我造成的后果就应该自己来承担！我必须试试！",
+      "english": "Audiolog, RIG number 438642. Maybe I can make this right. Director Tiedemann asked me to repair the quarantine seal on Crossover Tube A. I don't know if I'll even make it there -- but it's my fault these things are loose in the first place. I have to try!"
+    },
+    {
+      "id": "Van_50",
+      "text": "音频日志，RIG编号438642。我离A区的跨区交通隧道越来越近，如果我可以修复隧道的紧急封锁系统，这样便可以阻止那些怪物前往公共居民区了。那之后我将会告诉所有人教会干的好事！",
+      "english": "Audiolog, RIG number 438642. I'm almost at the Crossover Tube. If I can repair the seal, it'll stop the creatures from reaching the Public Sector. And then I'm going to tell everyone what the Church did!"
+    },
+    {
+      "id": "Van_51",
+      "text": "音频日志，RIG编号438642。这可能会成为自己的遗言，怪物正在肆虐，我无能为力。如果我再不修复反应堆堆芯，那么过热的反应堆将会摧毁整个空间站！所以...我希望有人能够听到这份录音。这至少意味着我对于此的弥补仍有意义。",
+      "english": "Audiolog, RIG number 438642. These could be my last words. The monsters are loose. I couldn't stop them. And now the reactor core is overheating -- which will destroy the entire Sprawl if I can't fix it! So... I hope someone hears this. It means I did that much right, at least."
+    },
+    {
+      "id": "Van_29",
+      "text": "妈的！它们到底都是从哪儿来的？",
+      "english": "Crap! Where are they all  coming from?"
+    },
+    {
+      "id": "Van_15",
+      "text": "泰勒，我到开往跨区交通隧道枢纽的列车这儿了。你那边怎么样？泰勒？泰勒，回话！妈的……",
+      "english": "Tyler, I'm at the tram to the Crossover Tube Hub. What's your status? Tyler? Tyler, come in! Oh, shit..."
+    },
+    {
+      "id": "Van_26",
+      "text": "天哪……我就知道，不是我破坏设备才弄成这样的！是那东西把整个核心都堵住了！",
+      "english": "Oh, christ... I knew it wasn't the sabotage that did this! That thing's suffocating the entire core!"
+    },
+    {
+      "id": "Van_28",
+      "text": "泰德曼主管……我是破坏者。搞定了……反应堆……已经稳定了。可我受了伤……伤得很重……主管？有人吗……求求你们……我叫……嘉莉……嘉莉·诺顿……有人……能听到我说话吗……？",
+      "english": "Director Tiedemann... this is Vandal. It's done... I stabilized... the reactor. But I'm hurt... pretty bad... Director? Anyone... please... My name... Is Karrie... Karrie Norton... can anybody... hear me...?"
+    },
+    {
+      "id": "Vill_69",
+      "text": "瑞迪科夫呼叫基地。我在回来的路上。破坏任务完成，一切顺利。",
+      "english": "Radikov to base. I'm en route, coming home. Sabotage execution is complete and A-OK."
+    },
+    {
+      "id": "Van_38",
+      "text": "来啊，你们这帮混蛋！我能陪你们耗上一整天！",
+      "english": "Come on, you bastards! I can do this all day!"
+    },
+    {
+      "id": "Anchor_03",
+      "text": "各位，刚刚收到一条惊人消息！别转台，详细情况马上为您报道！",
+      "english": "Incredible news just coming in, folks, stay with us and we'll get you all the details!"
+    },
+    {
+      "id": "Anchor_04",
+      "text": "各位现在看到的恐怖画面，来自公共区边缘的实况直播！",
+      "english": "These horrifying pictures coming to you live from the edge of the Public Sector!"
+    },
+    {
+      "id": "Insid_06",
+      "text": "我说过了，我们能追踪你的RIG。我会尽量远程给你更新路线指引。现在，赶紧走！",
+      "english": "I already explained that we can trace your Rig. I'll update it remotely with directions when I can. Now, get moving!"
+    },
+    {
+      "id": "Miner_04",
+      "text": "老天，快开枪啊！（尖叫）",
+      "english": "Shoot it, for god's sake! (Screams)"
+    },
+    {
+      "id": "Miner_05",
+      "text": "它们打不死！这些该死的怪物打不死！",
+      "english": "They won't die! Goddamn freaks won't die!"
+    },
+    {
+      "id": "Miner_06",
+      "text": "（更多尖叫声）",
+      "english": "(More screams)"
+    },
+    {
+      "id": "Oper_03",
+      "text": "第三公共区，情况稳定。",
+      "english": "Stable in public sector 3."
+    },
+    {
+      "id": "Oper_04",
+      "text": "隔离防线被突破了！重复，隔离防线被突破了！",
+      "english": "Quarantine is breached! I repeat, quarantine has been breached!"
+    },
+    {
+      "id": "Oper_05",
+      "text": "我操，它们进来了！救命啊！（尖叫）",
+      "english": "Holy shit, they're in here! Somebody help! (Screams)"
+    },
+    {
+      "id": "Oper_06",
+      "text": "这不是演习！快去个人，快叫长官过来！",
+      "english": "This is not a drill! Somebody go wake up the Chief!"
+    },
+    {
+      "id": "Suit_09",
+      "text": "正在进入零重力环境。穿着重力靴的人员，同时抬起双脚即可脱离地面，动作务必干脆。",
+      "english": "Now entering zero gravity. If wearing magnetic soled boots, personnel may disengage by removing both feet in a single, clean movement."
+    },
+    {
+      "id": "Suit_10",
+      "text": "正在进入真空环境。请记得经常检查氧气余量。",
+      "english": "Now entering vacuum environment. Personnel are reminded to perform regular checks of their oxygen levels."
+    },
+    {
+      "id": "Suit_11",
+      "text": "RIG定位系统会与本地定位信标同步，随时为你提供准确的位置和方向信息。到达系统指定的关键路点时，定位器会自动启动。",
+      "english": "The RIG Locator System is synchronised with local positioning beacons to give an accurate location and orientation at all times. It will activate automatically at key waypoints designated by the system."
+    },
+    {
+      "id": "Suit_32",
+      "text": "警告",
+      "english": "Warning"
+    },
+    {
+      "id": "Suit_33",
+      "text": "警报",
+      "english": "Alert"
+    },
+    {
+      "id": "Suit_39",
+      "text": "隔离封锁已启动",
+      "english": "Quarantine lockdown initiated"
+    },
+    {
+      "id": "Suit_40",
+      "text": "隔离封锁已解除",
+      "english": "Quarantine lockdown lifted"
+    },
+    {
+      "id": "Suit_41",
+      "text": "10,9,8,7,6,5,4,3,2,1",
+      "english": "10,9,8,7,6,5,4,3,2,1"
+    },
+    {
+      "id": "Suit_42",
+      "text": "已获取音频日志",
+      "english": "Audio Log retrieved"
+    },
+    {
+      "id": "Suit_44",
+      "text": "打开这扇门需要一个能量节点",
+      "english": "A power node is required to open this door"
+    },
+    {
+      "id": "Suit_45",
+      "text": "需要能量节点",
+      "english": "Power node required"
+    },
+    {
+      "id": "Suit_49",
+      "text": "新路点已设置",
+      "english": "New waypoint set"
+    },
+    {
+      "id": "Suit_50",
+      "text": "定位器已更新",
+      "english": "Locator updated"
+    },
+    {
+      "id": "Suit_51",
+      "text": "系统已上线",
+      "english": "Systems online"
+    },
+    {
+      "id": "Suit_52",
+      "text": "系统已启动",
+      "english": "System activated"
+    },
+    {
+      "id": "Suit_54",
+      "text": "系统已恢复",
+      "english": "Systems restored"
+    },
+    {
+      "id": "Suit_55",
+      "text": "舱体破裂",
+      "english": "Hull breach"
+    },
+    {
+      "id": "Suit_56",
+      "text": "备用电源已接通",
+      "english": "Backup power online"
+    },
+    {
+      "id": "Suit_57",
+      "text": "备用电源已断开",
+      "english": "Backup power offline"
+    },
+    {
+      "id": "Suit_58",
+      "text": "安保系统已被突破",
+      "english": "Security systems breached"
+    },
+    {
+      "id": "Suit_59",
+      "text": "安保系统已恢复",
+      "english": "Security systems restored"
+    },
+    {
+      "id": "Suit_60",
+      "text": "跨区交通隧道A未封锁",
+      "english": "Crossover Tube A is unsealed"
+    },
+    {
+      "id": "Suit_61",
+      "text": "封锁装置已受损",
+      "english": "Seal compromised"
+    },
+    {
+      "id": "Suit_62",
+      "text": "检测到异物",
+      "english": "Foreign matter detected"
+    },
+    {
+      "id": "Suit_63",
+      "text": "正在启动封锁",
+      "english": "Initiating lockdown"
+    },
+    {
+      "id": "Suit_64",
+      "text": "恢复备用电源",
+      "english": "Restore backup power"
+    },
+    {
+      "id": "Suit_65",
+      "text": "系统故障",
+      "english": "Systems failure"
+    },
+    {
+      "id": "Suit_66",
+      "text": "切换至手动控制",
+      "english": "Switching to manual over-ride"
+    },
+    {
+      "id": "Suit_67",
+      "text": "此物体可以抓取",
+      "english": "This object is Grip Enabled"
+    },
+    {
+      "id": "Suit_68",
+      "text": "护服已升级",
+      "english": "Suit Upgraded"
+    },
+    {
+      "id": "Suit_69",
+      "text": "武器已升级",
+      "english": "Weapon upgraded"
+    },
+    {
+      "id": "Suit_70",
+      "text": "转动等离子切割器，在水平和垂直模式之间切换，切得更准。",
+      "english": "Rotate your Plasma Cutter between vertical and horizontal modes for increased accuracy."
+    },
+    {
+      "id": "Van_06",
+      "text": "可我该往哪儿走？",
+      "english": "But, where do I go?"
+    },
+    {
+      "id": "Van_11",
+      "text": "去他的火星，要是咱俩都能活着出去，一定把那帮罪魁祸首揪出来，狠狠揍一顿！",
+      "english": "Screw Mars, if we both survive this we're going to find whoever's responsible and kick their ass."
+    },
+    {
+      "id": "Van_12",
+      "text": "你可真够疯的……不过，我喜欢。",
+      "english": "I think you're crazy -- but in a good way."
+    },
+    {
+      "id": "Van_13",
+      "text": "泰勒，你知道我现在想要什么吗？",
+      "english": "You know what I want right now, Tyler?"
+    },
+    {
+      "id": "Van_14",
+      "text": "真好笑。才不是，我想拧断教会那帮混蛋的脖子。然后说不定再找匹大得离谱的小马，从他们身上踩过去。",
+      "english": "Very funny. No, I want to wring those Church bastards' necks. Then maybe walk over them with a really BIG pony."
+    },
+    {
+      "id": "Van_27",
+      "text": "啊啊啊啊啊啊！",
+      "english": "AAAAAAAAAAAAAAAAH!"
+    },
+    {
+      "id": "Van_30",
+      "text": "这些东西到底有多少？",
+      "english": "How many of these things are there?"
+    },
+    {
+      "id": "Van_31",
+      "text": "它们就没完没了地往这儿冲！",
+      "english": "They just keep coming!"
+    },
+    {
+      "id": "Van_32",
+      "text": "不是吧，又来……",
+      "english": "Oh, man, not again..."
+    },
+    {
+      "id": "Van_33",
+      "text": "它们怎么会有这么多！",
+      "english": "I can't believe there are so many of them!"
+    },
+    {
+      "id": "Van_34",
+      "text": "撑住！再坚持一会儿……",
+      "english": "Come on! Just a little longer..."
+    },
+    {
+      "id": "Van_35",
+      "text": "你们到底还有多少？！",
+      "english": "How many more of you can there be?!"
+    },
+    {
+      "id": "Van_36",
+      "text": "快到了。撑住……！",
+      "english": "Not far now. Hold it together...!"
+    },
+    {
+      "id": "Van_37",
+      "text": "后面是开了家工厂吗？怎么没完没了地往外冒？！",
+      "english": "Is there a factory back there pumping you guys out, or what?!"
+    },
+    {
+      "id": "Van_39",
+      "text": "总算完了，还以为永远都打不完呢。",
+      "english": "At last. Thought that'd never end."
+    },
+    {
+      "id": "Van_40",
+      "text": "这就完了？真的？",
+      "english": "Is that it? For real?"
+    },
+    {
+      "id": "Van_41",
+      "text": "应该是最后一波了……至少眼下是。",
+      "english": "Think that was the last... For now, anyway."
+    },
+    {
+      "id": "Van_42",
+      "text": "谢天谢地……让我歇会儿。",
+      "english": "Oh, thank god... I need a break."
+    },
+    {
+      "id": "Van_43",
+      "text": "结束了。我发誓，再也不坐什么列车了！",
+      "english": "It's over. I swear, I am done with trams."
+    },
+    {
+      "id": "Van_44",
+      "text": "嗯，开这门还得要个能量节点。",
+      "english": "Huh. This door needs a power node."
+    },
+    {
+      "id": "Van_45",
+      "text": "看来没能量节点，就别想进去了。",
+      "english": "No access without a power node, I guess."
+    },
+    {
+      "id": "Van_46",
+      "text": "该死，还得要个能量节点。附近肯定能找到。",
+      "english": "Dammit, need a power node. Got to be one around somewhere."
+    },
+    {
+      "id": "Vill_02",
+      "text": "别忘了逛逛商店。不光能升级护甲，还能增加静滞能量和氧气的储备上限。",
+      "english": "Don't forget to use the store. It's not just for armor upgrades, you can increase your stasis and oxygen capacities, too."
+    },
+    {
+      "id": "Vill_03",
+      "text": "路过商店就进去看看。RIG能多改进一点是一点，总能派上用场。",
+      "english": "If you pass a store, drop in and see what they've got. Every little tweak you can make to your RIG will help."
+    },
+    {
+      "id": "Vill_09",
+      "text": "多练练切割锯，说不定一发就能切断敌人的四肢！",
+      "english": "Get some practice in with the Ripper, and you could probably take out all four limbs in one shot!"
+    },
+    {
+      "id": "Vill_10",
+      "text": "别忘了，线性枪不光能打光束。切到副攻击模式，给那帮混蛋来颗地雷！",
+      "english": "Don't forget, the Line Gun doesn't just shoot beams -- switch to secondary to fire a mine at the bastards!"
+    },
+    {
+      "id": "Vill_15",
+      "text": "记住，岩石取芯器再猛，也得瞄准了才行。",
+      "english": "Remember, the Core Extractor's powerful as all hell, but you still have to line it up right."
+    },
+    {
+      "id": "Vill_17",
+      "text": "别忘了用静滞！",
+      "english": "Don't forget your stasis!"
+    },
+    {
+      "id": "Vill_19",
+      "text": "记住，够不着的东西，可以用动态牵引模块抓过来。",
+      "english": "Remember, if you need to grab something at a distance, you've got a kinesis module."
+    },
+    {
+      "id": "Vill_20",
+      "text": "嘿，破坏者，别忘了，够不着的东西可以用动态牵引能量抓过来。",
+      "english": "Hey, Vandal -- your kinesis can grab stuff that's out of reach, remember."
+    },
+    {
+      "id": "Vill_21",
+      "text": "急着拿东西，就用动态牵引能量。",
+      "english": "Don't forget to use your kinesis if you need something in a hurry."
+    },
+    {
+      "id": "Vill_25",
+      "text": "别忘了，你可是在真空里！氧气快用完了！",
+      "english": "Remember, you're in a vacuum -- your air supply's running low!"
+    },
+    {
+      "id": "Vill_26",
+      "text": "破坏者，你的氧气不多了！快点！",
+      "english": "Vandal, you're low on oxygen! Hurry up!"
+    },
+    {
+      "id": "Vill_27",
+      "text": "氧气快耗光了！赶紧出来！",
+      "english": "Your oxygen is running out! Get out of there!"
+    },
+    {
+      "id": "Vill_29",
+      "text": "别忘了跟着定位器走，它会带你到该去的地方。",
+      "english": "Don't forget to follow your locator, it'll take you wherever you need to go."
+    },
+    {
+      "id": "Vill_30",
+      "text": "主路之外还能搜到不少东西。到时候跟着定位器走，就能回到原路。",
+      "english": "You can find plenty of stuff off the beaten path -- just use your locator to get back on track."
+    },
+    {
+      "id": "Vill_46",
+      "text": "我会一路帮着你。我能远程接入你的RIG，更新任务目标，带你去跨区交通隧道。想知道接下来该干什么，随时打开RIG、启动定位器就行。",
+      "english": "I'll be with you every step of the way. I can remotely access your Rig and update it with new objectives to keep you headed to the Crossover Tube. Access your Rig and activate the locator to check the current objective at any time."
+    },
+    {
+      "id": "Vill_48",
+      "text": "等一下，破坏者，又是一扇安全门。稍等……好了，走吧。",
+      "english": "Hold on, Vandal, that's another security door. Give me a second... All right, there you go."
+    },
+    {
+      "id": "Vill_55",
+      "text": "又找到一个商店终端。反正现在没人盯着系统，我又给咱俩弄了不少信用点。",
+      "english": "Found another Store terminal. Nobody's watching the system right now, so I gave us a bunch more credits."
+    },
+    {
+      "id": "Vill_56",
+      "text": "破坏者，我刚路过一个终端。没多少时间，不过还是弄到了些购物用的信用点。",
+      "english": "Vandal, I just passed a terminal. Only had a minute, but I managed to get us some more Store credits."
+    },
+    {
+      "id": "Vill_57",
+      "text": "等逃出去了，咱俩得好好歇歇。折腾成这样，总该放个假吧？听说火星这时候的天气还挺不错。",
+      "english": "When we get out of this, you and me should take some time out. We deserve a break, you know? I hear Mars is nice this time of year."
+    },
+    {
+      "id": "Vill_58",
+      "text": "我琢磨着，我也该起个代号，好跟“破坏者”凑一对。“破坏者”和“俄国人”，怎么样？",
+      "english": "I've been thinking, maybe I need a codename too, to go with \"Vandal\". Vandal and \"the Russian\", what do you think?"
+    },
+    {
+      "id": "Vill_59",
+      "text": "你在下面肯定大显身手了吧？我猜也是。真该让大伙看看你现在的样子！",
+      "english": "Are you kicking ass down there? I bet you are. If only the guys could see you now, huh?"
+    },
+    {
+      "id": "Vill_60",
+      "text": "一匹小马？",
+      "english": "A pony?"
+    },
+    {
+      "id": "Vill_61",
+      "text": "好，这下知道你生日该送什么了。",
+      "english": "Well, now I know what to get for your birthday."
+    },
+    {
+      "id": "Vill_71",
+      "text": "快到列车了，继续走。",
+      "english": "You're almost at the tram, keep going."
+    },
+    {
+      "id": "Vill_72",
+      "text": "前面就是列车，快点！",
+      "english": "You're coming up on a tram, hurry!"
+    },
+    {
+      "id": "Vill_74",
+      "text": "离最近的列车不远了，接着走！",
+      "english": "Not far to the nearest tram! Go on!"
+    },
+    {
+      "id": "Vill_75",
+      "text": "加把劲，赶到列车那儿！你能行！",
+      "english": "Go on, get to the tram! You can do it!"
+    },
+    {
+      "id": "Vill_87",
+      "text": "怎么了，破坏者？",
+      "english": "What is it, Vandal?"
+    },
+    {
+      "id": "Vill_89",
+      "text": "撑住，破坏者。",
+      "english": "Hang in there, Vandal."
+    },
+    {
+      "id": "Vill_90",
+      "text": "这也难怪，破坏者。你受的惊吓可不小。",
+      "english": "That's understandable, Vandal. You've had quite a shock."
+    },
+    {
+      "id": "about",
+      "text": "关于",
+      "english": "About"
+    },
+    {
+      "id": "about_text",
+      "text": "购买和／或使用本应用，即表示你同意《最终用户许可协议》、EA《隐私政策》和《服务条款》的规定。\n \n死亡空间™\n\n© 2011-2013 Electronic Arts Inc.  \n \n由IronMonkey Studios开发\n\n版本：{0}\n \n客户服务：请发送电子邮件至help@eamobile.com\n\n更多信息请访问privacy.ea.com或terms.ea.com",
+      "english": "By purchasing and/or using this application, you agree to the terms of the End User License Agreement and EA’s Privacy Policy and Terms of Service.\n \nDead Space™\n\n© 2011-2013 Electronic Arts Inc.  \n \nDeveloped by IronMonkey Studios\n\nVersion: {0}\n \nCustomer service: Send email to help@eamobile.com\n\nFor more information, see privacy.ea.com or terms.ea.com"
+    },
+    {
+      "id": "ACH_SECRET",
+      "text": "隐藏成就",
+      "english": "Secret Achievement"
+    },
+    {
+      "id": "ACHIEVEMENT_UNLOCKED",
+      "text": "成就已解锁",
+      "english": "Achievement Unlocked"
+    },
+    {
+      "id": "ACHIEVEMENTS_REQUIRED",
+      "text": "需获得{0}项成就才能解锁",
+      "english": "{0} achievements  required to unlock"
+    },
+    {
+      "id": "ACTIVATE",
+      "text": "启动？",
+      "english": "ACTIVATE?"
+    },
+    {
+      "id": "AUTO_RELOAD",
+      "text": "自动装弹",
+      "english": "Auto Reload"
+    },
+    {
+      "id": "BENCH",
+      "text": "工作台",
+      "english": "Bench"
+    },
+    {
+      "id": "BRIGHTNESS",
+      "text": "亮度",
+      "english": "Brightness"
+    },
+    {
+      "id": "BRUTE_FORCE",
+      "text": "蛮力取胜",
+      "english": "Brute Force"
+    },
+    {
+      "id": "BRUTE_PLAMSA",
+      "text": "仅用等离子锯击杀一只巨兽",
+      "english": "Kill a Brute using only the Plasma Saw"
+    },
+    {
+      "id": "BTN_ABOUT",
+      "text": "关于",
+      "english": "About"
+    },
+    {
+      "id": "BTN_ACHIEVEMENTS",
+      "text": "成就",
+      "english": "Achievements"
+    },
+    {
+      "id": "BTN_BACK",
+      "text": "返回",
+      "english": "Back"
+    },
+    {
+      "id": "BTN_BUY",
+      "text": "购买",
+      "english": "Buy"
+    },
+    {
+      "id": "BTN_CONTINUE",
+      "text": "继续",
+      "english": "Continue"
+    },
+    {
+      "id": "BTN_EXIT",
+      "text": "退出",
+      "english": "Exit"
+    },
+    {
+      "id": "BTN_EXTRAS",
+      "text": "其他内容",
+      "english": "Extras"
+    },
+    {
+      "id": "BTN_HELP",
+      "text": "帮助",
+      "english": "Help"
+    },
+    {
+      "id": "BTN_INFO",
+      "text": "信息",
+      "english": "Info"
+    },
+    {
+      "id": "BTN_ADBUY",
+      "text": "去除广告",
+      "english": "Ad Free"
+    },
+    {
+      "id": "BTN_LEGAL",
+      "text": "法律信息",
+      "english": "Legal"
+    },
+    {
+      "id": "BTN_MOREGAMES",
+      "text": "更多游戏",
+      "english": "More Games"
+    },
+    {
+      "id": "BTN_NEGATIVE",
+      "text": "取消",
+      "english": "Cancel"
+    },
+    {
+      "id": "BTN_NEW",
+      "text": "新游戏",
+      "english": "New Game"
+    },
+    {
+      "id": "BTN_NEWPLUS",
+      "text": "新游戏+",
+      "english": "New Game+"
+    },
+    {
+      "id": "BTN_NO",
+      "text": "否",
+      "english": "No"
+    },
+    {
+      "id": "TEXT_BTN_RESTORE",
+      "text": "恢复已购项目",
+      "english": "Restore Items"
+    },
+    {
+      "id": "BTN_OK",
+      "text": "确定",
+      "english": "OK"
+    },
+    {
+      "id": "BTN_OPTIONS",
+      "text": "选项",
+      "english": "Options"
+    },
+    {
+      "id": "BTN_PLAY",
+      "text": "开始游戏",
+      "english": "Play"
+    },
+    {
+      "id": "BTN_POSITIVE",
+      "text": "确定",
+      "english": "OK"
+    },
+    {
+      "id": "BTN_PURCHASE",
+      "text": "购买",
+      "english": "Purchase"
+    },
+    {
+      "id": "BTN_QUIT",
+      "text": "退出",
+      "english": "Quit"
+    },
+    {
+      "id": "BTN_REGISTER_GAME",
+      "text": "注册游戏",
+      "english": "Register Game"
+    },
+    {
+      "id": "BTN_RESTART",
+      "text": "重新开始",
+      "english": "Restart"
+    },
+    {
+      "id": "BTN_RESTART_CHECKPOINT",
+      "text": "检查点",
+      "english": "Checkpoint"
+    },
+    {
+      "id": "BTN_RESTART_LEVEL",
+      "text": "章节",
+      "english": "Chapter"
+    },
+    {
+      "id": "BTN_SAVETOPHOTOS",
+      "text": "保存至相册",
+      "english": "Save to photos"
+    },
+    {
+      "id": "BTN_SELL",
+      "text": "出售",
+      "english": "Sell"
+    },
+    {
+      "id": "BTN_STORE",
+      "text": "商店",
+      "english": "Store"
+    },
+    {
+      "id": "BTN_STORY",
+      "text": "剧情",
+      "english": "Story"
+    },
+    {
+      "id": "BTN_UNLOCKABLES",
+      "text": "可解锁内容",
+      "english": "Unlockables"
+    },
+    {
+      "id": "BTN_UPGRADE",
+      "text": "升级",
+      "english": "Upgrade"
+    },
+    {
+      "id": "BTN_WALLPAPERS",
+      "text": "壁纸",
+      "english": "Wallpapers"
+    },
+    {
+      "id": "BURST_SAC_DESC",
+      "text": "打爆一只孕育者的肚子",
+      "english": "Burst a Pregnant's stomach"
+    },
+    {
+      "id": "BURST_SAC_TITLE",
+      "text": "是个男孩！",
+      "english": "It's a boy!"
+    },
+    {
+      "id": "CHAP_DESC",
+      "text": "游玩任意已解锁章节",
+      "english": "Play any unlocked chapter"
+    },
+    {
+      "id": "CHAP_SEL",
+      "text": "章节",
+      "english": "Chapter"
+    },
+    {
+      "id": "CHAP_TITLE",
+      "text": "//章节选择",
+      "english": "//Chapter Select"
+    },
+    {
+      "id": "CHAPTER_01",
+      "text": "第1章",
+      "english": "Chapter 1"
+    },
+    {
+      "id": "CHAPTER_01_DESC",
+      "text": "逃离政府区",
+      "english": "Escape the Government Sector"
+    },
+    {
+      "id": "CHAPTER_01_GAME_TITLE",
+      "text": "当初善意",
+      "english": "Honorable Intentions"
+    },
+    {
+      "id": "CHAPTER_01_TITLE",
+      "text": "叫我破坏者",
+      "english": "Call me Vandal"
+    },
+    {
+      "id": "CHAPTER_02",
+      "text": "第2章",
+      "english": "Chapter 2"
+    },
+    {
+      "id": "CHAPTER_02_DESC",
+      "text": "在泰坦矿区中存活下来",
+      "english": "Survive the Titan Mines"
+    },
+    {
+      "id": "CHAPTER_02_GAME_TITLE",
+      "text": "心伤难逃",
+      "english": "Exit Wounds"
+    },
+    {
+      "id": "CHAPTER_02_TITLE",
+      "text": "后果",
+      "english": "Consequences"
+    },
+    {
+      "id": "CHAPTER_03",
+      "text": "第3章",
+      "english": "Chapter 3"
+    },
+    {
+      "id": "CHAPTER_03_DESC",
+      "text": "穿过水处理区",
+      "english": "Navigate Water Processing"
+    },
+    {
+      "id": "CHAPTER_03_GAME_TITLE",
+      "text": "同流合污",
+      "english": "Willing Accomplice"
+    },
+    {
+      "id": "CHAPTER_03_TITLE",
+      "text": "每况愈下",
+      "english": "Down the tubes"
+    },
+    {
+      "id": "CHAPTER_04",
+      "text": "第4章",
+      "english": "Chapter 4"
+    },
+    {
+      "id": "CHAPTER_04_DESC",
+      "text": "杀出食品加工厂",
+      "english": "Fight through the Food Processing Plant"
+    },
+    {
+      "id": "CHAPTER_04_GAME_TITLE",
+      "text": "伴我何人",
+      "english": "Identity Crisis"
+    },
+    {
+      "id": "CHAPTER_04_TITLE",
+      "text": "精神食粮",
+      "english": "Food for thought"
+    },
+    {
+      "id": "CHAPTER_05",
+      "text": "第5章",
+      "english": "Chapter 5"
+    },
+    {
+      "id": "CHAPTER_05_DESC",
+      "text": "返回泰坦碎片",
+      "english": "Return to the Titan Shard"
+    },
+    {
+      "id": "CHAPTER_05_GAME_TITLE",
+      "text": "切割留痕",
+      "english": "Leaving Traces"
+    },
+    {
+      "id": "CHAPTER_05_TITLE",
+      "text": "再度受骗",
+      "english": "Fool me twice"
+    },
+    {
+      "id": "CHAPTER_06",
+      "text": "第6章",
+      "english": "Chapter 6"
+    },
+    {
+      "id": "CHAPTER_06_GAME_TITLE",
+      "text": "莫近巨兽",
+      "english": "Lumbering Beast"
+    },
+    {
+      "id": "CHAPTER_07",
+      "text": "第7章",
+      "english": "Chapter 7"
+    },
+    {
+      "id": "CHAPTER_07_GAME_TITLE",
+      "text": "轻跃虚空",
+      "english": "Bounds and Leaps"
+    },
+    {
+      "id": "CHAPTER_08",
+      "text": "第8章",
+      "english": "Chapter 8"
+    },
+    {
+      "id": "CHAPTER_08_GAME_TITLE",
+      "text": "信仰侵蚀",
+      "english": "Encroachment"
+    },
+    {
+      "id": "CHAPTER_09",
+      "text": "第9章",
+      "english": "Chapter 9"
+    },
+    {
+      "id": "CHAPTER_09_GAME_TITLE",
+      "text": "谨慎换装",
+      "english": "Trading Up"
+    },
+    {
+      "id": "CHAPTER_10",
+      "text": "第10章",
+      "english": "Chapter 10"
+    },
+    {
+      "id": "CHAPTER_10_GAME_TITLE",
+      "text": "防不胜防",
+      "english": "Reversal"
+    },
+    {
+      "id": "CHAPTER_11",
+      "text": "第11章",
+      "english": "Chapter 11"
+    },
+    {
+      "id": "CHAPTER_11_GAME_TITLE",
+      "text": "背离理智",
+      "english": "Acute Psychosis"
+    },
+    {
+      "id": "CHAPTER_12",
+      "text": "第12章",
+      "english": "Chapter 12"
+    },
+    {
+      "id": "CHAPTER_12_GAME_TITLE",
+      "text": "叛徒遗祸",
+      "english": "Yesterday's Problem"
+    },
+    {
+      "id": "CHECKPOINT_SAVED",
+      "text": "检查点已保存。",
+      "english": "Checkpoint Saved."
+    },
+    {
+      "id": "CHINESE",
+      "text": "中文",
+      "english": "Chinese"
+    },
+    {
+      "id": "COMPLETE_GAME_DESC",
+      "text": "通关游戏",
+      "english": "Complete the game"
+    },
+    {
+      "id": "COMPLETE_GAME_HARD_DESC",
+      "text": "以困难难度通关游戏",
+      "english": "Complete the game on hard difficulty"
+    },
+    {
+      "id": "COMPLETE_GAME_HARD_TITLE",
+      "text": "传奇3级工程师",
+      "english": "Epic Tier 3 Engineer"
+    },
+    {
+      "id": "COMPLETE_GAME_TITLE",
+      "text": "救赎",
+      "english": "Redemption"
+    },
+    {
+      "id": "COMPLETE_HOUR",
+      "text": "在1小时内通关游戏",
+      "english": "Complete the game in 1 hour"
+    },
+    {
+      "id": "CONFIRM_BOUGHT_DLC",
+      "text": "已成功购买物品“{0}”。",
+      "english": "Item \"{0}\" successfully purchased."
+    },
+    {
+      "id": "CONFIRM_BUY",
+      "text": "确认购买？",
+      "english": "Confirm purchase?"
+    },
+    {
+      "id": "CONFIRM_BUY_DLC",
+      "text": "确认购买DLC？",
+      "english": "Confirm DLC purchase?"
+    },
+    {
+      "id": "CONFIRM_NEW",
+      "text": "开始新游戏会清除当前档案中的全部游戏进度。",
+      "english": "Starting a new game will remove all progress from your current game in this profile."
+    },
+    {
+      "id": "CONFIRM_QUIT",
+      "text": "上次检查点之后的进度会丢失。",
+      "english": "Progress from the last checkpoint will be lost."
+    },
+    {
+      "id": "CONFIRM_RESTART",
+      "text": "本章进度会丢失。",
+      "english": "Progress in this chapter will be lost."
+    },
+    {
+      "id": "CONFIRM_SELL",
+      "text": "确定出售此物品？",
+      "english": "Really sell item?"
+    },
+    {
+      "id": "CONTINUE",
+      "text": "继续？",
+      "english": "Continue?"
+    },
+    {
+      "id": "CREDITS",
+      "text": "信用点",
+      "english": "Credits"
+    },
+    {
+      "id": "CREDITS_DESC1",
+      "text": "获得10,000信用点，可在游戏商店中购买物品。",
+      "english": "Gain 10,000 Credits to purchase items in the game store."
+    },
+    {
+      "id": "CREDITS_DESC2",
+      "text": "获得50,000信用点，可在游戏商店中购买物品。",
+      "english": "Gain 50,000 Credits to purchase items in the game store."
+    },
+    {
+      "id": "CREDITS_DESC3",
+      "text": "获得100,000信用点，可在游戏商店中购买物品。",
+      "english": "Gain 100,000 Credits to purchase items in the game store."
+    },
+    {
+      "id": "CREDITS_DESC4",
+      "text": "获得500,000信用点，可在游戏商店中购买物品。",
+      "english": "Gain 500,000 Credits to purchase items in the game store."
+    },
+    {
+      "id": "CREDITS_DESC5",
+      "text": "获得1,000,000信用点，可在游戏商店中购买物品。",
+      "english": "Gain 1,000,000 Credits to purchase items in the game store."
+    },
+    {
+      "id": "credits_list",
+      "text": "制作\nMichael De Graaf\nTodd Hutchinson\nPaul Motion\nNikhil Dighe\nToby Charlton\n\n设计\nJarrad Trudgen\nEdward Hunter\n\n程序\nDaniel van Raay\nMatthew Cotton\nScott Wickens\nFeliciano Moody\nBrad Curran\n\n美术\nJonathan Derby\nAndrey Shramenko\nDarren White\nJeremy Doekes\nDan Tonkin\nJamie Andersen\nNick Wilson\n\n引擎\nLewis Strudwick\nAlex Holkner\nPer Gantelius\n\n质量保证\nLachlan Mason\nErin Dupuy\nAri Freeman\n\n市场营销\nMichele Aguilar\nAndres Constantinidis\nJustin Taber \n\nVisceral Games™\nDavid Woldman\nSteve Papoutsis\n\n音乐制作\n《死亡空间主题曲》\n作曲与演奏：Jason Graves\n发行：It's In The Game Music（BMI）\n版权管理：Nettwerk One\n\n《尸变体来袭》\n作曲与演奏：Jason Graves\n发行：It's In The Game Music（BMI）\n版权管理：Nettwerk One\n\n《进入零重力》\n作曲与演奏：Jason Graves\n发行：It's In The Game Music（BMI）\n版权管理：Nettwerk One\n\n《利维坦》\n作曲与演奏：Jason Graves\n发行：It's In The Game Music（BMI）\n版权管理：Nettwerk One\n\n《群巢之主》\n作曲与演奏：Jason Graves\n发行：It's In The Game Music（BMI）\n版权管理：Nettwerk One\n\n配音人员\nAndy Chanley - 泰勒\nAnna Vocino – 破坏者\nLester Purry – 泰德曼\nLeila Birch – 电脑\nTahyna Tozzi - 戴安娜\nAimee Miles - 主播1与工作人员1\nJon Carlo - 工作人员2\nAndrew Chaikin - 矿工1\nTom Chantler - 矿工2\nSteven Anthony Jones - 主播2",
+      "english": "PRODUCTION\nMichael De Graaf\nTodd Hutchinson\nPaul Motion\nNikhil Dighe\nToby Charlton\n\nDESIGN\nJarrad Trudgen\nEdward Hunter\n\nPROGRAMMING\nDaniel van Raay\nMatthew Cotton\nScott Wickens\nFeliciano Moody\nBrad Curran\n\nART\nJonathan Derby\nAndrey Shramenko\nDarren White\nJeremy Doekes\nDan Tonkin\nJamie Andersen\nNick Wilson\n\nENGINE\nLewis Strudwick\nAlex Holkner\nPer Gantelius\n\nQA\nLachlan Mason\nErin Dupuy\nAri Freeman\n\nMARKETING\nMichele Aguilar\nAndres Constantinidis\nJustin Taber \n\nVisceral Games™\nDavid Woldman\nSteve Papoutsis\n\nMusic Credits\n“Dead Space Theme”\nWritten & performed by Jason Graves\nPublished by It's In The Game Music (BMI)\nAdministered by Nettwerk One\n\n“The Necromorphs Attack”\nWritten & performed by Jason Graves\nPublished by It's In The Game Music (BMI)\nAdministered by Nettwerk One\n\n“Entering Zero-G”\nWritten & performed by Jason Graves\nPublished by It's In The Game Music (BMI)\nAdministered by Nettwerk One\n\n“The Leviathan”\nWritten & performed by Jason Graves\nPublished by It's In The Game Music (BMI)\nAdministered by Nettwerk One\n\n“The Hive Mind”\nWritten & performed by Jason Graves\nPublished by It's In The Game Music (BMI)\nAdministered by Nettwerk One\n\nVoice Credits\nAndy Chanley - Tyler\nAnna Vocino – Vandal\nLester Purry – Tiedemann\nLeila Birch – Computer\nTahyna Tozzi - Daina\nAimee Miles - Anchor 1 and Operative 1\nJon Carlo - Operative 2\nAndrew Chaikin - Miner 1\nTom Chantler - Miner 2\nSteven Anthony Jones - Anchor 2"
+    },
+    {
+      "id": "CREDITS_NAME1",
+      "text": "10,000信用点礼包",
+      "english": "10,000 Credit Pack"
+    },
+    {
+      "id": "CREDITS_NAME2",
+      "text": "50,000信用点礼包",
+      "english": "50,000 Credit Pack"
+    },
+    {
+      "id": "CREDITS_NAME3",
+      "text": "100,000信用点礼包",
+      "english": "100,000 Credit Pack"
+    },
+    {
+      "id": "CREDITS_NAME4",
+      "text": "500,000信用点礼包",
+      "english": "500,000 Credit Pack"
+    },
+    {
+      "id": "CREDITS_NAME5",
+      "text": "1,000,000信用点礼包",
+      "english": "1,000,000 Credit Pack"
+    },
+    {
+      "id": "CREDITS_NO",
+      "text": "信用点不足",
+      "english": "You don't have enough Credits"
+    },
+    {
+      "id": "CREDITS_SPENT_100K_DESC",
+      "text": "在商店累计消费100,000信用点",
+      "english": "Spend 100,000 credits at the Store"
+    },
+    {
+      "id": "CREDITS_SPENT_100K_TITLE",
+      "text": "挥金如土",
+      "english": "Big Spender"
+    },
+    {
+      "id": "CREDITS_SPENT_10K_DESC",
+      "text": "在商店累计消费10,000信用点",
+      "english": "Spend 10,000 credits at the Store"
+    },
+    {
+      "id": "CREDITS_SPENT_10K_TITLE",
+      "text": "一掷千金",
+      "english": "High roller"
+    },
+    {
+      "id": "CURRENT_OBJECTIVE",
+      "text": "当前目标：",
+      "english": "Current Objective:"
+    },
+    {
+      "id": "DEADSPACE",
+      "text": "死亡空间：解剖",
+      "english": "Dead Space: Dissection"
+    },
+    {
+      "id": "DECAPITATE_EXPLODER_DESC",
+      "text": "斩下一只自爆者的头颅",
+      "english": "Decapitate an Exploder"
+    },
+    {
+      "id": "DECAPITATE_EXPLODER_TITLE",
+      "text": "咔咔，轰！",
+      "english": "Chk Chk Boom"
+    },
+    {
+      "id": "DECAPITATE_PREGNANT_DESC",
+      "text": "斩下一只孕育者的头颅",
+      "english": "Decapitate a Pregnant"
+    },
+    {
+      "id": "DECAPITATE_PREGNANT_TITLE",
+      "text": "妈妈不知道",
+      "english": "Momma don't know"
+    },
+    {
+      "id": "DECAPITATE_SLASHER_DESC",
+      "text": "斩下一只镰刀怪的头颅",
+      "english": "Decapitate a Slasher"
+    },
+    {
+      "id": "DECAPITATE_SLASHER_TITLE",
+      "text": "砍下它的头！",
+      "english": "Off with his head!"
+    },
+    {
+      "id": "DECAPITATE_SUPER_EXPLODER_DESC",
+      "text": "斩下一只超级自爆者的头颅",
+      "english": "Decapitate a Super Exploder"
+    },
+    {
+      "id": "DECAPITATE_SUPER_EXPLODER_TITLE",
+      "text": "嘭！爆头！",
+      "english": "Boom Headshot"
+    },
+    {
+      "id": "DECAPITATE_SUPER_PREGNANT_DESC",
+      "text": "斩下一只超级孕育者的头颅",
+      "english": "Decapitate a Super Pregnant"
+    },
+    {
+      "id": "DECAPITATE_SUPER_PREGNANT_TITLE",
+      "text": "肥妈",
+      "english": "Big Momma"
+    },
+    {
+      "id": "DECAPITATE_SUPER_SLASHER_DESC",
+      "text": "斩下一只超级镰刀怪的头颅",
+      "english": "Decapitate a Super Slasher"
+    },
+    {
+      "id": "DECAPITATE_SUPER_SLASHER_TITLE",
+      "text": "拔得头筹",
+      "english": "Head of the Class"
+    },
+    {
+      "id": "DELETE",
+      "text": "删除",
+      "english": "Delete"
+    },
+    {
+      "id": "DIFF_NIGHT",
+      "text": "噩梦",
+      "english": "Nightmare"
+    },
+    {
+      "id": "DISMEMBER_1000_DESC",
+      "text": "切断500条肢体",
+      "english": "Dismember 500 limbs"
+    },
+    {
+      "id": "DISMEMBER_1000_TITLE",
+      "text": "屠夫",
+      "english": "Butcher"
+    },
+    {
+      "id": "DISMEMBER_2_WITH_1_DESC",
+      "text": "一发切断2条肢体",
+      "english": "Dismember 2 limbs with a single shot"
+    },
+    {
+      "id": "DISMEMBER_2_WITH_1_TITLE",
+      "text": "双重打击",
+      "english": "Double Tap"
+    },
+    {
+      "id": "DISMEMBER_20_DESC",
+      "text": "切断20条肢体",
+      "english": "Dismember 20 limbs"
+    },
+    {
+      "id": "DISMEMBER_20_TITLE",
+      "text": "截肢专家",
+      "english": "Amputator"
+    },
+    {
+      "id": "DISMEMBER_3_WITH_1_DESC",
+      "text": "一发切断3条肢体",
+      "english": "Dismember 3 limbs with a single shot"
+    },
+    {
+      "id": "DISMEMBER_3_WITH_1_TITLE",
+      "text": "一箭三雕",
+      "english": "Triple Play"
+    },
+    {
+      "id": "DISMEMBER_4_WITH_1_DESC",
+      "text": "一发切断4条肢体",
+      "english": "Dismember 4 limbs with a single shot"
+    },
+    {
+      "id": "DISMEMBER_4_WITH_1_TITLE",
+      "text": "毫无还手之力",
+      "english": "Didn't have a chance"
+    },
+    {
+      "id": "DISMEMBER_500_DESC",
+      "text": "切断250条肢体",
+      "english": "Dismember 250 limbs"
+    },
+    {
+      "id": "DISMEMBER_500_TITLE",
+      "text": "外科医生",
+      "english": "Surgeon"
+    },
+    {
+      "id": "DLC_FREE",
+      "text": "[免费]",
+      "english": "[Free]"
+    },
+    {
+      "id": "DLC_INSTALLED",
+      "text": "[已安装]",
+      "english": "[Installed]"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_FOOD_01",
+      "text": "此路不通",
+      "english": "This is not the way"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_FOOD_02",
+      "text": "食品仓库",
+      "english": "Food Storage"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_FOOD_03",
+      "text": "培育舱",
+      "english": "Growth Chambers"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_GENERIC_01",
+      "text": "政府区",
+      "english": "Government Sector"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_GENERIC_02",
+      "text": "服务器机房",
+      "english": "Server Room"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_GENERIC_03",
+      "text": "行政区",
+      "english": "Administration"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_GOV_01",
+      "text": "安保区",
+      "english": "Security"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_GOV_02",
+      "text": "政府区",
+      "english": "Government Sector"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_GOV_03",
+      "text": "政府区：下层区",
+      "english": "Government Sector: Underbelly"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_MINES_01",
+      "text": "泰坦碎片矿区",
+      "english": "Titan Shard Mines"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_MINES_02",
+      "text": "工人宿舍",
+      "english": "Worker's Quarters"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_MINES_03",
+      "text": "观景台",
+      "english": "Observation Deck"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_TITAN_01",
+      "text": "泰坦反应堆核心",
+      "english": "Titan Reactor Core"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_TITAN_02",
+      "text": "气闸",
+      "english": "Airlock"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_TITAN_03",
+      "text": "泰坦碎片外围",
+      "english": "Titan Shard Exterior"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_TUBE_01",
+      "text": "跨区交通隧道A",
+      "english": "Crossover Tube A"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_TUBE_02",
+      "text": "辅助缆车",
+      "english": "Ancillary Gondola"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_TUBE_03",
+      "text": "跨区交通隧道封锁控制室",
+      "english": "Crossover Seal Control Room"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_WATER_01",
+      "text": "净化罐",
+      "english": "Purification Tank"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_WATER_02",
+      "text": "水处理区",
+      "english": "Water Treatment"
+    },
+    {
+      "id": "DOOR_SIGN_ENV_WATER_03",
+      "text": "供水蓄水池",
+      "english": "Service Reservoir"
+    },
+    {
+      "id": "DOWN_TUBES",
+      "text": "每况愈下",
+      "english": "Down the tubes"
+    },
+    {
+      "id": "DOWNLOAD_CONTENT",
+      "text": "下载内容",
+      "english": "Download Content"
+    },
+    {
+      "id": "EASY",
+      "text": "简单",
+      "english": "Easy"
+    },
+    {
+      "id": "EMAIL",
+      "text": "电子邮箱：",
+      "english": "Email:"
+    },
+    {
+      "id": "EMAIL_EMPTY",
+      "text": "请输入电子邮箱地址。",
+      "english": "Please enter your email address."
+    },
+    {
+      "id": "EMAIL_INVALID",
+      "text": "电子邮箱地址无效。",
+      "english": "Invalid email address."
+    },
+    {
+      "id": "EMAIL_PROMPT",
+      "text": "EA.com电子邮箱地址",
+      "english": "EA.com email address"
+    },
+    {
+      "id": "END_USER_URL",
+      "text": "http://tos.ea.com/legalapp/mobileeula/US/en/OTHER/",
+      "english": "http://tos.ea.com/legalapp/mobileeula/US/en/OTHER/"
+    },
+    {
+      "id": "ENGLISH",
+      "text": "英语",
+      "english": "English"
+    },
+    {
+      "id": "ERROR_FULL",
+      "text": "存储空间不足，无法创建存档文件。请释放一些空间后重试。",
+      "english": "You do not have sufficient memory to create a save file. Please free some space and try again."
+    },
+    {
+      "id": "ERROR_NETWORK",
+      "text": "使用此功能需要连接网络。",
+      "english": "Network connectivity is required to use this feature."
+    },
+    {
+      "id": "EXPLODER_KILL_DESC",
+      "text": "切下一只自爆者的脓囊，并用它杀死一只尸变体",
+      "english": "Sever an Exploder's pustule and use it to kill a Necromorph"
+    },
+    {
+      "id": "EXPLODER_KILL_TITLE",
+      "text": "高效利用",
+      "english": "Be Efficient"
+    },
+    {
+      "id": "EXPLOSIVE_CAN_KILL_DESC",
+      "text": "用爆炸罐杀死一只尸变体",
+      "english": "Kill a Necromorph with an explosive canister"
+    },
+    {
+      "id": "EXPLOSIVE_CAN_KILL_TITLE",
+      "text": "轰隆！",
+      "english": "Kaboom"
+    },
+    {
+      "id": "FALSE",
+      "text": "假",
+      "english": "FALSE"
+    },
+    {
+      "id": "FIND_ALL_POWER_NODES_DESC",
+      "text": "-",
+      "english": "-"
+    },
+    {
+      "id": "FIND_ALL_POWER_NODES_TITLE",
+      "text": "能量节点归人民",
+      "english": "Powernodes to the people"
+    },
+    {
+      "id": "FIND_EVERY_WEAPON_DESC",
+      "text": "找到所有武器",
+      "english": "Find every weapon"
+    },
+    {
+      "id": "FIND_EVERY_WEAPON_TITLE",
+      "text": "谁捡到归谁",
+      "english": "Finders Keepers"
+    },
+    {
+      "id": "FIND_PENG_DESC",
+      "text": "找到Peng宝藏",
+      "english": "Find the Peng Treasure"
+    },
+    {
+      "id": "FIND_PENG_TITLE",
+      "text": "Peng无处不在！",
+      "english": "There's Always Peng!"
+    },
+    {
+      "id": "FIRE_MODE_BUTTON",
+      "text": "按钮",
+      "english": "Button"
+    },
+    {
+      "id": "FIRE_MODE_TILT",
+      "text": "倾斜",
+      "english": "Tilt"
+    },
+    {
+      "id": "FIRE_MODE_TITLE",
+      "text": "射击模式",
+      "english": "Fire Mode"
+    },
+    {
+      "id": "FOOL_TWICE",
+      "text": "再度受骗",
+      "english": "Fool me twice"
+    },
+    {
+      "id": "FRENCH",
+      "text": "法语",
+      "english": "French"
+    },
+    {
+      "id": "FULL_SUIT_UPGRADE_DESC",
+      "text": "将护服升至满级",
+      "english": "Fully upgrade your suit"
+    },
+    {
+      "id": "FULL_SUIT_UPGRADE_TITLE",
+      "text": "盛装杀戮",
+      "english": "Dressed to kill"
+    },
+    {
+      "id": "GAME_COMPLETE",
+      "text": "游戏通关",
+      "english": "Game Complete"
+    },
+    {
+      "id": "GERMAN",
+      "text": "德语",
+      "english": "German"
+    },
+    {
+      "id": "GRAB_BREAK_50_DESC",
+      "text": "被尸变体抓住时，累计切断50条肢体",
+      "english": "Sever 50 limbs when grappled by a Necromorph"
+    },
+    {
+      "id": "GRAB_BREAK_50_TITLE",
+      "text": "贴身肉搏",
+      "english": "Up Close and Personal"
+    },
+    {
+      "id": "HARD",
+      "text": "困难",
+      "english": "Hard"
+    },
+    {
+      "id": "HDR_CREDITS",
+      "text": "信用点",
+      "english": "Credits"
+    },
+    {
+      "id": "HDR_ITEM",
+      "text": "物品",
+      "english": "Item"
+    },
+    {
+      "id": "HDR_QTY",
+      "text": "数量",
+      "english": "Qty"
+    },
+    {
+      "id": "help",
+      "text": "帮助与关于",
+      "english": "Help & About"
+    },
+    {
+      "id": "HELP_EXTRA",
+      "text": "生存模式\n尽量多杀敌人，赚取额外信用点，还能带回主线剧情使用。\n选择同一个档案，就能把剧情模式中的所有武器和护服升级带入生存模式。\n连续打中敌人、提高连击数，就能获得奖励。\n\n无尽模式\n无尽模式中，生命值不会自动恢复。打出高连击，就能获得额外生命值。\n\n夺命5分钟\n你只有5分钟。杀敌、打出连击都能增加时间。\n\n章节选择\n可以重玩主线剧情中已经完成的章节。此模式下的操作不会保存。",
+      "english": "Survival Modes\nKill as many enemies as possible to be rewarded with extra credits, which can be spent in the main Story. \nAny weapon or suit upgrades you have acquired in Story mode will carry over to Survival mode when you select that profile. \nIncrease your combo counter by hitting enemies consecutively for bonuses.\n\nEndless\nYour health doesn’t regenerate in Endless mode. Big combos reward you with extra health.\n\n5 Minutes to Kill\nYou have a time limit of 5 minutes. Killing enemies and getting combos will reward you extra time.\n\nChapter Select\nReplay any chapter that you have completed in the main Story. Any actions in this mode will not be saved."
+    },
+    {
+      "id": "help_text",
+      "text": "操作\n\n移动角色\n按住屏幕左侧并滑动。\n\n移动视角\n按住屏幕右侧并滑动。\n\n180度转身\n双击角色。\n \n举起武器\n点击屏幕右侧。\n \n瞄准\n举起武器后，按住屏幕右侧并滑动来瞄准。\n \n开火\n瞄准时点击屏幕右侧。\n \n静滞\n瞄准时，点击角色背部的圆环。\n \n动态牵引\n能用动态牵引拾起的物体上会出现抓取图标，点击图标就能把它抓起来。\n抓住物体后，点击屏幕右侧就能把它射出去。\n \n副攻击模式\n瞄准时，将设备向一侧倾斜。\n \n装弹\n点击武器的弹药显示。\n \n零重力跳跃\n在零重力区域内晃动设备。\n \n定位器\n点击屏幕右上角的RIG图标，再点击左下角的定位器图标。\n \n暂停\n点击屏幕右上角的RIG图标，再点击左上角的暂停图标。\n \n切换武器\n点击屏幕右上角的RIG图标，再点一下想用的武器。\n \n\n武器\n \n等离子锯\n靠近敌人或电源箱，沿箭头向上滑动。\n \n等离子切割器\n主攻击：发射垂直能量冲击。\n副攻击：发射水平能量冲击。\n \n切割锯\n主攻击：发射一片可遥控的钛合金锯刃。在屏幕右侧滑动即可操控锯刃。\n副攻击：将锯刃向前射出，切开沿途的一切。\n \n线性枪\n主攻击：发射一道水平能量光束。\n副攻击：发射一枚定时地雷，爆炸后对附近敌人造成大量伤害。\n \n岩石取芯器\n主攻击：发射四束协同工作的等离子光束。\n副攻击：发射一道强力的聚焦等离子光束。在屏幕右侧滑动即可操控光束。\n\n重型脉冲步枪\n可在商店购买。射速高，弹药无限，但容易过热，每次使用后都需要冷却。\n\n挣脱\n有时敌人会抓住你，照着屏幕提示操作就能挣脱。\n \n镰刀怪\n沿箭头指示的方向滑动。\n \n潜伏者\n快速点击屏幕，再沿箭头指示的方向滑动。\n \n群虫\n快速点击每一只群虫。\n\n踩踏\n靠近爬行的敌人或可踩碎的箱子，沿箭头向下滑动。",
+      "english": "Controls\n\nMove character \nTouch and slide over the left side of the screen.\n\nMove Camera \nTouch and slide over the right side of the screen.\n\n180 Turn\nDouble tap on your character.\n \nRaise Weapon \nTap on the right side of the screen.\n \nAim \nTouch and slide over the right side of the screen with weapon raised.\n \nFire Weapon \nTap on the right side of the screen when aiming.\n \nStasis \nTap the ring on the character’s back when aiming. \n \nKinesis\nIf an item can be picked up with kinesis, a grip icon appears on that object. Tap on the icon to pick it up.\nWhile holding an object you can fire it by tapping on the right side of the screen.\n \nSecondary Fire Mode \nWhen aiming, tilt the device sideways.\n \nReload\nTap on the weapon’s ammo indicator.\n \nZero-G Jump\nWhen in a Zero-G area shake the device.\n \nLocator\nTap the Rig icon on the top right hand side of the screen then tap on the locator icon in the bottom left corner.\n \nPause\nTap the Rig icon on the top right hand side of the screen then tap on the pause icon in the top left corner.\n \nChange Weapons \nTap the Rig icon in the top right hand side of the screen then tap on a weapon icon to select it.\n \n\nWeapons\n \nPlasma Saw\nGet close to an enemy or power box and swipe up along the arrow.\n \nPlasma Cutter\nPrimary Fire – shoots a vertical energy blast.\nSecondary Fire – shoots a horizontal energy blast.\n \nRipper\nPrimary Fire – shoots a remote controlled titanium blade. The blade can be controlled by sliding on the right side of the screen. \nSecondary Fire – shoots a blade forward slicing whatever’s in its way.\n \nLine Gun  \nPrimary Fire – shoots a horizontal energy beam.\nSecondary Fire – shoots a timed mine that explodes, causing significant damage to enemies nearby. \n \nCore Extractor  \nPrimary Fire – shoots four co-ordinated plasma beams.\nSecondary Fire – shoots a powerful, concentrated plasma beam. The beam can be controlled by sliding on the right side of the screen.\n\nHeavy Pulse Rifle\nThis weapon can be purchased from the Store. It has a high rate of fire and infinite ammo, but can overheat and needs to cool down after each use.\n\nGrapple\nSometimes enemies will grapple your character. Follow the onscreen prompts to fend them off.\n \nSlasher\nSwipe along the arrow in the direction indicated.\n \nLurker\nTap the screen rapidly then swipe along the arrow in the direction indicated.\n \nSwarm\nQuickly tap on each swarm member.\n\nStomp\nGet close to a crawling enemy or stomp box and swipe down along the arrow."
+    },
+    {
+      "id": "HIDDEN_ACHIEVEMENT",
+      "text": "???",
+      "english": "???"
+    },
+    {
+      "id": "INTRO_CREDITS_EA",
+      "text": "Electronic Arts™出品",
+      "english": "Electronic Arts™ Presents"
+    },
+    {
+      "id": "INTRO_CREDITS_IRONMONKEY",
+      "text": "由IronMonkey Studios™开发",
+      "english": "Developed by IronMonkey Studios™"
+    },
+    {
+      "id": "INTRO_CREDITS_VISCERAL",
+      "text": "与Visceral Games™联合制作",
+      "english": "In Association with Visceral Games™"
+    },
+    {
+      "id": "ITALIAN",
+      "text": "意大利语",
+      "english": "Italian"
+    },
+    {
+      "id": "ITM_BURST_RIFLE",
+      "text": "重型脉冲步枪",
+      "english": "Heavy Pulse Rifle"
+    },
+    {
+      "id": "ITM_BURST_RIFLE_DESC",
+      "text": "说明：威力极强、射速高、弹药无限，但精度稍差。",
+      "english": "Description: An extremely powerful but somewhat inaccurate weapon with a high rate of fire and infinite ammo"
+    },
+    {
+      "id": "ITM_CORER",
+      "text": "岩石取芯器",
+      "english": "Corer"
+    },
+    {
+      "id": "ITM_CORER_DESC",
+      "text": "说明：岩石取芯器",
+      "english": "Description: Corer"
+    },
+    {
+      "id": "ITM_CORERENERGY",
+      "text": "取芯器能量",
+      "english": "Corer Energy"
+    },
+    {
+      "id": "ITM_CORERENERGY_DESC",
+      "text": "说明：岩石取芯器弹药",
+      "english": "Description: Ammo for the Corer"
+    },
+    {
+      "id": "ITM_CREDITS",
+      "text": "信用点",
+      "english": "Credits"
+    },
+    {
+      "id": "ITM_CREDITS_DESC",
+      "text": "说明：信用点",
+      "english": "Description: Credits"
+    },
+    {
+      "id": "ITM_LINEGUN",
+      "text": "线性枪",
+      "english": "Line Gun"
+    },
+    {
+      "id": "ITM_LINEGUN_DESC",
+      "text": "说明：线性枪",
+      "english": "Description: Line Gun"
+    },
+    {
+      "id": "ITM_LINERACK",
+      "text": "线性弹药",
+      "english": "Line Rack"
+    },
+    {
+      "id": "ITM_LINERACK_DESC",
+      "text": "说明：线性枪弹药",
+      "english": "Description: Ammo for the Line Gun"
+    },
+    {
+      "id": "ITM_NODE",
+      "text": "能量节点",
+      "english": "Power Node"
+    },
+    {
+      "id": "ITM_NODE_DESC",
+      "text": "说明：能量节点可用于升级RIG和武器，或开启特殊的门。",
+      "english": "Description: Power Nodes can be used to upgrade your RIG and weapons or to open special doors"
+    },
+    {
+      "id": "ITM_PENG",
+      "text": "Peng",
+      "english": "Peng"
+    },
+    {
+      "id": "ITM_PLASMACUTTER",
+      "text": "等离子切割器",
+      "english": "Plasma Cutter"
+    },
+    {
+      "id": "ITM_PLASMACUTTER_DESC",
+      "text": "说明：等离子切割器",
+      "english": "Description: Plasma Cutter"
+    },
+    {
+      "id": "ITM_PLASMAENERGY",
+      "text": "等离子能量",
+      "english": "Plasma Energy"
+    },
+    {
+      "id": "ITM_PLASMAENERGY_DESC",
+      "text": "说明：等离子切割器弹药",
+      "english": "Description: Ammo for the Plasma Cutter"
+    },
+    {
+      "id": "ITM_PLASMASAW",
+      "text": "等离子锯",
+      "english": "Plasma Saw"
+    },
+    {
+      "id": "ITM_PLASMASAW_DESC",
+      "text": "说明：等离子锯",
+      "english": "Description: Plasma Saw"
+    },
+    {
+      "id": "ITM_RIPPER",
+      "text": "切割锯",
+      "english": "Ripper"
+    },
+    {
+      "id": "ITM_RIPPER_DESC",
+      "text": "说明：切割锯",
+      "english": "Description: Ripper"
+    },
+    {
+      "id": "ITM_RIPPERBLADES",
+      "text": "切割锯锯刃",
+      "english": "Ripper Blades"
+    },
+    {
+      "id": "ITM_RIPPERBLADES_DESC",
+      "text": "说明：切割锯弹药",
+      "english": "Description: Ammo for the Ripper"
+    },
+    {
+      "id": "ITM_SEMI_DIAMOND",
+      "text": "钻石半导体",
+      "english": "Diamond Semi-conductor"
+    },
+    {
+      "id": "ITM_SEMI_DIAMOND_DESC",
+      "text": "说明：钻石半导体",
+      "english": "Description: Diamond Semi-conductor"
+    },
+    {
+      "id": "ITM_SEMI_GOLD",
+      "text": "黄金半导体",
+      "english": "Gold Semi-conductor"
+    },
+    {
+      "id": "ITM_SEMI_GOLD_DESC",
+      "text": "说明：黄金半导体",
+      "english": "Description: Gold Semi-conductor"
+    },
+    {
+      "id": "ITM_SEMI_RUBY",
+      "text": "红宝石半导体",
+      "english": "Ruby Semi-conductor"
+    },
+    {
+      "id": "ITM_SEMI_RUBY_DESC",
+      "text": "说明：红宝石半导体",
+      "english": "Description: Ruby Semi-conductor"
+    },
+    {
+      "id": "ITM_STASIS",
+      "text": "静滞模块",
+      "english": "Stasis Module"
+    },
+    {
+      "id": "ITM_STASIS_DESC",
+      "text": "说明：静滞模块",
+      "english": "Description: Stasis Module"
+    },
+    {
+      "id": "ITM_SUIT",
+      "text": "RIG",
+      "english": "Rig"
+    },
+    {
+      "id": "ITM_SUIT_UPGRADE_2",
+      "text": "2级护服",
+      "english": "Level 2 Suit"
+    },
+    {
+      "id": "ITM_SUIT_UPGRADE_2_DESC",
+      "text": "2级护服更耐打，踩踏伤害也更高。",
+      "english": "The level 2 suit features increased damage resistance and a boost to stomp damage"
+    },
+    {
+      "id": "ITM_SUIT_UPGRADE_3",
+      "text": "3级护服",
+      "english": "Level 3 Suit"
+    },
+    {
+      "id": "ITM_SUIT_UPGRADE_3_DESC",
+      "text": "3级护服能加快生命值恢复，还能增强等离子锯的威力。",
+      "english": "The level 3 suit increases the rate at which health regenerates and increases the power of your Plasma Saw"
+    },
+    {
+      "id": "ITM_SUIT_UPGRADE_4",
+      "text": "4级护服",
+      "english": "Level 4 Suit"
+    },
+    {
+      "id": "ITM_SUIT_UPGRADE_4_DESC",
+      "text": "4级护服能进一步减少所受伤害、加快生命值恢复，并大幅增强动态牵引攻击。",
+      "english": "The level 4 suit further increases damage resistance and health regeneration speed as well as supercharging kinesis attacks"
+    },
+    {
+      "id": "ITM_TELEKINESIS",
+      "text": "动态牵引模块",
+      "english": "Kinesis Module"
+    },
+    {
+      "id": "ITM_TELEKINESIS_DESC",
+      "text": "说明：动态牵引模块",
+      "english": "Description: Kinesis Module"
+    },
+    {
+      "id": "JAPANESE",
+      "text": "日语",
+      "english": "Japanese"
+    },
+    {
+      "id": "KILL_2_WITH_1_DESC",
+      "text": "一发击杀2只尸变体",
+      "english": "Kill 2 Necromorphs with a single shot"
+    },
+    {
+      "id": "KILL_2_WITH_1_TITLE",
+      "text": "双杀！",
+      "english": "Double Kill!"
+    },
+    {
+      "id": "KILL_3_WITH_1_DESC",
+      "text": "一发击杀3只尸变体",
+      "english": "Kill 3 Necromorphs with a single shot"
+    },
+    {
+      "id": "KILL_3_WITH_1_TITLE",
+      "text": "多重击杀！",
+      "english": "Multi Kill!"
+    },
+    {
+      "id": "KILL_BOSS_50HP_DESC",
+      "text": "击败最终首领时，剩余生命值超过50%",
+      "english": "Defeat final boss with over 50% health remaining"
+    },
+    {
+      "id": "KILL_BOSS_50HP_TITLE",
+      "text": "一钻到底",
+      "english": "Drilled"
+    },
+    {
+      "id": "KILL_BOSS_PLASMA_CUTTER_DESC",
+      "text": "仅使用等离子切割器、等离子锯、踩踏、静滞和动态牵引通关游戏。",
+      "english": "Beat the game using only the Plasma Cutter, Plasma Saw, Stomp, Stasis and Kinesis."
+    },
+    {
+      "id": "KILL_BOSS_PLASMA_CUTTER_TITLE",
+      "text": "一枪到底",
+      "english": "One Gun"
+    },
+    {
+      "id": "KILL_BRUTE_50HP_DESC",
+      "text": "击杀巨兽时，剩余生命值超过50%",
+      "english": "Kill the Brute with over 50% health remaining"
+    },
+    {
+      "id": "KILL_BRUTE_50HP_TITLE",
+      "text": "蛮力取胜",
+      "english": "Brute Force"
+    },
+    {
+      "id": "KILL_PLASMA",
+      "text": "用等离子锯击杀30个敌人",
+      "english": "Kill 30 enemies with the Plasma Saw"
+    },
+    {
+      "id": "KILL_SWARM_7_SECONDS_DESC",
+      "text": "用时少于7秒，杀光附着在身上的群虫",
+      "english": "Kill a Swarm on you in under 7 seconds"
+    },
+    {
+      "id": "KILL_SWARM_7_SECONDS_TITLE",
+      "text": "一个不留，全都碾碎",
+      "english": "Gotta crush 'em all"
+    },
+    {
+      "id": "KILL_SWARM_NO_JUMP_DESC",
+      "text": "在任何群虫扑到你身上前，杀光整群群虫",
+      "english": "Kill a Swarm before any jump on you"
+    },
+    {
+      "id": "KILL_SWARM_NO_JUMP_TITLE",
+      "text": "慢着",
+      "english": "Not so fast"
+    },
+    {
+      "id": "KILL_WITH_CORER_30_DESC",
+      "text": "用岩石取芯器击杀30只尸变体",
+      "english": "Kill 30  Necromorphs with the Corer"
+    },
+    {
+      "id": "KILL_WITH_CORER_30_TITLE",
+      "text": "硬核取芯",
+      "english": "Hardcorer"
+    },
+    {
+      "id": "KILL_WITH_LINE_GUN_30_DESC",
+      "text": "用线性枪击杀30只尸变体",
+      "english": "Kill 30  Necromorphs with the Line Gun"
+    },
+    {
+      "id": "KILL_WITH_LINE_GUN_30_TITLE",
+      "text": "开膛手",
+      "english": "Eviscerator"
+    },
+    {
+      "id": "KILL_WITH_PLASMA_CUTTER_30_DESC",
+      "text": "用等离子切割器击杀30只尸变体",
+      "english": "Kill 30  Necromorphs with the Plasma Cutter"
+    },
+    {
+      "id": "KILL_WITH_PLASMA_CUTTER_30_TITLE",
+      "text": "工具上场",
+      "english": "Tool Time"
+    },
+    {
+      "id": "KILL_WITH_PLASMA_SAW_30_DESC",
+      "text": "用等离子锯击杀30只尸变体",
+      "english": "Kill 30  Necromorphs with the Plasma Saw"
+    },
+    {
+      "id": "KILL_WITH_PLASMA_SAW_30_TITLE",
+      "text": "简单有效",
+      "english": "Simple but effective"
+    },
+    {
+      "id": "KILL_WITH_RIPPER_30_DESC",
+      "text": "用切割锯击杀30只尸变体",
+      "english": "Kill 30  Necromorphs with the Ripper"
+    },
+    {
+      "id": "KILL_WITH_RIPPER_30_TITLE",
+      "text": "技高一筹",
+      "english": "A Cut Above"
+    },
+    {
+      "id": "KINESIS_HIT_DESC",
+      "text": "用动态牵引命中50个目标",
+      "english": "Hit 50 targets with kinesis"
+    },
+    {
+      "id": "KINESIS_HIT_TITLE",
+      "text": "铁臂强人",
+      "english": "Armstrong"
+    },
+    {
+      "id": "KOREAN",
+      "text": "韩语",
+      "english": "Korean"
+    },
+    {
+      "id": "LANGUAGE",
+      "text": "语言",
+      "english": "Language"
+    },
+    {
+      "id": "LBL_AVAILABLE_NODES",
+      "text": "可用节点：{0}",
+      "english": "Available Nodes: {0}"
+    },
+    {
+      "id": "LBL_CREDITS",
+      "text": "信用点：{0}",
+      "english": "Credits: {0}"
+    },
+    {
+      "id": "LBL_NODES",
+      "text": "节点：{0}",
+      "english": "Nodes: {0}"
+    },
+    {
+      "id": "LEVEL_01_01",
+      "text": "政府区1",
+      "english": "Government Sector 1"
+    },
+    {
+      "id": "LEVEL_01_02",
+      "text": "政府区2",
+      "english": "Government Sector 2"
+    },
+    {
+      "id": "LEVEL_01_03",
+      "text": "政府区3",
+      "english": "Government Sector 3"
+    },
+    {
+      "id": "LEVEL_01_04",
+      "text": "政府区4",
+      "english": "Government Sector 4"
+    },
+    {
+      "id": "LEVEL_02_01",
+      "text": "矿区1",
+      "english": "Mines 1"
+    },
+    {
+      "id": "LEVEL_02_02",
+      "text": "矿区2",
+      "english": "Mines 2"
+    },
+    {
+      "id": "LEVEL_02_03",
+      "text": "矿区3",
+      "english": "Mines 3"
+    },
+    {
+      "id": "LEVEL_03_01",
+      "text": "水处理厂1",
+      "english": "Water Plant 1"
+    },
+    {
+      "id": "LEVEL_03_02",
+      "text": "水处理厂2",
+      "english": "Water Plant 2"
+    },
+    {
+      "id": "LEVEL_03_03",
+      "text": "水处理厂3",
+      "english": "Water Plant 3"
+    },
+    {
+      "id": "LEVEL_04_01",
+      "text": "食品加工区1",
+      "english": "Food Processing 1"
+    },
+    {
+      "id": "LEVEL_04_02",
+      "text": "食品加工区2",
+      "english": "Food Processing 2"
+    },
+    {
+      "id": "LEVEL_04_03",
+      "text": "食品加工区3",
+      "english": "Food Processing 3"
+    },
+    {
+      "id": "LEVEL_05_01",
+      "text": "跨区交通隧道1",
+      "english": "Crossover Tube 1"
+    },
+    {
+      "id": "LEVEL_05_02",
+      "text": "跨区交通隧道2",
+      "english": "Crossover Tube 2"
+    },
+    {
+      "id": "LEVEL_05_03",
+      "text": "跨区交通隧道3",
+      "english": "Crossover Tube 3"
+    },
+    {
+      "id": "LEVEL_06_01",
+      "text": "泰坦碎片1",
+      "english": "Titan Shard 1"
+    },
+    {
+      "id": "LEVEL_06_02",
+      "text": "泰坦碎片2",
+      "english": "Titan Shard 2"
+    },
+    {
+      "id": "LEVEL_06_03",
+      "text": "泰坦反应堆",
+      "english": "Titan Reactor"
+    },
+    {
+      "id": "license_01",
+      "text": "最终用户许可协议",
+      "english": "End User License Agreement"
+    },
+    {
+      "id": "license_02",
+      "text": "购买和／或使用本应用，即表示你同意《最终用户许可协议》、EA《隐私政策》和《服务条款》的规定。",
+      "english": "By purchasing and/or using this application, you agree to the terms of the End User License Agreement and EA’s Privacy Policy and Terms of Service."
+    },
+    {
+      "id": "LOADING_TIP_01",
+      "text": "瞄准敌人的肢体，能更快杀死它们。",
+      "english": "Target enemy's limbs to kill them quickly."
+    },
+    {
+      "id": "LOADING_TIP_02",
+      "text": "瞄准时，左右倾斜设备就能切换射击模式。有些敌人用副攻击模式更容易对付，不妨多试试。",
+      "english": "When aiming, tilt the device left or right to change fire modes. Some enemies are easier to kill with secondary fire modes. Experiment!"
+    },
+    {
+      "id": "LOADING_TIP_03",
+      "text": "开始跑动或快速转身，就能退出瞄准模式。",
+      "english": "Simply start running or perform a quick turn to easily exit aim mode."
+    },
+    {
+      "id": "LOADING_TIP_04",
+      "text": "线性枪只要一发打得准，就能同时切断潜伏者的三条触手。",
+      "english": "One well placed shot from a Line Gun can sever all three of a Lurker's tentacles."
+    },
+    {
+      "id": "LOADING_TIP_05",
+      "text": "线性枪地雷和爆炸罐的爆炸也会伤到你，请谨慎使用。",
+      "english": "Explosions from Line Gun mines and explosive canisters can hurt you. Use with caution."
+    },
+    {
+      "id": "LOADING_TIP_06",
+      "text": "群虫附着到身上时，快速点击它们即可将其杀死。",
+      "english": "Tap rapidly on a Swarm if they attach to you to kill them."
+    },
+    {
+      "id": "LOADING_TIP_07",
+      "text": "点击物体上方的抓取图标，就能用动态牵引抓住它。瞄准后再点一下，即可把它射出去。",
+      "english": "Tap the GRIP icon above an object to use kinesis. Aim and tap to launch the object."
+    },
+    {
+      "id": "LOADING_TIP_08",
+      "text": "点击RIG图标，再点箭头图标，就能打开定位器。",
+      "english": "Tap on the RIG icon and then the arrow icon to access your locator."
+    },
+    {
+      "id": "LOADING_TIP_09",
+      "text": "控制切割锯的遥控锯片时，随时点击屏幕，都能把锯片向前射出。",
+      "english": "While steering the Ripper's Remote Saw you can tap at any time to launch the saw straight ahead."
+    },
+    {
+      "id": "LOADING_TIP_10",
+      "text": "弹药不足？用静滞配合等离子锯，夺回主动权。",
+      "english": "Low on ammo? Use Stasis and the Plasma Saw to get back on top."
+    },
+    {
+      "id": "LOADING_TIP_11",
+      "text": "找找储物柜和可踩碎的箱子，里面有信用点和弹药。",
+      "english": "Seek out lockers and stomp boxes for credits and ammo."
+    },
+    {
+      "id": "LOADING_TIP_12",
+      "text": "双击角色，就能快速转身180度。",
+      "english": "Double-tap the character to quickly turn 180 degrees."
+    },
+    {
+      "id": "LOADING_TIP_13",
+      "text": "点击弹药显示就能装弹。",
+      "english": "Tap the ammo indicator to reload your weapon."
+    },
+    {
+      "id": "LOADING_TIP_14",
+      "text": "按住屏幕滑动手指，就能控制岩石取芯器副攻击模式的光束。",
+      "english": "Touch the screen and slide your finger to steer the Corer's secondary fire beam attack."
+    },
+    {
+      "id": "LOADING_TIP_15",
+      "text": "使用切割锯的副攻击模式时，点击屏幕就能射出威力强大的高速锯刃。",
+      "english": "When using the Ripper's secondary fire, tap the screen to fire a powerful high velocity saw blade."
+    },
+    {
+      "id": "LOADING_TIP_16",
+      "text": "点击静滞指示器，就能发射静滞能量，让敌人在短时间内大幅减速。",
+      "english": "Tap the stasis indicator to fire a stasis blast. Stasis slows down enemies dramatically for a short period of time."
+    },
+    {
+      "id": "LOADING_TIP_17",
+      "text": "点击RIG图标打开武器选择界面，再点一下想用的武器。",
+      "english": "Tap the Rig icon to bring up weapon select. Tap the desired weapon icon to select it."
+    },
+    {
+      "id": "LOADING_TIP_18",
+      "text": "在零重力环境中晃动设备，就能进行零重力跳跃。",
+      "english": "Shake the device in Zero-G to perform a Zero-G jump."
+    },
+    {
+      "id": "LOADING_TIP_19",
+      "text": "完成成就可解锁奖励内容。",
+      "english": "Complete achievements to unlock bonus content."
+    },
+    {
+      "id": "LOADING_TIP_20",
+      "text": "线性枪的射弹能贯穿尸变体，连它们身后的敌人也能打到。",
+      "english": "Line Gun projectiles slice through Necromorphs to damage any behind them."
+    },
+    {
+      "id": "LOADING_TIP_21",
+      "text": "想升级装备，可以卖掉不需要的弹药，多买些能量节点。",
+      "english": "You can sell unwanted ammo and buy more Power Nodes if you want to upgrade your equipment."
+    },
+    {
+      "id": "LOADING_TIP_22",
+      "text": "爬在地上的尸变体可以直接踩死，省点弹药。",
+      "english": "Stomp on crawling Necromorphs to conserve ammo."
+    },
+    {
+      "id": "LOADING_TIP_23",
+      "text": "通关后，在新游戏+中就能带着所有升级再玩一遍。",
+      "english": "Once you finish the game you can play again with all of your upgrades in New Game+."
+    },
+    {
+      "id": "LOADING_TIP_24",
+      "text": "尸变体踩上线性枪发射的定时地雷时，会将其引爆。",
+      "english": "Necromorphs will detonate timed mines from the Line Gun if they step on them."
+    },
+    {
+      "id": "LOADING_TIP_25",
+      "text": "巨兽正面全是厚甲。绕到它身后，打背部才能造成伤害。",
+      "english": "Brutes are heavily armoured on their front. Strafe around and shoot them in the back to do damage."
+    },
+    {
+      "id": "LOADING_TIP_26",
+      "text": "每到一个检查点，或是完成一章，游戏都会自动保存。",
+      "english": "Progress is saved automatically at every checkpoint and chapter complete."
+    },
+    {
+      "id": "LOADING_TIP_27",
+      "text": "先用静滞拖慢尸变体，再瞄准射击，杀起来更有效率。",
+      "english": "Use stasis to control Necromorphs and line up your shots for efficient kills."
+    },
+    {
+      "id": "LOADING_TIP_28",
+      "text": "打破孕育者的腹囊会放出群虫，瞄准时小心点。",
+      "english": "Bursting a Pregnant's sack will birth a Swarm; aim carefully."
+    },
+    {
+      "id": "LOADING_TIP_29",
+      "text": "打中自爆者的脓囊会引起爆炸，伤到周围的尸变体。",
+      "english": "Shooting an Exploder's pustule will cause it to explode and damage nearby Necromorphs."
+    },
+    {
+      "id": "LOADING_TIP_30",
+      "text": "你可以从任意章节或检查点重新开始。要是装备扛不住尸变体大军，就回去找商店或工作台整备一下。",
+      "english": "You can restart any chapter or checkpoint. Go back and visit a Store or Bench if you feel ill equipped to handle the Necromorph hordes."
+    },
+    {
+      "id": "LOADING_TIP_31",
+      "text": "孕育者受伤后，有时会自己剖开肚子，放出群虫。",
+      "english": "When injured, a Pregnant will sometimes eviscerate itself to unleash a Swarm."
+    },
+    {
+      "id": "LOADING_TIP_32",
+      "text": "多找找能量节点，升级装备可少不了它们。",
+      "english": "Search for Power Nodes; they are an invaluable resource to upgrade your equipment."
+    },
+    {
+      "id": "LOADING_TIP_33",
+      "text": "尸变体抓住你就会造成伤害，尽量别让它们贴身。万一被抓住，赶紧照着屏幕提示操作，能少受点伤。",
+      "english": "Necromorphs will hurt you during their grapple attacks. Try not to let them get close. Follow the onscreen prompts quickly to minimise damage if they do grapple you."
+    },
+    {
+      "id": "LOADING_TIP_34",
+      "text": "多去商店和工作台看看。想扭转对付尸变体时的劣势，升级装备、购买新护服是最好的办法。",
+      "english": "Visit Stores and Benches often. Upgrading your equipment and buying new suits is the best way to even the odds against the Necromorphs."
+    },
+    {
+      "id": "LOCKED",
+      "text": "已锁定",
+      "english": "LOCKED"
+    },
+    {
+      "id": "LOGIN",
+      "text": "登录",
+      "english": "Login"
+    },
+    {
+      "id": "LOGIN_DETAILS",
+      "text": "请输入你的EA.com登录信息。（需要连接互联网）",
+      "english": "Enter your EA.com login details. (Requires Internet connection)"
+    },
+    {
+      "id": "Marker_01",
+      "text": "你在做什么……？躺下等死吧……你阻止不了……",
+      "english": "What are you doing...? Lay down and die... You can't stop it..."
+    },
+    {
+      "id": "Marker_02",
+      "text": "你会死在这里……嘉莉……没有用的……",
+      "english": "You're going to die down here... Karrie... It's no use..."
+    },
+    {
+      "id": "Marker_03",
+      "text": "它要来了……不如自行了断……你什么也做不了……",
+      "english": "It's coming... Might as well kill yourself... There's nothing you can do..."
+    },
+    {
+      "id": "Marker_04",
+      "text": "无路可逃……接受你的命运……让我们归于完整……",
+      "english": "There's no way out... Accept your fate... Make us whole..."
+    },
+    {
+      "id": "Marker_05",
+      "text": "这一切都疯了……没有什么是真的……你能相信谁……？",
+      "english": "This is madness... Nothing is real... Who can you trust...?"
+    },
+    {
+      "id": "Marker_06",
+      "text": "你做不到……没人能活下来……这是我们的命运……",
+      "english": "You can't do this... Nobody can survive... It's our fate..."
+    },
+    {
+      "id": "Marker_07",
+      "text": "命运正在召唤……你逃不掉……为什么还要反抗……？",
+      "english": "Destiny is calling... You can't escape it... Why are you fighting it...?"
+    },
+    {
+      "id": "Marker_08",
+      "text": "敞开你的心灵……让我们归于完整……在解脱中寻得宁静……",
+      "english": "Open your mind... Make us whole... Find serenity in release..."
+    },
+    {
+      "id": "Marker_09",
+      "text": "否认毫无意义……不要躲避……世人皆盲……",
+      "english": "Denial is pointless... Don't hide from it... The world is blind..."
+    },
+    {
+      "id": "Marker_10",
+      "text": "恩典将引你升华……多么美丽的死亡……你准备好飞升了吗……？",
+      "english": "Grace will lift you up... It's a beautiful death... Are you ready to ascend...?"
+    },
+    {
+      "id": "MELEE_KILL_30_DESC",
+      "text": "用等离子锯击杀30个敌人",
+      "english": "Kill 30 enemies with the Plasma Saw"
+    },
+    {
+      "id": "MELEE_KILL_30_TITLE",
+      "text": "酷毙了",
+      "english": "Groovy"
+    },
+    {
+      "id": "MORE_GAMES",
+      "text": "更多游戏",
+      "english": "More Games"
+    },
+    {
+      "id": "MTX_ERROR_10001",
+      "text": "错误10001：未找到主物品。",
+      "english": "Error 10001: Master Item not found."
+    },
+    {
+      "id": "MTX_ERROR_10002",
+      "text": "错误10002：无法访问档案。",
+      "english": "Error 10002: Could not access profile."
+    },
+    {
+      "id": "MTX_ERROR_10003",
+      "text": "错误10003：权限不足。",
+      "english": "Error 10003: Insufficient privilege."
+    },
+    {
+      "id": "MTX_ERROR_10004",
+      "text": "错误10004：权限不足。",
+      "english": "Error 10004: Insufficient privilege."
+    },
+    {
+      "id": "MTX_ERROR_10005",
+      "text": "提示10005：请将本应用升级至最新版本，以访问游戏内商店。",
+      "english": "Message 10005: To access the in-game store please upgrade to the latest version of this application."
+    },
+    {
+      "id": "MTX_ERROR_10006",
+      "text": "错误10006：无法访问物品。",
+      "english": "Error 10006: Could not access item."
+    },
+    {
+      "id": "MTX_ERROR_10007",
+      "text": "错误10007：此产品不支持该语言。",
+      "english": "Error 10007: Language not supported for this product."
+    },
+    {
+      "id": "MTX_ERROR_1111",
+      "text": "错误1111：常规错误。请稍后重试。",
+      "english": "Error 1111: General Error. Please try again later."
+    },
+    {
+      "id": "MTX_ERROR_21002",
+      "text": "错误21002：无法访问档案。",
+      "english": "Error 21002: Could not access profile."
+    },
+    {
+      "id": "MTX_ERROR_21008",
+      "text": "错误21008：无法访问档案。",
+      "english": "Error 21008: Could not access profile."
+    },
+    {
+      "id": "MTX_ERROR_2222",
+      "text": "请关闭飞行模式或连接Wi-Fi，以访问你的数据。",
+      "english": "To access your data, deactivate flight mode or use Wi-Fi"
+    },
+    {
+      "id": "MTX_ERROR_30001",
+      "text": "错误30001：无法访问档案。",
+      "english": "Error 30001: Could not access profile."
+    },
+    {
+      "id": "MTX_ERROR_30002",
+      "text": "错误30002：无法访问物品。",
+      "english": "Error 30002: Could not access item."
+    },
+    {
+      "id": "MTX_ERROR_30003",
+      "text": "错误30003：凭据验证失败。",
+      "english": "Error 30003: Error validating receipt."
+    },
+    {
+      "id": "MTX_ERROR_30004",
+      "text": "错误30004：购买验证失败。",
+      "english": "Error 30004: Error validating purchase."
+    },
+    {
+      "id": "MTX_ERROR_30005",
+      "text": "提示30005：已超过下载次数限制。",
+      "english": "Message 30005: Download limit exceeded."
+    },
+    {
+      "id": "MTX_ERROR_30006",
+      "text": "错误30006：拒绝访问。",
+      "english": "Error 30006: Access denied."
+    },
+    {
+      "id": "MTX_ERROR_30007",
+      "text": "错误30007：购买验证失败。",
+      "english": "Error 30007: Error validating purchase."
+    },
+    {
+      "id": "MTX_ERROR_30008",
+      "text": "提示30008：已超过恢复次数限制。",
+      "english": "Message 30008: Restore limit exceeded."
+    },
+    {
+      "id": "MTX_ERROR_3333",
+      "text": "提示3333：购买已取消。",
+      "english": "Message 3333: Purchase cancelled."
+    },
+    {
+      "id": "MTX_ERROR_4444",
+      "text": "错误4444：购买时发生服务器错误。请稍后重试。",
+      "english": "Error 4444: Purchasing server error. Please try again later."
+    },
+    {
+      "id": "MTX_ERROR_5555",
+      "text": "提示5555：恢复已取消。",
+      "english": "Message 5555: Restore cancelled."
+    },
+    {
+      "id": "MTX_ERROR_6666",
+      "text": "错误6666：恢复物品时发生服务器错误。请稍后重试。",
+      "english": "Error 6666: Restoring server error. Please try again later."
+    },
+    {
+      "id": "MTX_ERROR_8888",
+      "text": "错误8888：空间不足。请释放一些空间后重试。",
+      "english": "Error 8888: Insufficient space.  Please free up some space and try again."
+    },
+    {
+      "id": "MTX_ERROR_UNKNOWN",
+      "text": "未知错误（错误代码={0}）。",
+      "english": "Unknown Error (Error = {0})."
+    },
+    {
+      "id": "MUSIC",
+      "text": "音乐",
+      "english": "Music"
+    },
+    {
+      "id": "NEW_ACCOUNT",
+      "text": "新建账号",
+      "english": "New Account"
+    },
+    {
+      "id": "NEW_GAME",
+      "text": "新游戏",
+      "english": "New Game"
+    },
+    {
+      "id": "NEW_OBJECTIVE",
+      "text": "新目标：",
+      "english": "New Objective:"
+    },
+    {
+      "id": "NO",
+      "text": "否",
+      "english": "No"
+    },
+    {
+      "id": "NODE_NONE",
+      "text": "解锁此处需要一个能量节点，但你目前没有。",
+      "english": "This requires a Power Node to unlock and you have none."
+    },
+    {
+      "id": "NODE_ROOM",
+      "text": "能量节点房间",
+      "english": "Power Node Room"
+    },
+    {
+      "id": "NODE_SPEND",
+      "text": "消耗1个能量节点开启？",
+      "english": "Spend 1 Power Node to open?"
+    },
+    {
+      "id": "NODES",
+      "text": "节点",
+      "english": "Nodes"
+    },
+    {
+      "id": "NODES_NO",
+      "text": "能量节点不足，无法升级",
+      "english": "You don't have enough Power Nodes to upgrade"
+    },
+    {
+      "id": "NORMAL",
+      "text": "普通",
+      "english": "Normal"
+    },
+    {
+      "id": "NOT_FAST",
+      "text": "慢着",
+      "english": "Not so fast"
+    },
+    {
+      "id": "OBJ_BOSS_01",
+      "text": "击杀首领",
+      "english": "Kill the Boss"
+    },
+    {
+      "id": "OBJ_BOSS_02",
+      "text": "调查反应堆核心",
+      "english": "Investigate the Reactor Core"
+    },
+    {
+      "id": "OBJ_DEMENTIA_01",
+      "text": "全都是你的错……",
+      "english": "IT'S ALL YOUR FAULT..."
+    },
+    {
+      "id": "OBJ_FOOD_01",
+      "text": "清除区域内的尸变体",
+      "english": "Clear the area of Necromorphs"
+    },
+    {
+      "id": "OBJ_FOOD_02",
+      "text": "寻找通往培育舱的路线",
+      "english": "Find your way to the Growth Chambers"
+    },
+    {
+      "id": "OBJ_FOOD_02_01",
+      "text": "穿过食品仓库01",
+      "english": "Proceed through Food Storage 01"
+    },
+    {
+      "id": "OBJ_FOOD_02_02",
+      "text": "前往食品仓库02",
+      "english": "Go to Food Storage 02"
+    },
+    {
+      "id": "OBJ_FOOD_02_03",
+      "text": "清除区域内的尸变体",
+      "english": "Clear the area of Necromorphs"
+    },
+    {
+      "id": "OBJ_FOOD_02_04",
+      "text": "找到公用设施区",
+      "english": "Locate the Utilities Area"
+    },
+    {
+      "id": "OBJ_FOOD_02_05",
+      "text": "取得岩石取芯器",
+      "english": "Retrieve the Corer"
+    },
+    {
+      "id": "OBJ_FOOD_02_06",
+      "text": "寻找出口",
+      "english": "Search for an exit"
+    },
+    {
+      "id": "OBJ_FOOD_02_07",
+      "text": "前往列车站",
+      "english": "Go to the Tram Station"
+    },
+    {
+      "id": "OBJ_FOOD_03",
+      "text": "进入肉类挂架中心",
+      "english": "Gain Access to the Flesh Racking Center"
+    },
+    {
+      "id": "OBJ_FOOD_04",
+      "text": "穿过输送区，前往仓库",
+      "english": "Proceed through the Conveyancing area to Storage"
+    },
+    {
+      "id": "OBJ_GOV_01",
+      "text": "取得等离子锯",
+      "english": "Retrieve the Plasma Saw"
+    },
+    {
+      "id": "OBJ_GOV_02",
+      "text": "进入服务器机房01",
+      "english": "Gain access to Server Room 01"
+    },
+    {
+      "id": "OBJ_GOV_02_01",
+      "text": "取得静滞模块",
+      "english": "Retrieve the Stasis Module"
+    },
+    {
+      "id": "OBJ_GOV_02_02",
+      "text": "前往安保办公室",
+      "english": "Go to the Security Office"
+    },
+    {
+      "id": "OBJ_GOV_02_03",
+      "text": "操作控制面板",
+      "english": "Access the Control Panel"
+    },
+    {
+      "id": "OBJ_GOV_02_04",
+      "text": "寻找出口",
+      "english": "Search for the Exit"
+    },
+    {
+      "id": "OBJ_GOV_02_04B",
+      "text": "逃离房间……",
+      "english": "Escape the room..."
+    },
+    {
+      "id": "OBJ_GOV_02_05",
+      "text": "清除房间内的尸变体",
+      "english": "Clear the room of Necromorphs"
+    },
+    {
+      "id": "OBJ_GOV_02_06",
+      "text": "乘升降机前往下层区",
+      "english": "Take the Lift to the Lower Sector"
+    },
+    {
+      "id": "OBJ_GOV_03",
+      "text": "摧毁3个电源箱",
+      "english": "Destroy the 3 Power Boxes"
+    },
+    {
+      "id": "OBJ_GOV_04",
+      "text": "取得等离子切割器",
+      "english": "Retrieve the Plasma Cutter"
+    },
+    {
+      "id": "OBJ_GOV_05",
+      "text": "进入服务器机房02",
+      "english": "Gain access to Server Room 02"
+    },
+    {
+      "id": "OBJ_GOV_06",
+      "text": "摧毁3个电源箱",
+      "english": "Destroy the 3 Power Boxes"
+    },
+    {
+      "id": "OBJ_GOV_07",
+      "text": "取得动态牵引模块",
+      "english": "Retrieve the Kinesis Module"
+    },
+    {
+      "id": "OBJ_GOV_08",
+      "text": "进入服务器机房03",
+      "english": "Gain access to Server Room 03"
+    },
+    {
+      "id": "OBJ_GOV_09",
+      "text": "摧毁3个电源箱",
+      "english": "Destroy the 3 Power Boxes"
+    },
+    {
+      "id": "OBJ_GOV_10",
+      "text": "前往清理区",
+      "english": "Go to the Clearance Area"
+    },
+    {
+      "id": "OBJ_GOV_11",
+      "text": "逃往上层区",
+      "english": "Flee to the Upper Sector"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_01",
+      "text": "取得切割锯",
+      "english": "Retrieve the Ripper"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_02",
+      "text": "解锁行政区",
+      "english": "Unlock the Administration Area"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_03",
+      "text": "前往行政区",
+      "english": "Go to the Administration Area"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_04",
+      "text": "解锁处理区",
+      "english": "Unlock the Processing Area"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_05",
+      "text": "前往处理区",
+      "english": "Go to the Processing Area"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_06",
+      "text": "破解2个安保面板",
+      "english": "Hack the 2 Security Panels"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_07",
+      "text": "操作控制室终端",
+      "english": "Access the Control Room Terminal"
+    },
+    {
+      "id": "OBJ_GOV_UNDER_08",
+      "text": "寻找出口",
+      "english": "Search for an Exit"
+    },
+    {
+      "id": "OBJ_MINES_01",
+      "text": "寻找通往上层的路线",
+      "english": "Find a route to the Upper Level"
+    },
+    {
+      "id": "OBJ_MINES_02",
+      "text": "恢复升降机供电",
+      "english": "Restore power to the lift"
+    },
+    {
+      "id": "OBJ_MINES_02_01",
+      "text": "进入内部隧道",
+      "english": "Gain access to the interior tunnels"
+    },
+    {
+      "id": "OBJ_MINES_02_02",
+      "text": "找到2块电池，解锁工人宿舍",
+      "english": "Find 2 batteries to unlock the Worker's Quarters"
+    },
+    {
+      "id": "OBJ_MINES_02_03",
+      "text": "前往观景平台",
+      "english": "Go to the Observation Platform"
+    },
+    {
+      "id": "OBJ_MINES_02_04",
+      "text": "操作出口控制面板",
+      "english": "Access the Exit Control Panel"
+    },
+    {
+      "id": "OBJ_MINES_02_05",
+      "text": "前往列车站",
+      "english": "Go to the Tram Station"
+    },
+    {
+      "id": "OBJ_MINES_03",
+      "text": "乘升降机前往上层",
+      "english": "Take the lift to the Upper Level"
+    },
+    {
+      "id": "OBJ_MINES_04",
+      "text": "进入上层隧道",
+      "english": "Gain Access to the Upper Tunnels"
+    },
+    {
+      "id": "OBJ_MINES_05",
+      "text": "解锁通往矿区内部的路线",
+      "english": "Unlock the route to the interior mines"
+    },
+    {
+      "id": "OBJ_MINES_06",
+      "text": "乘升降机进入矿区内部",
+      "english": "Take the lift to the interior mines"
+    },
+    {
+      "id": "OBJ_TEST",
+      "text": "测试目标：做点特别的事。",
+      "english": "Test Objective, do something special."
+    },
+    {
+      "id": "OBJ_TITAN_01",
+      "text": "进入泰坦空间站裂解核心的外部区域",
+      "english": "Access the Titan Shard Exterior"
+    },
+    {
+      "id": "OBJ_TITAN_02",
+      "text": "绕行外部区域，前往反应堆",
+      "english": "Proceed around the exterior en route to the Reactor"
+    },
+    {
+      "id": "OBJ_TITAN_03",
+      "text": "绕过5个外部接入点，进入气闸",
+      "english": "Bypass the 5 Exterior Access Points and enter the Airlock"
+    },
+    {
+      "id": "OBJ_TITAN_04",
+      "text": "穿过气闸",
+      "english": "Proceed through the Airlock"
+    },
+    {
+      "id": "OBJ_TITAN_05",
+      "text": "继续前往反应堆",
+      "english": "Continue en route to the Reactor"
+    },
+    {
+      "id": "OBJ_TITAN_06",
+      "text": "击败巨兽",
+      "english": "Defeat the Brute"
+    },
+    {
+      "id": "OBJ_TITAN_07",
+      "text": "直面恐惧",
+      "english": "Confront your Fears"
+    },
+    {
+      "id": "OBJ_TITAN_08",
+      "text": "前往泰坦空间站反应堆核心",
+      "english": "Go to the Titan Reactor Core"
+    },
+    {
+      "id": "OBJ_TRAM_01",
+      "text": "杀死所有尸变体",
+      "english": "Kill all Necromorphs"
+    },
+    {
+      "id": "OBJ_TRAMSTOP",
+      "text": "赶到列车站。",
+      "english": "Get to the tram stop."
+    },
+    {
+      "id": "OBJ_TUBE_01",
+      "text": "进入跨区交通隧道",
+      "english": "Enter the Crossover Tube"
+    },
+    {
+      "id": "OBJ_TUBE_02",
+      "text": "启动缆车",
+      "english": "Activate the Gondola"
+    },
+    {
+      "id": "OBJ_TUBE_03",
+      "text": "乘车前往跨区交通隧道封锁装置维护枢纽",
+      "english": "Ride to the Crossover Seal Maintenance Hub"
+    },
+    {
+      "id": "OBJ_TUBE_04",
+      "text": "摧毁3个电源箱",
+      "english": "Destroy the 3 Power Boxes"
+    },
+    {
+      "id": "OBJ_TUBE_05",
+      "text": "操作跨区交通隧道封锁控制面板",
+      "english": "Access the Crossover Seal Control Panel"
+    },
+    {
+      "id": "OBJ_TUBE_06",
+      "text": "找到辅助缆车",
+      "english": "Locate the ancillary Gondola"
+    },
+    {
+      "id": "OBJ_TUBE_07",
+      "text": "乘车返回泰坦碎片",
+      "english": "Ride back to the Titan Shard"
+    },
+    {
+      "id": "OBJ_WATER_01",
+      "text": "取得线性枪",
+      "english": "Retrieve the Line Gun"
+    },
+    {
+      "id": "OBJ_WATER_02",
+      "text": "进入输水系统",
+      "english": "Enter the Aqueduct System"
+    },
+    {
+      "id": "OBJ_WATER_02_01",
+      "text": "进入一级零重力净化罐",
+      "english": "Enter the Primary Zero-G Purification Tank"
+    },
+    {
+      "id": "OBJ_WATER_02_02",
+      "text": "前往净化罐另一侧",
+      "english": "Navigate to the other side of the Purification Tank"
+    },
+    {
+      "id": "OBJ_WATER_02_03",
+      "text": "前往供水蓄水池B",
+      "english": "Go to Service Reservoir B"
+    },
+    {
+      "id": "OBJ_WATER_02_04",
+      "text": "使用升降机继续前进",
+      "english": "Use the lifts to proceed"
+    },
+    {
+      "id": "OBJ_WATER_02_05",
+      "text": "找到并摧毁3个排水保护装置的电源箱",
+      "english": "Locate and destroy the 3 Drain Safeguard Powerboxes"
+    },
+    {
+      "id": "OBJ_WATER_02_06",
+      "text": "前往供水蓄水池C",
+      "english": "Go to Service Reservoir C"
+    },
+    {
+      "id": "OBJ_WATER_02_07",
+      "text": "进入二级零重力净化罐",
+      "english": "Enter the Secondary Zero-G Purification Tank"
+    },
+    {
+      "id": "OBJ_WATER_02_08",
+      "text": "重置净化罐的密封检测系统",
+      "english": "Reset the Purification Tank Seal Checks"
+    },
+    {
+      "id": "OBJ_WATER_02_09",
+      "text": "离开二级净化罐",
+      "english": "Exit the Secondary Purification Tank"
+    },
+    {
+      "id": "OBJ_WATER_02_10",
+      "text": "前往列车站",
+      "english": "Go to the Tram Station"
+    },
+    {
+      "id": "OBJ_WATER_03",
+      "text": "打开水闸",
+      "english": "Open the Sluice Gates"
+    },
+    {
+      "id": "OBJ_WATER_04",
+      "text": "前往水处理区02",
+      "english": "Proceed to Water Treatment 02"
+    },
+    {
+      "id": "OBJ_WATER_05",
+      "text": "前往供水蓄水池A",
+      "english": "Go to Service Reservoir A"
+    },
+    {
+      "id": "OBJ_WATER_06",
+      "text": "前往净化厂",
+      "english": "Proceed to the Purification Plant"
+    },
+    {
+      "id": "OBJECTIVE_COMPLETE",
+      "text": "目标已完成：",
+      "english": "Objective Complete:"
+    },
+    {
+      "id": "OFFLINE",
+      "text": "离线",
+      "english": "OFFLINE"
+    },
+    {
+      "id": "ONLINE",
+      "text": "在线",
+      "english": "ONLINE"
+    },
+    {
+      "id": "OPEN",
+      "text": "打开？",
+      "english": "OPEN?"
+    },
+    {
+      "id": "OPTIONS_AXIS",
+      "text": "反转Y轴",
+      "english": "Invert Y Axis"
+    },
+    {
+      "id": "OPTIONS_SENSITIVITY",
+      "text": "视角灵敏度",
+      "english": "Look Sensitivity"
+    },
+    {
+      "id": "PASSWORD",
+      "text": "密码：",
+      "english": "Password:"
+    },
+    {
+      "id": "PASSWORD_PROMPT",
+      "text": "密码",
+      "english": "Password"
+    },
+    {
+      "id": "PASSWORLD_EMPTY",
+      "text": "请输入密码。",
+      "english": "Please enter your password."
+    },
+    {
+      "id": "PENG",
+      "text": "Peng！",
+      "english": "Peng!"
+    },
+    {
+      "id": "PICKUP",
+      "text": "拾起",
+      "english": "Pick Up"
+    },
+    {
+      "id": "PLASMA_SAW_BRUTE_DESC",
+      "text": "仅用等离子切割器击杀一只巨兽",
+      "english": "Kill a Brute using only the Plasma Cutter"
+    },
+    {
+      "id": "PLASMA_SAW_BRUTE_TITLE",
+      "text": "残暴至极",
+      "english": "Brutal"
+    },
+    {
+      "id": "PLAY_TITLE",
+      "text": "//开始游戏",
+      "english": "//Play"
+    },
+    {
+      "id": "POWER_NODE_10_DESC",
+      "text": "-",
+      "english": "-"
+    },
+    {
+      "id": "POWER_NODE_10_TITLE",
+      "text": "无人知晓",
+      "english": "No one Nodes"
+    },
+    {
+      "id": "POWER_NODE_15_DESC",
+      "text": "-",
+      "english": "-"
+    },
+    {
+      "id": "POWER_NODE_15_TITLE",
+      "text": "节点就是节点",
+      "english": "Node means node"
+    },
+    {
+      "id": "POWER_NODE_5_DESC",
+      "text": "-",
+      "english": "-"
+    },
+    {
+      "id": "POWER_NODE_5_TITLE",
+      "text": "我的节点啊！",
+      "english": "Oh Nodes!"
+    },
+    {
+      "id": "PREGNANT_KILL_NO_SAC_DESC",
+      "text": "在不打破腹囊的情况下击杀一只孕育者",
+      "english": "Kill a Pregnant without bursting their sac"
+    },
+    {
+      "id": "PREGNANT_KILL_NO_SAC_TITLE",
+      "text": "别伤着宝宝",
+      "english": "Don't harm the baby"
+    },
+    {
+      "id": "privacy",
+      "text": "隐私政策",
+      "english": "Privacy Policy"
+    },
+    {
+      "id": "PRIVACY_POLICY_URL",
+      "text": "http://tos.ea.com/legalapp/WEBPRIVACY/US/en/PC/",
+      "english": "http://tos.ea.com/legalapp/WEBPRIVACY/US/en/PC/"
+    },
+    {
+      "id": "prof_delete",
+      "text": "确定要删除此档案吗？",
+      "english": "Are you sure you want to delete this profile?"
+    },
+    {
+      "id": "PROFILE_LEVEL",
+      "text": "第{0}章",
+      "english": "Chapter {0}"
+    },
+    {
+      "id": "PROFILE1_NAME",
+      "text": "档案1",
+      "english": "Profile 1"
+    },
+    {
+      "id": "PROFILE2_NAME",
+      "text": "档案2",
+      "english": "Profile 2"
+    },
+    {
+      "id": "PROFILE3_NAME",
+      "text": "档案3",
+      "english": "Profile 3"
+    },
+    {
+      "id": "PULSE_DESC",
+      "text": "购买弹药无限的重型脉冲步枪，可在所有游戏模式中使用",
+      "english": "Purchase the Heavy Pulse Rifle with infinite ammo for use in all game modes"
+    },
+    {
+      "id": "REGISTER_POPUP",
+      "text": "要注册本游戏吗？注册后可免费获得一个能量节点，以及《死亡空间2》中的特别奖励。",
+      "english": "Would you like to register this game to receive a free Power Node as well as a special reward in Dead Space 2?"
+    },
+    {
+      "id": "REGISTRATION_ALREADY",
+      "text": "本游戏已注册。",
+      "english": "This game has already been registered."
+    },
+    {
+      "id": "REGISTRATION_FAILED",
+      "text": "登录失败，请检查邮箱和密码，或稍后重试。",
+      "english": "Login failed, please check your email and password or try again later."
+    },
+    {
+      "id": "REGISTRATION_SUCCESS",
+      "text": "恭喜！游戏注册成功。\n你已解锁一个能量节点以及《死亡空间2》中的特别奖励。",
+      "english": "Congratulations! The game has been registered.\nYou have unlocked a Power Node as well as a special reward in Dead Space 2"
+    },
+    {
+      "id": "RESET",
+      "text": "重置",
+      "english": "Reset"
+    },
+    {
+      "id": "SECRET_ ACH",
+      "text": "隐藏成就",
+      "english": "Secret Achievement"
+    },
+    {
+      "id": "SOUND_FX",
+      "text": "音效",
+      "english": "Sound FX"
+    },
+    {
+      "id": "SPANISH",
+      "text": "西班牙语",
+      "english": "Spanish"
+    },
+    {
+      "id": "SPEED_RUN",
+      "text": "极速通关",
+      "english": "Speed Run"
+    },
+    {
+      "id": "SPEED_RUN_DESC",
+      "text": "在2小时内通关游戏",
+      "english": "Complete the game in 2 hours"
+    },
+    {
+      "id": "SPEED_RUN_TITLE",
+      "text": "极速通关",
+      "english": "Speed Run"
+    },
+    {
+      "id": "STASIS_DISMEMBER_DESC",
+      "text": "用静滞配合等离子锯击杀一只尸变体",
+      "english": "Kill a Necromorph using Stasis and the Plasma Saw"
+    },
+    {
+      "id": "STASIS_DISMEMBER_TITLE",
+      "text": "别动，该抡锤子了！",
+      "english": "Stop, Hammer Time"
+    },
+    {
+      "id": "STASIS_HIT_10_DESC",
+      "text": "对10个敌人使用静滞",
+      "english": "Use Stasis on 10 enemies"
+    },
+    {
+      "id": "STASIS_HIT_10_TITLE",
+      "text": "保持冷静",
+      "english": "Stay Frosty"
+    },
+    {
+      "id": "STASIS_HIT_30_DESC",
+      "text": "对30个敌人使用静滞",
+      "english": "Use Stasis on 30 enemies"
+    },
+    {
+      "id": "STASIS_HIT_30_TITLE",
+      "text": "慢慢来",
+      "english": "Take your time"
+    },
+    {
+      "id": "STASIS_HIT_50_DESC",
+      "text": "对50个敌人使用静滞",
+      "english": "Use Stasis on 50 enemies"
+    },
+    {
+      "id": "STASIS_HIT_50_TITLE",
+      "text": "别动",
+      "english": "Freeze"
+    },
+    {
+      "id": "STOMP_KILL_EXPLODER_20_DESC",
+      "text": "踩死20只自爆者",
+      "english": "Stomp kill 20 Exploders"
+    },
+    {
+      "id": "STOMP_KILL_EXPLODER_20_TITLE",
+      "text": "与危险共舞",
+      "english": "Dancing with danger"
+    },
+    {
+      "id": "STOMP_KILL_EXPLODER_DESC",
+      "text": "踩死一只自爆者",
+      "english": "Stomp kill an Exploder"
+    },
+    {
+      "id": "STOMP_KILL_EXPLODER_TITLE",
+      "text": "危险买卖",
+      "english": "Risky Business"
+    },
+    {
+      "id": "STOMP_KILL_LURKER_20_DESC",
+      "text": "踩死20只潜伏者",
+      "english": "Stomp kill 20 Lurkers"
+    },
+    {
+      "id": "STOMP_KILL_LURKER_20_TITLE",
+      "text": "别踢宝宝！",
+      "english": "Don't kick the baby!"
+    },
+    {
+      "id": "STOMP_KILL_LURKER_DESC",
+      "text": "踩死一只潜伏者",
+      "english": "Stomp kill a Lurker"
+    },
+    {
+      "id": "STOMP_KILL_LURKER_TITLE",
+      "text": "踢宝宝！",
+      "english": "Kick the baby!"
+    },
+    {
+      "id": "STOMP_KILL_PREGNANT_20_DESC",
+      "text": "踩死20只孕育者",
+      "english": "Stomp kill 20 Pregnants"
+    },
+    {
+      "id": "STOMP_KILL_PREGNANT_20_TITLE",
+      "text": "擦擦脚！",
+      "english": "Wipe your feet!"
+    },
+    {
+      "id": "STOMP_KILL_PREGNANT_DESC",
+      "text": "踩死一只孕育者",
+      "english": "Stomp kill a Pregnant"
+    },
+    {
+      "id": "STOMP_KILL_PREGNANT_TITLE",
+      "text": "妈妈总说……",
+      "english": "Mother always said..."
+    },
+    {
+      "id": "STOMP_KILL_SLASHER_20_DESC",
+      "text": "踩死50个敌人",
+      "english": "Stomp kill 50 enemies"
+    },
+    {
+      "id": "STOMP_KILL_SLASHER_20_TITLE",
+      "text": "踩个痛快",
+      "english": "Stomping good time"
+    },
+    {
+      "id": "STOMP_KILL_SLASHER_DESC",
+      "text": "踩死一只镰刀怪",
+      "english": "Stomp kill a Slasher"
+    },
+    {
+      "id": "STOMP_KILL_SLASHER_TITLE",
+      "text": "砍这个试试！",
+      "english": "Slash this!"
+    },
+    {
+      "id": "STORE",
+      "text": "商店",
+      "english": "STORE"
+    },
+    {
+      "id": "STORE_HELP",
+      "text": "购买的DLC，所有档案都能用",
+      "english": "DLC purchases become available in all profiles"
+    },
+    {
+      "id": "STORY_DESC",
+      "text": "游玩主线剧情",
+      "english": "Play the main game"
+    },
+    {
+      "id": "SUBTITLES",
+      "text": "字幕",
+      "english": "Subtitles"
+    },
+    {
+      "id": "SURV_BCOMBO",
+      "text": "最高连击",
+      "english": "Best Combo"
+    },
+    {
+      "id": "SURV_BEST",
+      "text": "最佳",
+      "english": "Best"
+    },
+    {
+      "id": "SURV_BRUTE",
+      "text": "巨兽",
+      "english": "Brutes"
+    },
+    {
+      "id": "SURV_BTIME",
+      "text": "最佳时间",
+      "english": "Best Time"
+    },
+    {
+      "id": "SURV_BTOTAL",
+      "text": "最高总分",
+      "english": "Best Total"
+    },
+    {
+      "id": "SURV_COMBO",
+      "text": "连击",
+      "english": "Combo"
+    },
+    {
+      "id": "SURV_CREDITS",
+      "text": "获得信用点",
+      "english": "Credits Earned"
+    },
+    {
+      "id": "SURV_END",
+      "text": "无尽模式",
+      "english": "Endless"
+    },
+    {
+      "id": "SURV_ENDDESC",
+      "text": "没有时间限制，生命值不会自动恢复。打出连击能获得生命值和信用点奖励。",
+      "english": "No time limit, no auto health regeneration. Combos reward health and credits."
+    },
+    {
+      "id": "SURV_EXP",
+      "text": "自爆者",
+      "english": "Exploders"
+    },
+    {
+      "id": "SURV_LEVEL",
+      "text": "//关卡选择",
+      "english": "//Level Select"
+    },
+    {
+      "id": "SURV_LIMB",
+      "text": "断肢奖励",
+      "english": "Limb Bonus"
+    },
+    {
+      "id": "SURV_LURK",
+      "text": "潜伏者",
+      "english": "Lurkers"
+    },
+    {
+      "id": "SURV_MAPS",
+      "text": "地图选择",
+      "english": "Map Select"
+    },
+    {
+      "id": "SURV_MODE",
+      "text": "生存模式",
+      "english": "Survival Mode"
+    },
+    {
+      "id": "SURV_NORM",
+      "text": "普通",
+      "english": "Normal"
+    },
+    {
+      "id": "SURV_PREG",
+      "text": "孕育者",
+      "english": "Pregnants"
+    },
+    {
+      "id": "SURV_QUIT",
+      "text": "确定要退出吗？",
+      "english": "Are you sure you want to quit?"
+    },
+    {
+      "id": "SURV_RESTART",
+      "text": "确定要重新开始吗？",
+      "english": "Are you sure you want to restart?"
+    },
+    {
+      "id": "SURV_RESULTS",
+      "text": "结果",
+      "english": "Results"
+    },
+    {
+      "id": "SURV_SLASH",
+      "text": "镰刀怪",
+      "english": "Slashers"
+    },
+    {
+      "id": "SURV_SWARM",
+      "text": "群虫",
+      "english": "Swarms"
+    },
+    {
+      "id": "SURV_TIME",
+      "text": "时间",
+      "english": "Time"
+    },
+    {
+      "id": "SURV_TIMED",
+      "text": "夺命5分钟",
+      "english": "5 Minutes to Kill"
+    },
+    {
+      "id": "SURV_TIMEDDESC",
+      "text": "杀敌能增加时间，连击越高，信用点奖励越多。",
+      "english": "Kills buy more time. Higher combos award more credits."
+    },
+    {
+      "id": "SURV_TITLE",
+      "text": "//生存模式",
+      "english": "//Survival Mode"
+    },
+    {
+      "id": "SURV_TOTAL",
+      "text": "总计",
+      "english": "Total"
+    },
+    {
+      "id": "SURV_UBER",
+      "text": "超级",
+      "english": "Uber"
+    },
+    {
+      "id": "SURVIVAL_MAP_01",
+      "text": "矿区危机",
+      "english": "Miner Threat"
+    },
+    {
+      "id": "SURVIVAL_MAP_02",
+      "text": "爆破室",
+      "english": "The Boom Room"
+    },
+    {
+      "id": "SURVIVAL_MAP_03",
+      "text": "水处理厂",
+      "english": "Waterworks"
+    },
+    {
+      "id": "SURVIVAL_MAP_04",
+      "text": "毫无压力",
+      "english": "No Pressure"
+    },
+    {
+      "id": "SWARM_JUMP",
+      "text": "在任何群虫扑到你身上前，杀光整群群虫",
+      "english": "Kill a Swarm before any jump on you"
+    },
+    {
+      "id": "SWIPE",
+      "text": "滑动",
+      "english": "Swipe"
+    },
+    {
+      "id": "SWIPE_HINT",
+      "text": "向左或向右滑动，查看更多提示",
+      "english": "Swipe left or right for more hints"
+    },
+    {
+      "id": "TAB_DLC",
+      "text": "DLC",
+      "english": "DLC"
+    },
+    {
+      "id": "TAB_INVENTORY",
+      "text": "物品栏",
+      "english": "Inventory"
+    },
+    {
+      "id": "TAB_SHOP",
+      "text": "商店",
+      "english": "Shop"
+    },
+    {
+      "id": "TAP",
+      "text": "点击",
+      "english": "Tap"
+    },
+    {
+      "id": "TAP_TO_CONTINUE",
+      "text": "点击继续",
+      "english": "Tap to continue"
+    },
+    {
+      "id": "terms",
+      "text": "服务条款",
+      "english": "Terms of Service"
+    },
+    {
+      "id": "TERMS_SERVICE_URL",
+      "text": "http://tos.ea.com/legalapp/WEBTERMS/US/en/PC/",
+      "english": "http://tos.ea.com/legalapp/WEBTERMS/US/en/PC/"
+    },
+    {
+      "id": "THREE_NECK_SACS_SINGLE_PHASE_DESC",
+      "text": "在同一阶段内，打爆死亡触手怪颈部的3个囊包",
+      "english": "Bust 3 neck sacks on the Tentacle Monsters of Death in a single phase"
+    },
+    {
+      "id": "THREE_NECK_SACS_SINGLE_PHASE_TITLE",
+      "text": "效果拔群！",
+      "english": "Super Effective!"
+    },
+    {
+      "id": "TRAM_TO_FOOD",
+      "text": "食品加工区列车",
+      "english": "Food Tram"
+    },
+    {
+      "id": "TRAM_TO_MINES",
+      "text": "矿区列车",
+      "english": "Mines Tram"
+    },
+    {
+      "id": "TRAM_TO_TITAN",
+      "text": "泰坦碎片列车",
+      "english": "Titan Tram"
+    },
+    {
+      "id": "TRAM_TO_TUBE",
+      "text": "跨区交通隧道列车",
+      "english": "Tube Tram"
+    },
+    {
+      "id": "TRAM_TO_WATER",
+      "text": "水处理区列车",
+      "english": "Water Tram"
+    },
+    {
+      "id": "TRUE",
+      "text": "真",
+      "english": "TRUE"
+    },
+    {
+      "id": "TUTORIAL_AIM_TEXT",
+      "text": "点击屏幕右侧举起武器，按住并滑动来瞄准电源箱，再点一下就能开火。",
+      "english": "Tap the right side of the screen to raise your weapon. Touch and slide to aim at the power box. Tap again to fire."
+    },
+    {
+      "id": "TUTORIAL_AIM_TITLE",
+      "text": "瞄准／开火操作",
+      "english": "Aim/Fire Controls"
+    },
+    {
+      "id": "TUTORIAL_ALT_FIRE_PC_TEXT",
+      "text": "瞄准时，左右倾斜设备，就能让等离子光束旋转90度。",
+      "english": "While aiming, tilt the device left or right to rotate the plasma beam 90 degrees."
+    },
+    {
+      "id": "TUTORIAL_ALT_FIRE_PC_TITLE",
+      "text": "旋转操作",
+      "english": "Rotate Controls"
+    },
+    {
+      "id": "TUTORIAL_ALT_FIRE_TEXT",
+      "text": "左右倾斜设备就能切换射击模式。有些敌人用副攻击模式更容易对付，不妨多试试。",
+      "english": "Tilt the device left or right to change fire modes. Some enemies are easier to kill with secondary fire modes. Experiment!"
+    },
+    {
+      "id": "TUTORIAL_ALT_FIRE_TITLE",
+      "text": "副攻击操作",
+      "english": "Alt Fire Controls"
+    },
+    {
+      "id": "TUTORIAL_BENCH_TEXT",
+      "text": "靠近工作台，点击提示图标就能打开升级菜单。记得用能量节点升级RIG和武器，这可是保命的关键！",
+      "english": "Approach the Bench and tap on the indicator to access the upgrade menu. Upgrading your RIG and weapons with Power Nodes is vital!"
+    },
+    {
+      "id": "TUTORIAL_BENCH_TITLE",
+      "text": "升级工作台",
+      "english": "Upgrade Bench"
+    },
+    {
+      "id": "TUTORIAL_CORER_BEAM_TEXT",
+      "text": "按住屏幕并滑动，就能控制聚焦等离子光束的方向。",
+      "english": "Touch and slide on the screen to direct the concentrated plasma beam."
+    },
+    {
+      "id": "TUTORIAL_CORER_BEAM_TITLE",
+      "text": "取芯器光束操作",
+      "english": "Corer Beam Controls"
+    },
+    {
+      "id": "TUTORIAL_CORER_TEXT",
+      "text": "点击屏幕，就能发射四道高能等离子光束。",
+      "english": "Tap the screen to fire four sheets of supercharged plasma."
+    },
+    {
+      "id": "TUTORIAL_CORER_TITLE",
+      "text": "取芯器射击操作",
+      "english": "Corer Blast Controls"
+    },
+    {
+      "id": "TUTORIAL_END_LEVEL_TEXT",
+      "text": "靠近列车即可结束当前关卡，前往下一个地点。",
+      "english": "Approach the Tram to end the level and move to the next location."
+    },
+    {
+      "id": "TUTORIAL_END_LEVEL_TITLE",
+      "text": "登上列车",
+      "english": "Board the Tram"
+    },
+    {
+      "id": "TUTORIAL_FIRE_TEXT",
+      "text": "举起武器后，点击屏幕右侧就能开火。瞄准敌人的肢体，杀起来更快。",
+      "english": "Tap the right side of the screen with your weapon raised to fire. Target enemy's limbs to kill them quickly."
+    },
+    {
+      "id": "TUTORIAL_FIRE_TITLE",
+      "text": "开火操作",
+      "english": "Fire Controls"
+    },
+    {
+      "id": "TUTORIAL_HEALTH_REGEN",
+      "text": "生命值显示在护服背部的脊柱指示条上，并会慢慢恢复。",
+      "english": "Your health is displayed on the spinal comlun of your suit. Health regenerates slowly over time."
+    },
+    {
+      "id": "TUTORIAL_KINESIS_TEXT",
+      "text": "点击抓取图标，用动态牵引抓住物体。瞄准后再点一下，就能把它射出去。",
+      "english": "Tap the GRIP icon to use kinesis. Aim and tap to launch the object."
+    },
+    {
+      "id": "TUTORIAL_KINESIS_TITLE",
+      "text": "动态牵引操作",
+      "english": "Kinesis Controls"
+    },
+    {
+      "id": "TUTORIAL_LOCATOR_TEXT",
+      "text": "点击RIG图标，再点箭头图标，就能打开定位器。",
+      "english": "Tap on the RIG icon and then the arrow icon to access your locator."
+    },
+    {
+      "id": "TUTORIAL_LOCATOR_TITLE",
+      "text": "定位器指南",
+      "english": "Locator Guide"
+    },
+    {
+      "id": "TUTORIAL_LOOK_TEXT",
+      "text": "按住屏幕右半边并滑动，就能转动视角，查看周围。",
+      "english": "Touch and slide on the right half of the screen to look around."
+    },
+    {
+      "id": "TUTORIAL_LOOK_TITLE",
+      "text": "视角操作",
+      "english": "Look Controls"
+    },
+    {
+      "id": "TUTORIAL_MELEE_TEXT",
+      "text": "靠近电源箱，点击圆环打开箱子，再沿箭头向上滑动，就能挥出等离子锯。",
+      "english": "Get close to the Power Box, tap the ring to open it and swipe up on the arrow to swing your Plasma Saw."
+    },
+    {
+      "id": "TUTORIAL_MELEE_TITLE",
+      "text": "近战操作",
+      "english": "Melee Controls"
+    },
+    {
+      "id": "TUTORIAL_MOVE_TEXT",
+      "text": "按住角色并滑动，就能行走或横向移动。向上滑动就能奔跑。",
+      "english": "Touch and slide over the character to walk and strafe. Slide up to run."
+    },
+    {
+      "id": "TUTORIAL_MOVE_TITLE",
+      "text": "移动操作",
+      "english": "Movement Controls"
+    },
+    {
+      "id": "TUTORIAL_NODE_TEXT",
+      "text": "收集能量节点，之后就能在升级工作台升级RIG和武器。",
+      "english": "Collect Power Nodes and use them later to upgrade your Rig and weapons at Upgrade Benches"
+    },
+    {
+      "id": "TUTORIAL_NODE_TITLE",
+      "text": "能量节点",
+      "english": "Power Nodes"
+    },
+    {
+      "id": "TUTORIAL_O2_TEXT",
+      "text": "真空环境中，氧气会不断消耗。寻找氧气补给器补充氧气。",
+      "english": "Your oxygen will deplete while in a vacuum environment. Look for an O2 dispenser to refill."
+    },
+    {
+      "id": "TUTORIAL_O2_TITLE",
+      "text": "真空环境",
+      "english": "Vacuum Environment"
+    },
+    {
+      "id": "TUTORIAL_PLASMA_SAW_TEXT",
+      "text": "沿箭头向上滑动，即可挥动等离子锯。",
+      "english": "Swipe up along the arrow to swing the Plasma Saw."
+    },
+    {
+      "id": "TUTORIAL_PLASMA_SAW_TITLE",
+      "text": "等离子锯操作",
+      "english": "Plasma Saw Controls"
+    },
+    {
+      "id": "TUTORIAL_QUICK_TURN_TEXT",
+      "text": "双击角色，就能快速转身180度。",
+      "english": "Double-tap the character to quickly turn 180 degrees."
+    },
+    {
+      "id": "TUTORIAL_QUICK_TURN_TITLE",
+      "text": "快速转身操作",
+      "english": "Quick Turn Controls"
+    },
+    {
+      "id": "TUTORIAL_RELOAD_TEXT",
+      "text": "点击弹药显示就能装弹。",
+      "english": "Tap the ammo indicator to reload weapon."
+    },
+    {
+      "id": "TUTORIAL_RELOAD_TITLE",
+      "text": "装弹操作",
+      "english": "Reload Controls"
+    },
+    {
+      "id": "TUTORIAL_REMOTE_SAW_TEXT",
+      "text": "按住屏幕并滑动，就能操控遥控锯片。",
+      "english": "Touch and slide on the screen to steer the remote saw"
+    },
+    {
+      "id": "TUTORIAL_REMOTE_SAW_TITLE",
+      "text": "遥控锯片操作",
+      "english": "Remote Saw Controls"
+    },
+    {
+      "id": "TUTORIAL_SAW_SHOT_TEXT",
+      "text": "点击屏幕，即可发射一片威力强大的高速锯刃。",
+      "english": "Tap the screen to fire a powerful high velocity saw blade."
+    },
+    {
+      "id": "TUTORIAL_SAW_SHOT_TITLE",
+      "text": "锯刃发射操作",
+      "english": "Saw Shot Controls"
+    },
+    {
+      "id": "TUTORIAL_STASIS_TEXT",
+      "text": "瞄准时，点击角色背部的圆环，就能向门发射静滞能量。",
+      "english": "While aiming, tap the ring on the character's back to fire a stasis blast at the door."
+    },
+    {
+      "id": "TUTORIAL_STASIS_TITLE",
+      "text": "静滞操作",
+      "english": "Stasis Controls"
+    },
+    {
+      "id": "TUTORIAL_STOMP_TEXT",
+      "text": "靠近可踩碎的箱子，沿箭头向下滑动，就能把它踩开。",
+      "english": "Get close to the stomp box and swipe down on the arrow to smash it open."
+    },
+    {
+      "id": "TUTORIAL_STOMP_TITLE",
+      "text": "踩踏",
+      "english": "Stomping"
+    },
+    {
+      "id": "TUTORIAL_STORE_TEXT",
+      "text": "靠近商店，点击提示图标就能买东西。新护服、弹药和更多能量节点都能买到。",
+      "english": "Approach the Store and tap on the indicator to go shopping. You can buy new suits, ammo and extra Power Nodes."
+    },
+    {
+      "id": "TUTORIAL_STORE_TITLE",
+      "text": "商店",
+      "english": "Store"
+    },
+    {
+      "id": "TUTORIAL_TEST_TEXT",
+      "text": "教程测试消息——这是测试，只是测试。要是真出了事，大家早就一边尖叫一边逃命了。",
+      "english": "Test Tutorial message - this is a test, just a test.  If it were the real thing, people would be running and screaming."
+    },
+    {
+      "id": "TUTORIAL_TEST_TITLE",
+      "text": "测试教程",
+      "english": "Test Tutorial"
+    },
+    {
+      "id": "TUTORIAL_TILT_BUTTON",
+      "text": "瞄准时，点击弹药显示旁的按钮，就能在主攻击模式和副攻击模式之间切换。",
+      "english": "While aiming, tap the button next to the ammo indicator to switch between primary and secondary modes."
+    },
+    {
+      "id": "TUTORIAL_TRAM_TEXT",
+      "text": "击退成群来袭的尸变体，直到抵达目的地。",
+      "english": "Fight off the hordes of attacking Necromorphs until you reach your destination."
+    },
+    {
+      "id": "TUTORIAL_TRAM_TITLE",
+      "text": "列车战斗",
+      "english": "Tram Gameplay"
+    },
+    {
+      "id": "TUTORIAL_WEAPON_SELECT_TEXT",
+      "text": "点击RIG图标打开武器选择界面，再点一下想用的武器。",
+      "english": "Tap the Rig icon to bring up weapon select. Tap the desired weapon icon to select it."
+    },
+    {
+      "id": "TUTORIAL_WEAPON_SELECT_TITLE",
+      "text": "武器选择操作",
+      "english": "Weapon Select Controls"
+    },
+    {
+      "id": "TUTORIAL_ZERO_G_JUMP_TEXT",
+      "text": "瞄准能落脚的表面，再晃动设备，进行零重力跳跃。",
+      "english": "Aim at a walkable surface and shake the device to perform a Zero-G jump."
+    },
+    {
+      "id": "TUTORIAL_ZERO_G_JUMP_TITLE",
+      "text": "零重力跳跃操作",
+      "english": "Zero-G Jump Controls"
+    },
+    {
+      "id": "TUTORIALS",
+      "text": "教程",
+      "english": "Tutorials"
+    },
+    {
+      "id": "UI_ABOUT",
+      "text": "//关于",
+      "english": "//About"
+    },
+    {
+      "id": "UI_CREDITGO",
+      "text": "//制作团队",
+      "english": "//Credits"
+    },
+    {
+      "id": "UI_ACHIEVEMENTS",
+      "text": "//成就",
+      "english": "//Achievements"
+    },
+    {
+      "id": "UI_DIFFICULTY",
+      "text": "//选择难度",
+      "english": "//Select Difficulty"
+    },
+    {
+      "id": "UI_EXTRAS",
+      "text": "//其他内容",
+      "english": "//Extras"
+    },
+    {
+      "id": "UI_HELP",
+      "text": "//帮助",
+      "english": "//Help"
+    },
+    {
+      "id": "UI_INFO",
+      "text": "//信息",
+      "english": "//Info"
+    },
+    {
+      "id": "UI_LEVEL1",
+      "text": "1级",
+      "english": "Level 1"
+    },
+    {
+      "id": "UI_LEVEL2",
+      "text": "2级",
+      "english": "Level 2"
+    },
+    {
+      "id": "UI_LEVEL3",
+      "text": "3级",
+      "english": "Level 3"
+    },
+    {
+      "id": "UI_OPTIONS",
+      "text": "//选项",
+      "english": "//Options"
+    },
+    {
+      "id": "UI_PLAY",
+      "text": "开始游戏",
+      "english": "Play"
+    },
+    {
+      "id": "UI_PROFILE",
+      "text": "//选择档案",
+      "english": "//Select Profile"
+    },
+    {
+      "id": "UI_REGISTER_GAME",
+      "text": "//注册游戏",
+      "english": "//Register Game"
+    },
+    {
+      "id": "UI_USAGE_SHARING",
+      "text": "//使用数据共享",
+      "english": "//Usage Sharing"
+    },
+    {
+      "id": "UI_WALLPAPERS",
+      "text": "//壁纸",
+      "english": "//Wallpapers"
+    },
+    {
+      "id": "UNLOCK_HARD_TEXT",
+      "text": "你已解锁困难难度。真正的恐怖从这里开始。",
+      "english": "You have unlocked Hard difficulty. True terror starts here."
+    },
+    {
+      "id": "UNLOCK_NEWGAME+_EASY",
+      "text": "你已解锁简单难度的新游戏+。保留所有升级，再玩一次。",
+      "english": "You have unlocked New Game+ for Easy difficulty. Play again with all your upgrades."
+    },
+    {
+      "id": "UNLOCK_NEWGAME+_HARD",
+      "text": "你已解锁困难难度的新游戏+。保留所有升级，再玩一次。",
+      "english": "You have unlocked New Game+ for Hard difficulty. Play again with all your upgrades."
+    },
+    {
+      "id": "UNLOCK_NEWGAME+_NORMAL",
+      "text": "你已解锁普通难度的新游戏+。保留所有升级，再玩一次。",
+      "english": "You have unlocked New Game+ for Normal difficulty. Play again with all your upgrades."
+    },
+    {
+      "id": "UNLOCK_TITLE",
+      "text": "解锁",
+      "english": "Unlock"
+    },
+    {
+      "id": "UPG_AIR",
+      "text": "氧气",
+      "english": "AIR"
+    },
+    {
+      "id": "UPG_AIRSUPPLY",
+      "text": "供氧",
+      "english": "AIR SUPPLY"
+    },
+    {
+      "id": "UPG_CAP",
+      "text": "弹容",
+      "english": "CAP"
+    },
+    {
+      "id": "UPG_CAPACITY",
+      "text": "弹容",
+      "english": "CAPACITY"
+    },
+    {
+      "id": "UPG_DAMAGE",
+      "text": "伤害",
+      "english": "DAMAGE"
+    },
+    {
+      "id": "UPG_DMG",
+      "text": "伤害",
+      "english": "DMG"
+    },
+    {
+      "id": "UPG_DUR",
+      "text": "持续",
+      "english": "DUR"
+    },
+    {
+      "id": "UPG_DURATION",
+      "text": "持续时间",
+      "english": "DURATION"
+    },
+    {
+      "id": "UPG_ENERGY",
+      "text": "能量值",
+      "english": "ENERGY"
+    },
+    {
+      "id": "UPG_ENG",
+      "text": "能量值",
+      "english": "ENG"
+    },
+    {
+      "id": "UPG_HITPOINTS",
+      "text": "生命值",
+      "english": "HIT POINTS"
+    },
+    {
+      "id": "UPG_HP",
+      "text": "生命值",
+      "english": "HP"
+    },
+    {
+      "id": "UPG_MIN",
+      "text": "地雷",
+      "english": "MIN"
+    },
+    {
+      "id": "UPG_MINES",
+      "text": "地雷",
+      "english": "MINES"
+    },
+    {
+      "id": "UPG_REL",
+      "text": "装弹",
+      "english": "REL"
+    },
+    {
+      "id": "UPG_RELOAD",
+      "text": "装弹",
+      "english": "RELOAD"
+    },
+    {
+      "id": "UPG_SPD",
+      "text": "射速",
+      "english": "SPD"
+    },
+    {
+      "id": "UPG_SPEED",
+      "text": "射速",
+      "english": "SPEED"
+    },
+    {
+      "id": "UPG_WID",
+      "text": "光束宽度",
+      "english": "WID"
+    },
+    {
+      "id": "UPG_WIDTH",
+      "text": "光束宽度",
+      "english": "WIDTH"
+    },
+    {
+      "id": "UPGRADE_EVERY_WEAPON_DESC",
+      "text": "升级所有武器和装备",
+      "english": "Upgrade all weapons and equipment"
+    },
+    {
+      "id": "UPGRADE_EVERY_WEAPON_TITLE",
+      "text": "全面满级",
+      "english": "Maxed Out"
+    },
+    {
+      "id": "usage_01",
+      "text": "关闭使用数据共享",
+      "english": "Disable Usage Sharing"
+    },
+    {
+      "id": "usage_02",
+      "text": "开启使用数据共享",
+      "english": "Enable Usage Sharing"
+    },
+    {
+      "id": "usage_03",
+      "text": "通过共享游戏统计、设置、功能偏好、故障或事件数据等使用信息，帮助EA改进产品、服务和用户体验。这些信息不会以可识别你个人身份的方式分享给任何第三方。是否关闭使用数据共享？",
+      "english": "Help EA improve products, services and user experience by sharing usage information such as game statistics, settings, feature preferences and incident or event data.  This information will not be shared with any third party in a way that can personally identify you.  Disable usage sharing?"
+    },
+    {
+      "id": "usage_04",
+      "text": "本游戏的使用统计共享已关闭。通过共享游戏统计、设置、功能偏好、故障或事件数据等使用信息，帮助EA改进产品、服务和用户体验。这些信息不会以可识别你个人身份的方式分享给任何第三方。是否开启使用数据共享？",
+      "english": "Sharing of usage statistics has been disabled for this game.  Help EA improve products, services and user experience by sharing usage information such as game statistics, settings, feature preferences and incident or event data.  This information will not be shared with any third party in a way that can personally identify you.  Enable usage sharing?"
+    },
+    {
+      "id": "USAGE_SHARING",
+      "text": "使用数据共享",
+      "english": "Usage Sharing"
+    },
+    {
+      "id": "USE_HEADPHONES",
+      "text": "使用耳机可获得最佳体验。",
+      "english": "Use headphones for the best experience."
+    },
+    {
+      "id": "WARNING",
+      "text": "警告",
+      "english": "WARNING"
+    },
+    {
+      "id": "YES",
+      "text": "是",
+      "english": "Yes"
+    },
+    {
+      "id": "YOU_ARE_DEAD",
+      "text": "你已死亡",
+      "english": "You are dead"
+    },
+    {
+      "id": "UNLOCK_NEWGAME+_NIGHTMARE",
+      "text": "你已解锁噩梦难度的新游戏+。保留所有升级，再玩一次。",
+      "english": "You have unlocked New Game+ for Nightmare difficulty. Play again with all your upgrades."
+    }
+  ]
+}

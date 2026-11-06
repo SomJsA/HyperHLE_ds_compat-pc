@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at https://mozilla.org/MPL/2.0/.
+   -
+   - Parts of this file are derived from SDL 2's Android project template, which
+   - has a different license. Please see vendor/SDL/LICENSE.txt for details. -->
+
+<!-- Replace com.test.game with the identifier of your game below, e.g.
+     com.gamemaker.game
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:installLocation="auto"
+    android:versionCode="1">
+
+    <!-- Touchscreen support -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <!-- Game controller support -->
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.gamepad"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- External mouse input events -->
+    <uses-feature
+        android:name="android.hardware.type.pc"
+        android:required="false" />
+
+    <!-- Audio recording support -->
+    <!-- if you want to capture audio, uncomment this. -->
+    <!-- <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" /> -->
+
+    <!-- Allow downloading to the external storage on Android 5.1 and older -->
+    <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" /> -->
+
+    <!-- Allow access to Bluetooth devices -->
+    <!-- Currently this is just for Steam Controller support and requires setting SDL_HINT_JOYSTICK_HIDAPI_STEAM -->
+    <!-- <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" /> -->
+    <!-- <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> -->
+
+    <!-- Allow access to the vibrator -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- if you want to capture audio, uncomment this. -->
+    <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+        <!-- Example of setting SDL hints from AndroidManifest.xml:
+        <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
+         -->
+
+        <activity
+            android:name="org.touchhle.android.LauncherActivity"
+            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@android:style/Theme.Material.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="org.touchhle.android.MainActivity"
+            android:alwaysRetainTaskState="true"
+            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:process=":game"
+            android:preferMinimalPostProcessing="true" />
+
+        <provider
+            android:name="org.touchhle.android.DocumentsProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:icon="@mipmap/ic_launcher"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+    </application>
+
+</manifest>

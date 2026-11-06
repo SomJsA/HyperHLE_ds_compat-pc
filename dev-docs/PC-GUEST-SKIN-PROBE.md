@@ -1,0 +1,11 @@
+# Bounded PC guest skin entry probe
+
+`TOUCHHLE_DS_GUEST_SKIN_PROBE=1` plus an explicit `TOUCHHLE_DS_GUEST_SKIN_PROBE_TRIGGER` path. Both required, defaultOFF, Windowsx64 DeadSpace only. The controller creates this file only after actual native playable state/image/warm-up. Existence checked at most once per native present until armed. No changes to native arithmetic/output/FP state and no host input or screen recognition.
+
+Before patching, verify full692/716-byte functions and16-byte GetData helper fingerprints plus exact firstARMword. Known entries37f814/37fac8, firstinstructionPUSHr4-r7/LR. Probe replays exactly20little-endianstackbytes andSPwriteback then resumes original bodyatentry+4; originalLR (includingThumbreturnbit) retained. Unsupported stack/endian/execution-state restores own word and lets the original instruction execute. Unknown code never patched; restoration requires ownBKPT stillpresent. After64calls perentry restore originalPUSH and invalidateJIT; no counts inferred afterrestoration. DiskIPA untouched. No acceleration is claimed.
+
+Realproduction-JIT regression compares originalPUSH/body/POP with probe replay, allGPR/CPSR/stackbytes, bothARM/Thumbreturn; pure plan rejects underflow/misalignment. Must pass before actual gameplay. Replaying firstPUSH avoids nested guest-call bridge or replacing caller-saved registers/FP behavior merely to observe frequency. Actual triggering/calls/automatic restoration need native evidence.
+
+Context: profiler6530/cbab normal release foundDrawElements+Arrays ~0.263ms perobservedpresent inheldaimStore and~0.475ms indynamicmining sample; hostCPUskin/indexrange/submit zero inboth. This does not prove a specific guest function hot. Probe first asks whether the known original game functions actually execute. Full main-thread/passivehitch/performance/content/input/audio/hardware/finalR15 goals remain open; oldv5 immutable.
+
+Production-JIT regression2/2 passed (4m26s build,0.18s execution): exact GPR/CPSR/20stackbytes for ARM andThumbreturn; underflow/misalignment/LRbit plan checks. Restoration conflicts retain unknownword and invalidate staleJIT; after PUSH consumedSP/PC the handler never reportsunhandled. Probe scheduling/instruction-tick overhead is not a gameplay performance measurement.

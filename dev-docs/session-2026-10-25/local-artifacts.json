@@ -1,0 +1,1403 @@
+{
+  "recorded_at": "2026-10-25T02:40:16.816142+08:00",
+  "base_directory": "E:\\CodexProjects\\DeadSpaceLegacy",
+  "scope": "top-level files in named evidence/build directories plus native-save tree and installed executables",
+  "files": [
+    {
+      "path": "builds\\ending-head-circle-20261025\\manifest.json",
+      "bytes": 1097,
+      "sha256": "704b7351342451ca907993c88094d01b6ad19115c85c24a430715adfc5745d59"
+    },
+    {
+      "path": "builds\\ending-head-circle-20261025\\startup-smoke\\result.json",
+      "bytes": 242,
+      "sha256": "0be69d2930473503a46bd8779bcd0ded975e804df49a5583cda039abccfe7bef"
+    },
+    {
+      "path": "builds\\ending-head-circle-20261025\\startup-smoke\\startup-output.txt",
+      "bytes": 10394,
+      "sha256": "85e5a7a78f2a47f7b75457aa7005762dee774cc519f8dbf938b267042e81097c"
+    },
+    {
+      "path": "builds\\ending-head-circle-20261025\\startup-smoke\\touchHLE_default_options.txt",
+      "bytes": 18736,
+      "sha256": "833fc10ec90dd61973d54325727117be3f28c9b1d9b97e874ffa8d00274da1b6"
+    },
+    {
+      "path": "builds\\ending-head-circle-20261025\\startup-smoke\\touchHLE_log.txt",
+      "bytes": 9846,
+      "sha256": "91acf64482acacc0771b5444e10e11f0dc7ddff29f5fac37cbb7f6b379776315"
+    },
+    {
+      "path": "builds\\ending-head-circle-20261025\\touchHLE.exe",
+      "bytes": 31133696,
+      "sha256": "1d0a9e3b3308f50546e8a9352a7830ec2866e4971991c1cc57dbb579e66b9d80"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\boss-ending-obs.mp4",
+      "bytes": 37850535,
+      "sha256": "0e764cbaaf9f4d7da8ceb615c5298d18871aac6e4cc014027988c312d744cc41"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\build-head-fix.txt",
+      "bytes": 142336,
+      "sha256": "1347fd96743f85068b5fa4766d6a85104d637a5824177e6b3cca0d1ef00dea78"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\ending-contact-70-to-105.jpg",
+      "bytes": 75209,
+      "sha256": "4bcf0ac879fa6ae99ffb0a3588108a3291ac501f76d2741b0ca058868e58455d"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\evidence-manifest.json",
+      "bytes": 1205,
+      "sha256": "d88e7328d47f8d71eed6893e6b117fcd9d710b3261570d54292ca8788fcb3cc1"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\full-session-final-log.txt",
+      "bytes": 406896,
+      "sha256": "110f6b620f06f357928be9514bbfa78db5dbf2ab9bbe560d1f50de74a4aefcdc"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-after.json",
+      "bytes": 1667,
+      "sha256": "a95cce70c7fb05505d45cf1822a352f8b1d56a1b1a4e734b98e53bfb98628c51"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-before.json",
+      "bytes": 1667,
+      "sha256": "6bd7fd22615446131f43ac4e0823a5355d48167584f9a426c176621089d1f319"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-cleanup-targets.py",
+      "bytes": 1418,
+      "sha256": "f1b4abce11a2c06a37d85d0829e8d274fe14ba020f9047dabe82779ce057da0c"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-compare.py",
+      "bytes": 366,
+      "sha256": "912964d8f8cda74204722ad0b3b8b7215cd92c1dff92014c3110a8ca885ba914"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-names.py",
+      "bytes": 588,
+      "sha256": "b9e968b78467eea883ac9f2a204445a79e2baa56b71bb3d4687d0b41ddfe8fad"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-objects.py",
+      "bytes": 728,
+      "sha256": "5e87db0b7a58a619b84982e9317624fc79ad289477c5bbb38a7268a5b526545d"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-patch-tests.exe",
+      "bytes": 755712,
+      "sha256": "9f6fff612de9e5fc80c5039580b1e17d2e881386e1e7ebc32a77a8040a3bff12"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-patch-tests.pdb",
+      "bytes": 3043328,
+      "sha256": "bb86cf78824a6f2e26b5416bcfb6d613376d21815ce028b7d2889d5794a646e8"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-refs.py",
+      "bytes": 556,
+      "sha256": "e80d7fdb0d677e2f6c9c9781fe17c49c449f340f323f3eb18b1a044071a5bac0"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-submeshes.py",
+      "bytes": 484,
+      "sha256": "15db5c1b668d2c3e66f855d3798ee8f4d0627e3e9143aee662b72566919563d9"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\head-tree.py",
+      "bytes": 660,
+      "sha256": "1963d3f14a3aaf3f8771212f11476ffbd5c3a89c47314846e41e3d4f48533f05"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\inspect-head.py",
+      "bytes": 1788,
+      "sha256": "f4fdb74b9fba5aaef9263192e6b1757759df105e8ae859abdb683cf8572f8180"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\patch-test-wrapper.rs",
+      "bytes": 126,
+      "sha256": "40f9b2ad1da6b5a8d9391e4375a980bb4c7d57e48b9046269da9a3535d71f777"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\startup-smoke.py",
+      "bytes": 1711,
+      "sha256": "60b46adcacb0b61a3b6cf99c55fe530542bcb41a2685501fc19e7ce51e9a67ee"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\state-1792865354-f036252.dsstate",
+      "bytes": 60356628,
+      "sha256": "0e0f732bd766872b06ec812e1749e2aa5417140394255f0ef823566197e3d9b7"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\state-1792865381-f037353.dsstate",
+      "bytes": 60427516,
+      "sha256": "aff5de13bea3f6ffce879d36949fe6451b5ef5661a308a311af7fec5fb428d91"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\state-1792865422-f039261.dsstate",
+      "bytes": 60621644,
+      "sha256": "d93cf0f7f6c6b869e424f18b7da99438988ccb94854361769e3503584a472a3d"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\switch-to-carrie-arm.txt",
+      "bytes": 10460,
+      "sha256": "b6976eba423e7a55e7dc9eec8c624d1ccf0ec03e2f5f65badb4834a76831e169"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\touchHLE_log.txt",
+      "bytes": 400528,
+      "sha256": "8159382f0de144a293d65949fe6e21e80c92755446fc55ef28bddfa30f0b3c4c"
+    },
+    {
+      "path": "logs\\ending-face-20261025\\user-face-original.png",
+      "bytes": 645992,
+      "sha256": "5be5b298074e53fb58f4d04bdc329501c9c8d5f853d216933a76535f589dcc27"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\ActivateFog-arm.txt",
+      "bytes": 2404,
+      "sha256": "4b01b2b2fbf197e2fd0f6f3b747b3554e2a7c0be2ffdcf88890e0eccbf1c511f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\ActivatePolygonMode-arm.txt",
+      "bytes": 1200,
+      "sha256": "19da7d2b2eca00f8747e380f26a1103ca90e0b04ce6013eac5fac55add4d9ab8"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\baseline-and-launcher-hashes.json",
+      "bytes": 405,
+      "sha256": "6f5543383459e2f8bf5858f64e604657eaba186c42fde1e150ea7c14ef6e934e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\blackdetect.log",
+      "bytes": 2265,
+      "sha256": "9b1ebbc234a6e4acf4bad29c068d544bfd6cdcad50f368077dc01147ac0b3586"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\build.txt",
+      "bytes": 142611,
+      "sha256": "4ea7507a3730e63c5ec7763487d3b055e424f257ab68518aa9f5dfd38a9da57f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\comparison-depthwrite.jpg",
+      "bytes": 139964,
+      "sha256": "7dc3a39ab37e5dc6255ecec90063502c219f0262e7db71310643ec3357b019fc"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\comparison-final.jpg",
+      "bytes": 146497,
+      "sha256": "87d2b4c631d7cd362ab0119a2e479b564a37879b84b29b9324161b135298c59b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\encode.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\final-reference-match.json",
+      "bytes": 102,
+      "sha256": "b394cebffcd50222242d291ae58e9856cefb7bc897e844ddf0105a9e71faecad"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\interior-final.jpg",
+      "bytes": 183161,
+      "sha256": "a191f39f4524f1d90bdffe2ca2c61dad739c371e102f3872c24fefbbc93604ab"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\number-frames.ffilter",
+      "bytes": 130,
+      "sha256": "59cfb8d56c0d679e1c57c73356cd37a30473406e1204674a770572dfd50bab05"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\obs-full-60fps.mp4",
+      "bytes": 32302854,
+      "sha256": "0d869697c5f65ff4c56ddae3fb3679c7e2db6afe3f130ecb43a1fff861aea2e2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\obs.py",
+      "bytes": 1241,
+      "sha256": "1dc22820bb42ea835f7772112644197132749dcb08af8aaca4807f416aaf0e86"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\opening-fix-60fps.mp4",
+      "bytes": 161342342,
+      "sha256": "e52eb00fba7bd4fb524afdf0e10fd857a52ce41381615b45167b37a22ee08f45"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\opening-review.jpg",
+      "bytes": 122875,
+      "sha256": "8fad0cf858c88255a5c8aa6eb941d7f8d8c728609bfbaa3c340a664ca1d2cde8"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00001_f004200.ppm",
+      "bytes": 460815,
+      "sha256": "ae333836ab1ea5882ebc16be4909b35e87a7a4586c02d3da42309b3b8a58ef1a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00002_f004260.ppm",
+      "bytes": 460815,
+      "sha256": "f1ea211eb25d70b1d0f607ce0ee975c0ecae52c5942731226d5b7c2febe90380"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00003_f004320.ppm",
+      "bytes": 460815,
+      "sha256": "bd650ae3d645c4f4609eb72c89d416f72c4857a53be9b9ad214482f08bfa6ed7"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00004_f004380.ppm",
+      "bytes": 460815,
+      "sha256": "ed991fb058a5ad386457558ae223049a717266d95afe09219bb66cdb270c6a83"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00005_f004440.ppm",
+      "bytes": 460815,
+      "sha256": "6706546fa05e006d7ddea1aa38658fed6c4f9dc72f27eb40ea8dc93c0d9ae8df"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00006_f004500.ppm",
+      "bytes": 460815,
+      "sha256": "45033e760e2ee4eec1dafd8bca8e2f881281fedbdfd4acf5226550a6ec297f0c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00007_f004560.ppm",
+      "bytes": 460815,
+      "sha256": "3d58f06244d3c0b2f564dd5cdbc037befdeb667ff019d2ef84278ff5a97a3d08"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00008_f004620.ppm",
+      "bytes": 460815,
+      "sha256": "74ebea3aa3fe13e94eecc1f16ec3ac7f284f4e5cba3a380a6ae53b71f930566a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00009_f004680.ppm",
+      "bytes": 460815,
+      "sha256": "c9c5a069b88d5eb18d38f16bb09769a235567e0189d24fb7942a31c4f60587ca"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00010_f004740.ppm",
+      "bytes": 460815,
+      "sha256": "1d303c922762d00773e47d7d5752532b4f9a9d6bbf987c3ff9bdd432a7048fb4"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00011_f004800.ppm",
+      "bytes": 460815,
+      "sha256": "bfe84119b081eb0fa2fa28378296144e82ccb79ac7c9525d665be6f5232c9057"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00012_f004860.ppm",
+      "bytes": 460815,
+      "sha256": "6599ada203b09a7f41addebf90b8467da54f807a55889e671201466b44cf0a80"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00013_f004920.ppm",
+      "bytes": 460815,
+      "sha256": "5a7a619ac0142f20d68abd128b647561960cf1372b832cd01f4106ee6fa55679"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00014_f004980.ppm",
+      "bytes": 460815,
+      "sha256": "c8ba8f574f50056cc83e387a045af1e97da44b9ec9323ba23a57fb0fb53a8eb2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00015_f005040.ppm",
+      "bytes": 460815,
+      "sha256": "f96099764f8f3e18bb16394c44061bb8cdff5d9d91f2441b7041ebe7ed827506"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00016_f005100.ppm",
+      "bytes": 460815,
+      "sha256": "8980aebd3deda78fbf4a2071d4f712b357f9721dd12286dcfd4fe464a19e7648"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00017_f005160.ppm",
+      "bytes": 460815,
+      "sha256": "5c7d4a9513fa0a196b57da76c57bda08caecefe85e0f604e670bb1a9d09812ae"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00018_f005220.ppm",
+      "bytes": 460815,
+      "sha256": "eb66457f79359911a66fec1b05c3384b7dc5f11d06ecebb3405a663ef303daf5"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00019_f005280.ppm",
+      "bytes": 460815,
+      "sha256": "3e7bee47844a606225341653956528eff95eb318b15d68425c4300c80c973271"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00020_f005340.ppm",
+      "bytes": 460815,
+      "sha256": "f1e3ae33beafd8f142b17e75d660b0fb243c049a0278f808b837d97a4d232816"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00021_f005400.ppm",
+      "bytes": 460815,
+      "sha256": "8a2134c93801e1b3c148d688989216c63a83f4e51c8bb1b09ee4e709aa4abfdc"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00022_f005460.ppm",
+      "bytes": 460815,
+      "sha256": "b2e57e847e4836833c5d6f0326a9dbd94bf2204222778745c51f14dd8e5a4c44"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00023_f005520.ppm",
+      "bytes": 460815,
+      "sha256": "f8ce785857ddd7901ed870f87d91b8634d4d2514d8bcf78e88cf02c55f1513e7"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00024_f005580.ppm",
+      "bytes": 460815,
+      "sha256": "5b62b84482246bd748141fd71466d165f721fc0238b4513860e266869c9cfe22"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00025_f005640.ppm",
+      "bytes": 460815,
+      "sha256": "83dc19722ccc4f160b9e853c6fddf7f1d6b18920d832aa182130d269ac27a63d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00026_f005700.ppm",
+      "bytes": 460815,
+      "sha256": "a9ae4654a9b1dc3e01bf878b5303322132520b55a2de4f9192428919aa21fb15"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00027_f005760.ppm",
+      "bytes": 460815,
+      "sha256": "52fa28581f744953422fee2a2548d758ba19a611ff4aef61f9bd9fe68859dcb9"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00028_f005820.ppm",
+      "bytes": 460815,
+      "sha256": "4ac15fee554c3ca7855a5f1d4f20152f7de26a4693713a7a789b86781cbc26da"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00029_f005880.ppm",
+      "bytes": 460815,
+      "sha256": "049cd1b2a58b38c9f0e589d6a89f57ef6c9ae2e4c51fd6c4fc314bc20ac50853"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00030_f005940.ppm",
+      "bytes": 460815,
+      "sha256": "98864c68af031d1bccbae89ad4fb7349fba934d3113f914269d7ea7a4b449baf"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00031_f006000.ppm",
+      "bytes": 460815,
+      "sha256": "7691cd4a2b0abe9ed61234d41769291b957311169132a52a5d3c9605658b1680"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00032_f006060.ppm",
+      "bytes": 460815,
+      "sha256": "595c244d78849fbae4209111d1627d142fa50e2b794ba90e69e6dec48862595e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00033_f006120.ppm",
+      "bytes": 460815,
+      "sha256": "710b8b9231b05d6840cfee02b47f97e156a70dd5d08af4bbf6d7c67932c907ac"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00034_f006180.ppm",
+      "bytes": 460815,
+      "sha256": "6130a2081d1964c2fdc5412fac96aa3e91ac39c69e02d756afbba8120676568b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00035_f006240.ppm",
+      "bytes": 460815,
+      "sha256": "dfe09f2d86dc41749c41b0b45f83f81bc2446ba429960e25174cd3c8e56013a3"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00036_f006300.ppm",
+      "bytes": 460815,
+      "sha256": "59abb54384c95b0f30915df536982721f24c0d9a616bef18ffe1a30736ddcc79"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00037_f006360.ppm",
+      "bytes": 460815,
+      "sha256": "6597a9578d924617f4a5c8cb88c283da4aa6794483bce9a360eb98dbec8405be"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00038_f006420.ppm",
+      "bytes": 460815,
+      "sha256": "ea26cf522ab4c1de2218023e3579eabdd8ccc0460a890af82a5e0dbbb8dafd26"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00039_f006480.ppm",
+      "bytes": 460815,
+      "sha256": "52d50ecb898ca4d23f8ae6d542654a735e733bc276347b5d7ac6a9ded291dd3b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00040_f006540.ppm",
+      "bytes": 460815,
+      "sha256": "0205d507f4b1d8a6fd28bd3123d45e094a177d6cc9634049a7051caefcf6b34b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00041_f006600.ppm",
+      "bytes": 460815,
+      "sha256": "7f0ff2b56d9fe184392f04c6b7671886113b68b6aa51bd7868c2a08e0764ef3e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00042_f006660.ppm",
+      "bytes": 460815,
+      "sha256": "8b1c812c24017d8036811f55706951c17eebd8223adb19e2a061670572826623"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00043_f006720.ppm",
+      "bytes": 460815,
+      "sha256": "d9f32c47a9677c7246016f01a239eeac979bf4ea67c610b0a8cd85e4d215016e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00044_f006780.ppm",
+      "bytes": 460815,
+      "sha256": "485892f01d6b21cf09ea65fef08372b4f6b152f022138c097a63751dc6323358"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00045_f006840.ppm",
+      "bytes": 460815,
+      "sha256": "ed48745e0f638e76ac8fa49f384afba187f0da2ce97978c440ed49289e737db1"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00046_f006900.ppm",
+      "bytes": 460815,
+      "sha256": "53acce50cdaf35e28623274bc00eda826698f21304369a1633bd193e0abcf25d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00047_f006960.ppm",
+      "bytes": 460815,
+      "sha256": "6373c563f37be6e29578caf47ffd5cfc9177907b4d1cc447692b382dd3c46ebd"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00048_f007020.ppm",
+      "bytes": 460815,
+      "sha256": "17b223e51f021de5fe4f2f2de4fff9b398fef19540a2e583fe3eb56910308e1d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00049_f007080.ppm",
+      "bytes": 460815,
+      "sha256": "ff34199f371b8183b3128dbda5c979b3ada6cb78dce6cf7a9d23c9c43c11565c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00050_f007140.ppm",
+      "bytes": 460815,
+      "sha256": "56ed575719dcf62d0a1ad352bcab8ddbe34a2e21de329077854f0920429dc383"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00051_f007200.ppm",
+      "bytes": 460815,
+      "sha256": "1e01edcd4f6a0daf78649fcb539b4bb931153b56c40590f28e97399aa164e758"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00052_f007260.ppm",
+      "bytes": 460815,
+      "sha256": "a2a6c47d25b0eaf95a066b71ba34f69d0b8afbdaf040a5f9455aa05c5ce9ba98"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00053_f007320.ppm",
+      "bytes": 460815,
+      "sha256": "b869c24daefcac79f6c07c7fc3fd481f7cbf6cff119a17218cb06f554ada427f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00054_f007380.ppm",
+      "bytes": 460815,
+      "sha256": "e6b5c35f53d72c960dad2fdbe6786b04d15c262e575145ab00b5d962e792bf77"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00055_f007440.ppm",
+      "bytes": 460815,
+      "sha256": "d0542448617bf7a46127bdfc289aeb5114c9e6f96a1e04590f7413ff6372f4ac"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00056_f007500.ppm",
+      "bytes": 460815,
+      "sha256": "92920ab9d027230828f37642210a50eca996e18128a74e0ff6f6a67535b4b0ea"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00057_f007560.ppm",
+      "bytes": 460815,
+      "sha256": "db770768628f2b67dab64ce95e49ee6c94b302e1b6db2a6948a55ab71a09e529"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00058_f007620.ppm",
+      "bytes": 460815,
+      "sha256": "76da79c6e9f929692536185dda95098fcc18509b322b8f8cdbe3efbd90de757c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00059_f007680.ppm",
+      "bytes": 460815,
+      "sha256": "7ecc4c4ba84fbe83485ce6cc7d05adbdfc1a97989bc84e717845c94cb84e6755"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00060_f007740.ppm",
+      "bytes": 460815,
+      "sha256": "f6f6955284c7989ddc8023da9b2913b8e286e06b54292f061070cdf47416c886"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00061_f007800.ppm",
+      "bytes": 460815,
+      "sha256": "e74b4cac06e923cd3fd1737a3b3acd44cbd17e23b6df6ac2017702ecb9236cb0"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00062_f007860.ppm",
+      "bytes": 460815,
+      "sha256": "910e03bebd58e5ecde2a1bb555473c497eeba9078f1e2f28720905a42cfd46a2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00063_f007920.ppm",
+      "bytes": 460815,
+      "sha256": "d199fbbffe1a716703548c0817b24a592892fd7cc7311e5df04bcd25e10f265d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00064_f007980.ppm",
+      "bytes": 460815,
+      "sha256": "0308441e8cf522512313c47052bf83e2199554fe438dd2c12a50a44027bcd3da"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00065_f008040.ppm",
+      "bytes": 460815,
+      "sha256": "bb38077c6fe86e4be9eb07cefc3a3c3476662d8e6f5899a1b5fe734d44b97cbf"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00066_f008100.ppm",
+      "bytes": 460815,
+      "sha256": "4ac17d42b6be44b6d8f372228249ec178c133606782e8c6896010d72f10f17c1"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00067_f008160.ppm",
+      "bytes": 460815,
+      "sha256": "bb6ee47c3afccdb3d7a8d0820bebccbb9ec5933f2f9599a3e1dcfa81050f8462"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00068_f008220.ppm",
+      "bytes": 460815,
+      "sha256": "b89652a84c072380e281e590d35749aae341f651dee0f5016e698e0511e2c50c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00069_f008280.ppm",
+      "bytes": 460815,
+      "sha256": "65786a2fc94750fa9b30f9ee67583e34a92ea8f12eda93b74f804a3c92f3ae42"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00070_f008340.ppm",
+      "bytes": 460815,
+      "sha256": "f68d755611310184198e0ba562aba0a70cc10dd2e8854f35965e02e61a3565ce"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00071_f008400.ppm",
+      "bytes": 460815,
+      "sha256": "e769ede175a780356cfa346fa7b4532933ac451dc18b1ef53094e0c3a6d40f90"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00072_f008460.ppm",
+      "bytes": 460815,
+      "sha256": "e30393776767b85e0221bf0c2a9a1534b50181914437a88980214c72923776e5"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00073_f008520.ppm",
+      "bytes": 460815,
+      "sha256": "1828a137adfe43671c672df61a8e31c4b57c83f28a5ea22b15012abb7923c4d2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00074_f008580.ppm",
+      "bytes": 460815,
+      "sha256": "7d432a3645a288d8d4c82fdd8d447f3d5aba94b22527d8e0452a6516455ef223"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00075_f008640.ppm",
+      "bytes": 460815,
+      "sha256": "94997f18101075160bdb86205a84290b69cb7e2d666fef0c78c53ccbce8008bb"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00076_f008700.ppm",
+      "bytes": 460815,
+      "sha256": "7fc34fbbc2b0cbb5f904f6fd03cca58ff3d91289ce22277b26decbda3533702f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00077_f008760.ppm",
+      "bytes": 460815,
+      "sha256": "0c3637167186549f0379c87811a08616eea30b9638dc5619d0897517096bb011"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00078_f008820.ppm",
+      "bytes": 460815,
+      "sha256": "7901bbc10edec573f099d633755c0b42945c0854e83da1ad25f17902b9f3e70a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00079_f008880.ppm",
+      "bytes": 460815,
+      "sha256": "cd49a9e7cacde66a8354c1e9efaf8bed029f1927bf2ae65d13d3bce3baa5e4a0"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00080_f008940.ppm",
+      "bytes": 460815,
+      "sha256": "b279cab0ad86784f3c14d2ec961a2348f079151cb196f7aa784831ea6f686b4c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00081_f009000.ppm",
+      "bytes": 460815,
+      "sha256": "56cf3f7312f26aa52f942dd2819633e9cf682c76fe4c521d61fc81da93e969c2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00082_f009060.ppm",
+      "bytes": 460815,
+      "sha256": "8517c26c6d2d4c65e735fdd06308208c245521c1f1b82aa864adb92ec4e1c385"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00083_f009120.ppm",
+      "bytes": 460815,
+      "sha256": "66a71436731e1ff7fd1591aefcaca72ef452af3a3e5a9e9c8045af2d2ad2f526"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00084_f009180.ppm",
+      "bytes": 460815,
+      "sha256": "77ed83c0fab3af3b0ec3f19fbfb831c484f807676af44345982fc70709cb8e95"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00085_f009240.ppm",
+      "bytes": 460815,
+      "sha256": "2bf43d01020fd4fbb38f011a9cb7f4c5bf2040e73627b592334dc3849989c138"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00086_f009300.ppm",
+      "bytes": 460815,
+      "sha256": "1db16cc2c1b4515e1581f275908cbfb463ce78509523b3e21c85ac275fb5fc6c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00087_f009360.ppm",
+      "bytes": 460815,
+      "sha256": "d3454d2b450dac219fea0b44f92178e80937cc41ea00a9a0e3e868fad5a602a4"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00088_f009420.ppm",
+      "bytes": 460815,
+      "sha256": "3c7ee10a48af51029216cb02ed7ad9a663572d7e969bb74cfa4b37b9be409a48"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00089_f009480.ppm",
+      "bytes": 460815,
+      "sha256": "c5367648a5306772df66ddfc6726193cad580bd70040d16aeb0f24e24d682a2f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00090_f009540.ppm",
+      "bytes": 460815,
+      "sha256": "13c0aff25ff1c7a8f5dc5f750deb57f7bf32e7e8d76eab350e5a066b87290abd"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\present_00091_f009600.ppm",
+      "bytes": 460815,
+      "sha256": "265ec6a53c8938910a681a58892249d17a1320acc164e4d8dbcc37e4ea8c2531"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\previous-touchHLE_log.txt",
+      "bytes": 297728,
+      "sha256": "ca1e39dc04a3d8960d352d8f4cceb4ec2f9bea19e347e3f99db0078e6faeaa5d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\record-result.json",
+      "bytes": 90,
+      "sha256": "b6233e9780194b86d3c2e93c2d0a7528cfc7ef8022e113637eccfe613e3c5be6"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\record-start.txt",
+      "bytes": 35,
+      "sha256": "e7212b48d71b5d763326740afc861f8500bddde98b6c449f5d049415d9ad49e8"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\reference-match.json",
+      "bytes": 84,
+      "sha256": "6ae6e2dc7ab19ddf6db6c3e3e84fbde07e885c0bc08911583f04fd71b9ccf398"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\review-partial-black-3508-3556.jpg",
+      "bytes": 197912,
+      "sha256": "3ee31514bc33956d5915a9065947e5a0d5be84680237990110239250033e3105"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\review.py",
+      "bytes": 800,
+      "sha256": "358aa6ab2dabdc8ca5f20bbf401ca8ab89f4830bd7218d02e542a0c7416d9a30"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\rock-final.jpg",
+      "bytes": 190660,
+      "sha256": "d9fb2e01bbfade4acda6fba904951673cb58aa8dbbf4bd9bff3d0f28f863179b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\runtime-manifest.json",
+      "bytes": 244,
+      "sha256": "31a91e573cb11bf33f9cd2f674d8e4b54ac00df66b9e831ac68c6315f3d00c2f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00001_f004860.ppm",
+      "bytes": 460815,
+      "sha256": "45f4b0985f3dc4554c6f2603b4dab4898d8dbe718a3ff897afd40d095a4115e0"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00002_f004920.ppm",
+      "bytes": 460815,
+      "sha256": "a6fae078f0c5fafd9fb2643c6f1cb46893b9e3b77b8fe645dccb0daa43eb8d50"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00003_f004980.ppm",
+      "bytes": 460815,
+      "sha256": "f837ba7538204eef892b95650fe6089e6cc0a4506a6520e7a36d12820ab6dcea"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00004_f005040.ppm",
+      "bytes": 460815,
+      "sha256": "f12c6687d4817d9999d03319a4848b37f79c09e4916ed4c9ab8257d9d91e1ec4"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00005_f005100.ppm",
+      "bytes": 460815,
+      "sha256": "becb539ce3cb3340cda8e1bf13898023627d2e5a2d228b299179bae9f0ba72b8"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00006_f005160.ppm",
+      "bytes": 460815,
+      "sha256": "fe4f0d8bb4d4cb16deb7baec58cb16ac1a170cd1d1c41e729b790aae0864d13a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00007_f005220.ppm",
+      "bytes": 460815,
+      "sha256": "60ea6f91a689ef106eb3f0cb191e0db98628824b80e1aca7d1a1d50b1648e0a4"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00008_f005280.ppm",
+      "bytes": 460815,
+      "sha256": "abdada804d44ea447a24eeab85094118ea0650e53d1d61e6aff001f80d2f0e6d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00009_f005340.ppm",
+      "bytes": 460815,
+      "sha256": "802a9cab1a93d15dcddfcee08b57fbe7b824ec7e67e2e3587b66e91b350ff2f5"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00010_f005400.ppm",
+      "bytes": 460815,
+      "sha256": "ef471c78bacd2708c135571f5c5695d3e4946e541b2b0b961c720f71ed806529"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00011_f005460.ppm",
+      "bytes": 460815,
+      "sha256": "51882fc59aa86d675d99ef5d18dba37d9887dd2a03ae0bbdd17c5de0ede59ca5"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00012_f005520.ppm",
+      "bytes": 460815,
+      "sha256": "4c7015f1f46b63cb5f0610206410b2cb972281763903e9c6079711a030762ebf"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00013_f005580.ppm",
+      "bytes": 460815,
+      "sha256": "f16a67d53139e637391f9f4bc7a475d57b15bad6be0d4de5acb44320a7f8cda9"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00014_f005640.ppm",
+      "bytes": 460815,
+      "sha256": "e2a55d1816424a31b7ef208a82976fc7a6bcdab483a6addcc3358b5d55c8e209"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00015_f005700.ppm",
+      "bytes": 460815,
+      "sha256": "933d97329bf9a49e02176c222c717df25a99c731dc58303b3e1ee89b4cf13fb1"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00016_f005760.ppm",
+      "bytes": 460815,
+      "sha256": "1b55bf71558bbe10ee3932b5110abcb2aadb069bd5f86f3c6584a8880ff10c06"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00017_f005820.ppm",
+      "bytes": 460815,
+      "sha256": "56c867b0f34df974f1c0f12b0a952a0a8776fa0aa573cddfd49f8339ea514698"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00018_f005880.ppm",
+      "bytes": 460815,
+      "sha256": "6e6ac295dcb5be161da47d47fa665ecf95563d780db2a90daf7b7e409c4da369"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00019_f005940.ppm",
+      "bytes": 460815,
+      "sha256": "eedfee4ff607b48d8ee19f0dba23b194fb4f562e3f0bcaaa01b2d069772aab2c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00020_f006000.ppm",
+      "bytes": 460815,
+      "sha256": "64e7dd88e6ec7d321e9d3398e8674acb9f28180697f9511b1968fdd191cc1aad"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00021_f006060.ppm",
+      "bytes": 460815,
+      "sha256": "ceeae3f11eb3fb20bc2fac69a168fa58b5029ae273e7667fbbdc41a474b8b51c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00022_f006120.ppm",
+      "bytes": 460815,
+      "sha256": "8d51979b456c3718e3eaea70530f2fa28c8c4cc2294b04696b341c27d5d2060f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00023_f006180.ppm",
+      "bytes": 460815,
+      "sha256": "6586aafdc8a85775a39444b647e5b4f4a0e95fc05dddba1e29f071a154984c68"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00024_f006240.ppm",
+      "bytes": 460815,
+      "sha256": "5ab9a90f803b4a15aea3a05db47c520507268c9b3215d283f21a6ea28da6a1ea"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00025_f006300.ppm",
+      "bytes": 460815,
+      "sha256": "b74472ea67aee949a0969df63e6418e14059f6cf9debe22ad4c45d62592e7f83"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00026_f006360.ppm",
+      "bytes": 460815,
+      "sha256": "eb3a3b2ee0eba2470f3e0618b6fcdc5b04e7571b5e6d35b6c00376290f482c1c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00027_f006420.ppm",
+      "bytes": 460815,
+      "sha256": "82a2994d5bd8d80ce424065c324fca3cd32de632ea8d6d62c0ca39959f8bb601"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00028_f006480.ppm",
+      "bytes": 460815,
+      "sha256": "d4a3e775cbd76e4bd7665366e3c97693231ad14093d270653e49c70f1b1bb90f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00029_f006540.ppm",
+      "bytes": 460815,
+      "sha256": "3e866a46027633ee62703951cb8d499914a930e7ee365e641643bcfa8514418e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00030_f006600.ppm",
+      "bytes": 460815,
+      "sha256": "c5f1f675f33dd012a034c6e0fb227c07bbd4110806cb01a7352aace8f413d674"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00031_f006660.ppm",
+      "bytes": 460815,
+      "sha256": "aa8397659149eb11923d6f6e98190fdcf8b548d6c6e2e58555cf3efd4397421a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00032_f006720.ppm",
+      "bytes": 460815,
+      "sha256": "ba813bd58d949cbda7bd57d83ba82f9c94ff30ffe89d2a57149942c34e42aedc"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00033_f006780.ppm",
+      "bytes": 460815,
+      "sha256": "4cb4ce8b3a25566bbd753e01eb2ad2f9467ed30388c394cdfc93544ae500b7d4"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00034_f006840.ppm",
+      "bytes": 460815,
+      "sha256": "ebcaba1441b3f97b1d2ab6e1f9d65e6aa616adfb5c8817b307bd55f277a16ea2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00035_f006900.ppm",
+      "bytes": 460815,
+      "sha256": "a3b37bf243c74fb711e702a624b09768ea6892075e8b67326435a264099cf69b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00036_f006960.ppm",
+      "bytes": 460815,
+      "sha256": "b472e52ba2db31978ce02a88190338a5b0e509734c3ac6939d370ebd8db9de2a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00037_f007020.ppm",
+      "bytes": 460815,
+      "sha256": "dadc1360b0cbcb9d34bde63f090f37c35175f8463ca380b173ac37eac416e19d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00038_f007080.ppm",
+      "bytes": 460815,
+      "sha256": "8a1270e3f06348b975f3fc4745d36fb7f44da617cfa6e6a6056042ca5b1765e4"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00039_f007140.ppm",
+      "bytes": 460815,
+      "sha256": "98bb02584a76cbee2e90dc13fb4dcb0f61969bf4a5ebde49741c9c9878e6e242"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00040_f007200.ppm",
+      "bytes": 460815,
+      "sha256": "10689a0be88c2408296ec770ff442bc6e7941ec4ecd9cf16d163316658dd9d04"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00041_f007260.ppm",
+      "bytes": 460815,
+      "sha256": "c09597839440418be2a2d56f5b635165280c782de2cdfac145ba40109c40805e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00042_f007320.ppm",
+      "bytes": 460815,
+      "sha256": "2a0f403d6580bf0d5156d54ee42c0ba302437795c2eacc5aa84648baa838ff5d"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00043_f007380.ppm",
+      "bytes": 460815,
+      "sha256": "0ff027493e8e0cca24feb2d5914aa1e08542c04660b57228fe45ffe9cd46a33a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00044_f007440.ppm",
+      "bytes": 460815,
+      "sha256": "a87601d04ce85088e54618105c9e91b14dd065fa44ff1ea0e20baffaf5cf07c6"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00045_f007500.ppm",
+      "bytes": 460815,
+      "sha256": "e86d744de10d393861e297ba1bb12e2a42e90dedfddba0f11b632f64bf5c9c15"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00046_f007560.ppm",
+      "bytes": 460815,
+      "sha256": "79718e7a58f6a70d21cc28df38c1fbe8532591946a3213031ae856fbefe8f74b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00047_f007620.ppm",
+      "bytes": 460815,
+      "sha256": "335548e481945cf975e5a218f0b22e0d1faf68032ff851fc8152e8d4280428cf"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00048_f007680.ppm",
+      "bytes": 460815,
+      "sha256": "20ae99f39c7534027b706afd03b6ef66cc1d453a73608cbf655ae37987977180"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00049_f007740.ppm",
+      "bytes": 460815,
+      "sha256": "cd052e764d8aed1d246f4525ac3d97c9a5a9431a407aea5ea77b0d929324d1d5"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00050_f007800.ppm",
+      "bytes": 460815,
+      "sha256": "5867852833d75b116bb6a2e0e31ada25fc66f6f65436712d934ac877b9c0afb6"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00051_f007860.ppm",
+      "bytes": 460815,
+      "sha256": "5f4dcf886db779eedc54830c1e33da6cfac22dcacbbca5775fe800ccbd40af92"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00052_f007920.ppm",
+      "bytes": 460815,
+      "sha256": "d3e7d8302eb034e79b0c1aec8bf7b161a06b2e5a2864fa7981233a35d6077edb"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00053_f007980.ppm",
+      "bytes": 460815,
+      "sha256": "84d2e5d417d8f79933b35b5d90c33da68b0ee94e2a502879f586600ca2957d62"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00054_f008040.ppm",
+      "bytes": 460815,
+      "sha256": "9787551974583b281c37f126aedb7b43ce4fa176b8c8a3cde490fb91db1c9803"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00055_f008100.ppm",
+      "bytes": 460815,
+      "sha256": "9f7a331e377f00a863466b6f5b5a3678cf3e7b1568134a4c668b56d7be61e3ec"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00056_f008160.ppm",
+      "bytes": 460815,
+      "sha256": "cbefcfb8158b2339ff1e9c05a2efc86b0b620e50397dfe91511b58d45425e04f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00057_f008220.ppm",
+      "bytes": 460815,
+      "sha256": "d916c3917e8c899d3b57549e9453137d6c7681ae2c5dc252e3512d3863445497"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00058_f008280.ppm",
+      "bytes": 460815,
+      "sha256": "d1e1e274f5b44374d90b5787cac228fc57b131a2aea5d2fc5a8f3e1e0d373a29"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00059_f008340.ppm",
+      "bytes": 460815,
+      "sha256": "66bce61c67cf8b86013a6d9e61205279fb764e0c41f16aff14e4296ad970c3d9"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00060_f008400.ppm",
+      "bytes": 460815,
+      "sha256": "69357d4d9546d8a7401328b9eb332e75d378886433e21b1513131996face4b4c"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00061_f008460.ppm",
+      "bytes": 460815,
+      "sha256": "e58c001250fb265c3330d1eaf1a4fe193a7373ef28e94644ca7ed3ab7f59b8a7"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00062_f008520.ppm",
+      "bytes": 460815,
+      "sha256": "32fc22e5ed1f616d0828f232bedb9e5a7ecb610035f377b5cc32980d5f2e1674"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00063_f008580.ppm",
+      "bytes": 460815,
+      "sha256": "7d4455dc58453d6f1b98e0c14597dfd71873567f41b06264075a074eb284157e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00064_f008640.ppm",
+      "bytes": 460815,
+      "sha256": "a7f30316f670adaa90c725cd3a334ed23f77392fed1bc51bc6185da2e6ccdef2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00065_f008700.ppm",
+      "bytes": 460815,
+      "sha256": "03efc2ce3608d2504396438a7d19555db07d748754b467e5734e8d9b0512423f"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00066_f008760.ppm",
+      "bytes": 460815,
+      "sha256": "71744a2e407beb46e3eb9ad5bca23b67d3e924239a24fc1f26e35a3462448047"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00067_f008820.ppm",
+      "bytes": 460815,
+      "sha256": "c74f55ed20d6decbebacb587aa169c3f67cc719e2e8015758d6d42d036bd4e05"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00068_f008880.ppm",
+      "bytes": 460815,
+      "sha256": "f7bbfafeecd6f3c17ebff7036a2103eca245d25d274588b7c17fa0346aaa1ad8"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00069_f008940.ppm",
+      "bytes": 460815,
+      "sha256": "37e8826626e7071828496536e4ed4d37634e6508812adc9e13ef02f880c1e5e2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00070_f009000.ppm",
+      "bytes": 460815,
+      "sha256": "73690bad3616252f111bb4b302d3275e57dd1a97ebd9c2b821a3b3dd3245d81b"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00071_f009060.ppm",
+      "bytes": 460815,
+      "sha256": "3edcb4f3d1aca35d8685e728cf79686f089d36f1609d08802a74d38a48eacce8"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00072_f009120.ppm",
+      "bytes": 460815,
+      "sha256": "a87221c3ee5ba0c6b2038c17eb6b3a0a2361ab5b866aee6dab31902de754e084"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00073_f009180.ppm",
+      "bytes": 460815,
+      "sha256": "79891a254899b9f31722a4eed7f7708c2971b820135a0d61e7fc70131612961a"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00074_f009240.ppm",
+      "bytes": 460815,
+      "sha256": "9f8fe551b82bc693403ddb797c5e3086a69e076f83801de3ea23f8ca6371a28e"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00075_f009300.ppm",
+      "bytes": 460815,
+      "sha256": "f3648eb94973dc1a6ad0d697c3105389b4ba610322cd50406564c610fadf1dd6"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00076_f009360.ppm",
+      "bytes": 460815,
+      "sha256": "297a6caf3aa312b1b25e79a72f10524d6a86dfe493226338b71be9d96972be58"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00077_f009420.ppm",
+      "bytes": 460815,
+      "sha256": "c49616b1d23c0a4db280be73fdd2efbbe05846508a3c9a886c5624eae44c20a3"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00078_f009480.ppm",
+      "bytes": 460815,
+      "sha256": "69b6d559e57e0709dd84a11d38eec6f592945a473e7f2b346ad594c94eb118a2"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00079_f009540.ppm",
+      "bytes": 460815,
+      "sha256": "b99e5344e413e79b5766f8be7f856365ad5bca4a5564895ff1e3dcc9f131f3da"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\shot_00080_f009600.ppm",
+      "bytes": 460815,
+      "sha256": "b217050baf7bf8892909af58c1a1feec45329519cf334075db035947757ab0bd"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\touchHLE_log.txt",
+      "bytes": 298292,
+      "sha256": "fef10e9dca0276c1a0d8cf360e6ce69dcb69b4d74a70fcab264d38d1ac3fe8ea"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\user-review-progress.jpg",
+      "bytes": 61668,
+      "sha256": "d50121c3610818800fd4818af24daef51d7a8851ea1fd00bd7f92e2a78da7e45"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\validation-metrics.json",
+      "bytes": 163,
+      "sha256": "0494c2e75d2679f0574d3d3747de7229d8b3bd0ee5a5a0f8ec3e256300f6ee71"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\video-proof.jpg",
+      "bytes": 53326,
+      "sha256": "3a712912ded26a010266c708a98c0a1c65b379aa8dc4452e2da3955d7a760b20"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\zero-g-build.txt",
+      "bytes": 142611,
+      "sha256": "a952d034f0c1d4e853bce00b129cb4d797696ac644f405d72d76aa818b7c9a90"
+    },
+    {
+      "path": "logs\\frame2016-final-20261025\\zero-g-current.jpg",
+      "bytes": 55470,
+      "sha256": "230912c3e21ab9a62a3852ccd5a8318cd6e3c03ab2dcbd51a6b90eaf5bc170db"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\arm-action06.txt",
+      "bytes": 3543,
+      "sha256": "362eb3aa7fca42109064b95a0a8367b1cfab5c4e1c64ebe7ae3a054667f0c052"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\arm-can-telekinesis.txt",
+      "bytes": 569,
+      "sha256": "49a659bdb01d1c14a74704b55ba0737da34d19a0865521a5cbfdc822641d6785"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\arm-object-interact.txt",
+      "bytes": 1140,
+      "sha256": "f369603faae5ed266b413d742e8109a3345d25104b232eb658a9bc7f8b4a145c"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\build-ef-final.txt",
+      "bytes": 142611,
+      "sha256": "9c3411dc233d3ee41f7ba72fd7f1239dc95e4dd4fcfa91be99778c112575da88"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\build-ef.txt",
+      "bytes": 142776,
+      "sha256": "250fb955c7a714b5f3ad07a294a41d5763e94089ad7a82320f3241949e127ee5"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\build.txt",
+      "bytes": 142611,
+      "sha256": "e748973fe60d30bc4ce4b08c72ac03e93a25078a8dad1cfec35509d5821e5614"
+    },
+    {
+      "path": "logs\\interaction-lock-20261025\\repeat-0107\\touchHLE_log.txt",
+      "bytes": 451682,
+      "sha256": "9757df10190f41a7208ecd5b56f0e4eb1ed481f6f4b34c79602c289213a94640"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\before-snapshot-log.txt",
+      "bytes": 304700,
+      "sha256": "dc75ce5a93770a099a0dcf2c33ada92ab9422d628f859617ef2b8f7990d94600"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\build.txt",
+      "bytes": 142336,
+      "sha256": "79c7a2960c65eeb1ffed74874efde1cec0af120e389d98b3810056d0a7a3161f"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\inspect-kinesis.py",
+      "bytes": 2074,
+      "sha256": "d54ef267a70275c20122756f6b362450a2e0e16546251f8d1d1c75fc369aeaf4"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\inspect-regions.py",
+      "bytes": 359,
+      "sha256": "dc9f2480809570fe9cf2a9c4f7a7cb4cfc200ef7f8e59698126d06d6fb25b4ad"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\inspect-symbols.py",
+      "bytes": 332,
+      "sha256": "1a19096e2275e17ea25f1922ee60cc72406c512246bde8c5b80ef47818f72e47"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\native-circle.txt",
+      "bytes": 953,
+      "sha256": "58fe66a1f1f9fa2049a8943a424841557200c6707ac9cc57801f120f87a28799"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\native-update-regions.txt",
+      "bytes": 9707,
+      "sha256": "19d88471b5ed206752822af5cdfeec6018de9ea88ef33c843485fa8b1b224c36"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\region-tests.exe",
+      "bytes": 747008,
+      "sha256": "61e115c54b9bd9edb3486eec368a6c70a2e0f134352ce3f4fa853653343652c5"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\region-tests.pdb",
+      "bytes": 3043328,
+      "sha256": "5e7b6e15e48c9e3d44273843c62b9d68668ec96330999eec2c9878a38d905715"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\snapshot-log.txt",
+      "bytes": 335541,
+      "sha256": "123e9de0c5d68b84d39cbaabde1e1cf6c613b87437d389341e9c0f29966fd116"
+    },
+    {
+      "path": "logs\\kinesis-visible-target-20261025\\state-1792864842-f006506.dsstate",
+      "bytes": 56939492,
+      "sha256": "30d135266c2e1a00e284127e2189c062c28ec6b64ff01ab96b39454bf8316094"
+    },
+    {
+      "path": "run-host\\Runtime-PC\\DeadSpace Launcher.exe",
+      "bytes": 21504,
+      "sha256": "b145504de089e4b96271859fd55d2abe61973593929f044aefa683e379126a5a"
+    },
+    {
+      "path": "run-host\\Runtime-PC\\touchHLE.exe",
+      "bytes": 31133696,
+      "sha256": "1d0a9e3b3308f50546e8a9352a7830ec2866e4971991c1cc57dbb579e66b9d80"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\adtrackingevents",
+      "bytes": 1640,
+      "sha256": "23efd0c510c0304a13f87fad4a7d3e682fa671158b248faa1543980e0f3f6506"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\mtxprods",
+      "bytes": 2356,
+      "sha256": "934891f9187d8b39bfc9593d510b6690c0d3ab4db210678f3b46075de6ccbdd0"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\00_CheckpointSave.sb",
+      "bytes": 4896,
+      "sha256": "b6ba6fe9fd3d52760b8068182fdee67e144d4facf0d7b8e25197a73952d635d2"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\00_LevelSave.sb",
+      "bytes": 2852,
+      "sha256": "1472d8b383d0819488979fcdf4b1d2d1f9079e71ec45f4b465aa947712aaad38"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\00_SurvivalSave.sb",
+      "bytes": 504,
+      "sha256": "53e24472f54348790a0632726156dc9486b4746e96138dfb9b7f0441a67be81d"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\01_CheckpointSave.sb",
+      "bytes": 8044,
+      "sha256": "37f98c1c54e417de26f0ec28a4c7fe67733b7a4c74fb3dc9866989cd58934a8d"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\01_LevelSave.sb",
+      "bytes": 2812,
+      "sha256": "91682869608979c003fb7070f1e51f844e0ce3ddb951adc77f4e2feb26d3ba72"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\01_SurvivalSave.sb",
+      "bytes": 984,
+      "sha256": "dd55c457958e63c8deb0373821cf8e39d534ca707fd04d202de813f0653595c2"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\02_CheckpointSave.sb",
+      "bytes": 4200,
+      "sha256": "96fd9bb343c92d146ec6312371bcf1b040ec43dcafa00cc1b31ef3352ab3ddc7"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\02_LevelSave.sb",
+      "bytes": 2020,
+      "sha256": "dd66684d2815795c3b62061c6171fd432e73341ecafbdf87a785f4020a6639e1"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\02_SurvivalSave.sb",
+      "bytes": 196,
+      "sha256": "269a04558c8a13c2bbe2887802b999b1b1a0f47a56e9026c2636a3cec9993e17"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\AchievementsSave.sb",
+      "bytes": 8344,
+      "sha256": "b240f96ac6542182ec25582da20ca28746348fcf5a3a83d559db5c50e2548a48"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\Core.sb",
+      "bytes": 3992,
+      "sha256": "3f60c23a1384a43c9d4b59c825a246f9397b0b71b191a1e32e48776e30af8018"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\Dead Space\\Debug Toggles.sb",
+      "bytes": 144,
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\Dead Space\\Tweaks.sb",
+      "bytes": 11932,
+      "sha256": "b4a07648486ef05109a6cf63bc6ec1a7e6e4a74419b8b8cd68555c2ba5e674bc"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\last_version.txt",
+      "bytes": 6,
+      "sha256": "64e89202dcf09d8812007205f37fa7a113142921293fc319a6b42a18e3896c06"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var\\settings.sb",
+      "bytes": 968,
+      "sha256": "abb511101dc00eb8043d20b88c60f2245e276bbd9c5ca190540d9c79c1e7dce3"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\00_CheckpointSave.sb",
+      "bytes": 3344,
+      "sha256": "6c2e620baaf1aa4da9b62aaa8c699fb1f59e1cbc561c56222bcce00740add9f0"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\00_LevelSave.sb",
+      "bytes": 972,
+      "sha256": "e5f18fab08eca2ee6ce80b7e66f2612266beb2ed85eb40ff67db4406f4e370a0"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\00_SurvivalSave.sb",
+      "bytes": 108,
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\01_SurvivalSave.sb",
+      "bytes": 108,
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\02_SurvivalSave.sb",
+      "bytes": 108,
+      "sha256": "57495c340e317d15242fc78760a7198f2da91afd2861458a5621f215c5039a35"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\AchievementsSave.sb",
+      "bytes": 1544,
+      "sha256": "d1296b42d3adba152d3760674aecfa11155285a65a13d1a11bfb9a0fff948848"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\Core.sb",
+      "bytes": 3992,
+      "sha256": "ff41bb0793f1c4d637f7a53c4ef500cffc4662aa79ca60527a40291d3e1db1e1"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\Dead Space\\Debug Toggles.sb",
+      "bytes": 144,
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\Dead Space\\Tweaks.sb",
+      "bytes": 144,
+      "sha256": "2cde3dbef5332a1722443e337f35b40612d27d0041f8b87c66cc8664ad1f8fb2"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\last_version.txt",
+      "bytes": 6,
+      "sha256": "64e89202dcf09d8812007205f37fa7a113142921293fc319a6b42a18e3896c06"
+    },
+    {
+      "path": "savebank\\20261025-020809-paused-near-boss-bug-20261025\\Documents\\var-backup-agent-render-20261023-121529\\settings.sb",
+      "bytes": 432,
+      "sha256": "227ce6a541a5b3ad0c8c26d975f80ada94b4896c799556269e46b73c4dd89bd8"
+    }
+  ],
+  "metadata_updated_at": "2026-10-25T02:41:11.841337+08:00"
+}

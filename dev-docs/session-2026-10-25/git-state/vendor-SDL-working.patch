@@ -1,0 +1,25 @@
+diff --git a/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java b/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+index 037600b..a59894f 100644
+--- a/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
++++ b/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+@@ -59,6 +59,10 @@ import java.util.Locale;
+ */
+ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
+     private static final String TAG = "SDL";
++    // touchHLE emulates recursive guest/Objective-C call paths. Android's
++    // default ~1 MiB Java thread stack is too small for Dead Space level
++    // initialization and surfaces as a JNI StackOverflowError/SIGABRT.
++    private static final long SDL_THREAD_STACK_SIZE = 16L * 1024L * 1024L;
+     private static final int SDL_MAJOR_VERSION = 2;
+     private static final int SDL_MINOR_VERSION = 26;
+     private static final int SDL_MICRO_VERSION = 4;
+@@ -707,7 +711,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
+                     // Start up the C app thread and enable sensor input for the first time
+                     // FIXME: Why aren't we enabling sensor input at start?
+ 
+-                    mSDLThread = new Thread(new SDLMain(), "SDLThread");
++                    Log.i(TAG, "Starting SDLThread with requested stack size " + SDL_THREAD_STACK_SIZE);
++                    mSDLThread = new Thread(null, new SDLMain(), "SDLThread", SDL_THREAD_STACK_SIZE);
+                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                     mSDLThread.start();
+ 

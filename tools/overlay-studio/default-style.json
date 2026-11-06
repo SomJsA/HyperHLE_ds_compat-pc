@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "reference": {
+    "width": 480,
+    "height": 320,
+    "aspect": 1.5
+  },
+  "layers": {
+    "chapter": {
+      "enabled": true,
+      "align": "center",
+      "lineHeight": 1.12,
+      "padding": 5,
+      "radius": 2,
+      "stroke": "#56dce8",
+      "strokeOpacity": 0.6,
+      "color": "#ebf4f7",
+      "background": "#031016",
+      "opacity": 0.76,
+      "maxHeight": 35,
+      "x": 73.54,
+      "y": 39.22,
+      "width": 46,
+      "fontSize": 11.5,
+      "secondaryFontSize": 8.5,
+      "secondaryColor": "#56dce8",
+      "gap": 3,
+      "anchor": "first-center"
+    },
+    "objective": {
+      "enabled": true,
+      "align": "center",
+      "lineHeight": 1.12,
+      "padding": 5,
+      "radius": 2,
+      "stroke": "#56dce8",
+      "strokeOpacity": 0.6,
+      "color": "#ebf4f7",
+      "background": "#031016",
+      "opacity": 0.76,
+      "maxHeight": 35,
+      "x": 66.04,
+      "y": 41.875,
+      "width": 42,
+      "fontSize": 10.5,
+      "anchor": "center"
+    },
+    "subtitle": {
+      "enabled": true,
+      "align": "center",
+      "lineHeight": 1.12,
+      "padding": 5,
+      "radius": 2,
+      "stroke": "#56dce8",
+      "strokeOpacity": 0,
+      "color": "#ffffff",
+      "background": "#000000",
+      "opacity": 0.45,
+      "maxHeight": 32,
+      "x": 50,
+      "y": 93,
+      "width": 86,
+      "fontSize": 11.5,
+      "anchor": "bottom-center"
+    }
+  },
+  "samples": {
+    "chapter": "第 1 章 · 尊重的意向",
+    "chapterSecondary": "CHAPTER 01 · Honorable Intentions",
+    "objective": "进入服务器房间 01",
+    "subtitle": "大家，早上好。接下来的节目是：Sprawl 的预算问题？"
+  },
+  "overrides": {}
+}

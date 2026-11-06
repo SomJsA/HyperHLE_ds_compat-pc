@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "profiles": [
+    {
+      "id": "pc-9950x-4090d-tested",
+      "platform": "pc",
+      "cpu": "AMD Ryzen 9 9950X 16-Core Processor",
+      "gpu": "NVIDIA GeForce RTX 4090 D",
+      "min_vram_gib": 16,
+      "label": "已测配置建议",
+      "render_scale": 3,
+      "texture_scale": 4,
+      "af": 4,
+      "msaa": 4,
+      "fps_cap": 0,
+      "note": "建议3×原生、4×高清纹理、AF4/MSAA4；不设帧率上限。已有实战短样本，仍不代表全关稳定60。",
+      "evidence": "report/performance-push-20261102/pc-actual-play-4k8x-05-state"
+    },
+    {
+      "id": "android-2405crpfdc-adreno610-tested",
+      "platform": "android",
+      "model": "2405CRPFDC",
+      "gpu_contains": "Adreno (TM) 610",
+      "min_ram_gib": 5,
+      "label": "已测设备的保守建议",
+      "render_scale": 3,
+      "texture_scale": 2,
+      "af": 1,
+      "msaa": 1,
+      "fps_cap": 0,
+      "note": "保持3×原生；高清包建议2×（已安装时）。AF/MSAA关闭、不设帧率上限。已测实战约30–35FPS，60FPS目标尚未达到。",
+      "evidence": "report/android-texture-tier-matrix-20261102"
+    }
+  ]
+}

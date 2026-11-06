@@ -1,0 +1,35 @@
+{
+  "rows": 996,
+  "changed": 27,
+  "changed_from_original": 844,
+  "stable_original_indices": 995,
+  "appended_ids": [],
+  "native_bin_keys": 996,
+  "native_string_count": 2978,
+  "native_changed_keys": 19,
+  "placeholder_differences": [],
+  "interference": [
+    "Insid_01",
+    "Insid_02"
+  ],
+  "chapter_chinese_acrostic": "当心同伴切莫轻信谨防背叛",
+  "chapter_english_acrostic": "HEWILLBETRAY",
+  "source_sha256": "747C8D14329582974A95BBCFC1D99D5A600B733AF1192C11053E2ED9B4614609",
+  "chapter_titles": [
+    "当初善意",
+    "心伤难逃",
+    "同流合污",
+    "伴我何人",
+    "切割留痕",
+    "莫近巨兽",
+    "轻跃虚空",
+    "信仰侵蚀",
+    "谨慎换装",
+    "防不胜防",
+    "背离理智",
+    "叛徒遗祸"
+  ],
+  "text_corrections": [
+    "CREDITS"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "baseline": "R15-user-feedback-20261102",
+  "entries": 996,
+  "chapter_acrostic": "当心同伴切莫轻信谨防背叛",
+  "english_acrostic": "HEWILLBETRAY",
+  "resource_sha256": {
+    "res/overlay/deadspace_iphone.bin": "2f5f8c77d760446f3a63d2ea59ccbecd86eb59791e07f927de1b184e32c37260",
+    "res/overlay/ChapterChinese.ttf": "0c1d28b446f8a2d3089ce0c04d5c3f5140dcf40340ae9f06d11f18fec16d12db",
+    "res/overlay/ChapterEnglish.ttf": "2e0ff7df406910d3e8d2d9a74b129a818e9ee67f2b27434be1a0ed1b8fc15ad0",
+    "src/ds_overlay_default.json": "acb740b70d793a9f935aa81aaee6ef803a0d6d94d9e172898cc731fb3d39b2c0"
+  },
+  "accepted_ipa_sha256": [
+    "333b8d9e907cc1d73af5deb9b801561abfc63e60d94214390ab2a680ff265c52",
+    "1381cbd7de15bcaf8085edf8f191cc54261c00376087d4893ac62fb9b9f2da1c"
+  ],
+  "platform_resource_paths": {
+    "android": {
+      "res/overlay/ChapterEnglish.ttf": "android/app/src/main/assets/overlay/ChapterEnglish.ttf"
+    }
+  },
+  "android_ambient_sha256": "e40291dd3265c40570731ba9764aaf10b34dae937cee821416e7abe56ddc1f3e",
+  "min_sdk": 21,
+  "submodules": {
+    "vendor/SDL": "446c02be2dfb619c0dd3e801a07d3c3f38fa1ad2",
+    "vendor/dynarmic": "e0f6bd9d0b48ed6e536672c0c9abbe87961be861",
+    "vendor/libxml2": "02d577715e1951cf114ca4e9adaf5605156c4f4c",
+    "vendor/openal-soft": "23c8a35505fe6ab7a5c87754911a133b23ac75cf",
+    "vendor/stb": "9f1776a36d2a3d63c52f705c3a84b372cfed4340"
+  },
+  "native_chapter_menu_zero_based": [
+    0,
+    1,
+    2,
+    4,
+    5,
+    7,
+    8,
+    10,
+    11,
+    13,
+    15,
+    16
+  ],
+  "native_train_menu_zero_based": [
+    3,
+    6,
+    9,
+    12,
+    14
+  ],
+  "not_automatically_accepted": [
+    "native chapter/title/objective/subtitle transitions",
+    "station enter/exit while moving and complete armor animation",
+    "physical input/controller and remapped tutorials",
+    "same-scene Android lights and boxes",
+    "sustained heavy texture/streaming and cross-level performance",
+    "all weapon/secondary/projectile/consumption and audible audio",
+    "additional physical desktop GPU/driver",
+    "final latest PC and Android human acceptance"
+  ],
+  "platform_submodule_overrides": {
+    "pc": {
+      "vendor/dynarmic": "439183ed974c240c683fa95be6bdf089c11bccdf"
+    }
+  },
+  "platform_submodule_override_reason": {
+    "pc": "439183ed retains the 4a145d38 Win64 exception callback ABI fix (32-byte shadow space plus8 alignment) and adds only nullable Win64 emitted-range/clear diagnostic callbacks. PC performance work requires timestamped ARM block attribution; default-off journal exclusive-file/epoch/concurrency/16MiB tests and owned-child PSS checks passed. Normal game integration is separately required, not implied by this source contract. Android/third pin and resource baseline unchanged."
+  },
+  "pc_font_resource_sha256": {
+    "res/overlay/TitleChinese.ttf": "c14c692b526830a48bfa7d946afb3beb350f078abad3cd67d245877fed52b751",
+    "res/overlay/StoryChinese.ttf": "df140c929d10307ca270de1161134d20bf1cc3b12aaee7b6df50ebfb4b8ceb2d"
+  }
+}

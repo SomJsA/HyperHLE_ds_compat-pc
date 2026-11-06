@@ -1,0 +1,10 @@
+{
+  "built_at": "2026-10-25T01:34:45.4894686+08:00",
+  "executable_sha256": "aea05e3dd4da18680213ee6d503bea6dcc2fb8404c0c25bc590a7c4d803e1462",
+  "source_sha256": "42c11ac073b712dde0df946248f05ccccb987ff584c0d79ba4e505a1dccbe949",
+  "build_log": "logs/interaction-lock-20261025/repeat-0107/build-ef-final.txt",
+  "installed_in_runtime": true,
+  "playtest": "pending",
+  "zero_g": "previously user-verified defaults 6,3,4,z retained",
+  "manual_checkpoint": "not implemented"
+}

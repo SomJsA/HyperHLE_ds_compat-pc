@@ -1,0 +1,23 @@
+{
+  "built_at": "2026-10-25T02:24:55.2347780+08:00",
+  "executable_sha256": "1d0a9e3b3308f50546e8a9352a7830ec2866e4971991c1cc57dbb579e66b9d80",
+  "installed_in_runtime": true,
+  "previous_game_exit": "User requested quit, PID 63752; no agent termination",
+  "build": "release passed in 5m08s",
+  "tests": "3 patch tests and 4 circle tests passed; isolated headless startup applied verified patch",
+  "playtest": "user accepted both ending face light strips and E/F corrections",
+  "manual_checkpoint": "not implemented",
+  "evidence": "logs/ending-face-20261025",
+  "user_acceptance": {
+    "recorded_at": "2026-10-25T02:40:16.816142+08:00",
+    "quote": "测试灯带问题已消失",
+    "scope": "ending face helmet-light overlay",
+    "new_recording_supplied": false
+  },
+  "launcher_sha256": "b145504de089e4b96271859fd55d2abe61973593929f044aefa683e379126a5a",
+  "ef_user_acceptance": {
+    "recorded_at": "2026-10-25T02:41:11.841337+08:00",
+    "quote": "EF也修好了",
+    "scope": "E/F correction overall; no per-scenario checklist or new recording supplied"
+  }
+}

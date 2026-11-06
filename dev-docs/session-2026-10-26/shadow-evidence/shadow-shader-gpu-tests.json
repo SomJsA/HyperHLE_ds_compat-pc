@@ -1,0 +1,47 @@
+{
+  "compiled_production_shader": true,
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "off_exact_identity": true,
+  "black_and_alpha_preserved": true,
+  "highlights_153_to_255_exact_identity": true,
+  "all_four_levels_monotone": true,
+  "colour_ratios_preserved": true,
+  "gray_samples": {
+    "0": [
+      0,
+      1,
+      4,
+      16,
+      64,
+      153,
+      255
+    ],
+    "0.3": [
+      0,
+      5,
+      12,
+      30,
+      76,
+      153,
+      255
+    ],
+    "0.6": [
+      0,
+      10,
+      21,
+      44,
+      89,
+      153,
+      255
+    ],
+    "1": [
+      0,
+      16,
+      32,
+      63,
+      105,
+      153,
+      255
+    ]
+  }
+}

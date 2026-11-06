@@ -1,0 +1,61 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index c7e8cd4..b0f1eff 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -106,3 +106,9 @@ gl_generator = { workspace = true }
+ opt-level = 3
+ codegen-units = 1
+ lto = "thin"
++
++# Local build redirects for environments where GitHub git access is unavailable.
++# The exact rust-sdl2 revision is taken from Cargo.lock.
++[patch."https://github.com/touchHLE/rust-sdl2"]
++sdl2 = { path = "vendor/rust-sdl2" }
++sdl2-sys = { path = "vendor/rust-sdl2/sdl2-sys" }
+\ No newline at end of file
+diff --git a/src/audio/openal_soft_wrapper/build.rs b/src/audio/openal_soft_wrapper/build.rs
+index d91895d..9b9652e 100644
+--- a/src/audio/openal_soft_wrapper/build.rs
++++ b/src/audio/openal_soft_wrapper/build.rs
+@@ -100,6 +100,8 @@ fn main() {
+             build.define("ALSOFT_REQUIRE_ALSA", "ON");
+         }
+ 
++        build.define("CMAKE_POLICY_VERSION_MINIMUM", "3.5");
++
+         let openal_soft_out = build.build();
+ 
+         link_search(&openal_soft_out.join("lib"));
+diff --git a/src/environment.rs b/src/environment.rs
+index 99b9705..8a5bd0d 100644
+--- a/src/environment.rs
++++ b/src/environment.rs
+@@ -574,6 +574,28 @@ impl Environment {
+         let mut bins = dylibs;
+         bins.insert(0, executable);
+ 
++        // Dead Space 1.3.34 compatibility patch:
++        // LogBuffer::DebugInit performs a dynamic_cast from im::log::LogBufferNode
++        // to im::log::LogBuffer. The compiler's src2dst offset is 0x30, meaning
++        // the LogBuffer base subobject is at LogBufferNode + 0x30. libstdc++'s
++        // legacy RTTI implementation fails to resolve this cast under HLE, which
++        // causes std::bad_cast and leaves the engine with corrupted state.
++        //
++        // The original call is at 0x3bdf20:
++        //     bl __dynamic_cast
++        // Replace it with:
++        //     add r0, r5, #0x30
++        // The following cmp r0, #0 then takes the success path, matching the
++        // real-device result while keeping the original IPA untouched.
++        if bundle.bundle_identifier() == "com.ea.deadspace.bv"
++            && bundle.bundle_version() == "1.3.34"
++        {
++            const DEAD_SPACE_DYNAMIC_CAST_CALL: u32 = 0x3bdf20;
++            const ARM_ADD_R0_R5_IMM_0X30: u32 = 0xe2850030;
++            mem.write(crate::mem::Ptr::from_bits(DEAD_SPACE_DYNAMIC_CAST_CALL), ARM_ADD_R0_R5_IMM_0X30);
++            log!("Applying Dead Space 1.3.34 LogBuffer dynamic_cast compatibility patch.");
++        }
++
+         let mut objc = objc::ObjC::new();
+ 
+         let mut dyld = dyld::Dyld::new();

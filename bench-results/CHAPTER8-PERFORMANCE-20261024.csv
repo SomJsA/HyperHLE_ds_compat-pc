@@ -1,0 +1,10 @@
+profile,mode,scale,input,surface,video_avg_fps,video_frames,video_duration_s,dsstats_fps,one_percent_low,min_fps,frame_ms_median,pss_gb,rss_gb,swap_pss_gb,native_heap_gb,graphics_gb,battery_temp_c,video_mb,video_path
+01-native-scale1,native,1,320x480,2376x1080,60.193,1200,19.935744,60.4,42.1,23.0,16.56,1.390,1.525,0.000,1.169,0.085,33.0,47.228,01-native-scale1/native-20261024-075154/video.mp4
+02-native-scale2,native,2,640x960,2376x1080,59.960,1195,19.929922,60.4,40.6,26.8,16.56,1.381,1.516,0.000,1.155,0.091,33.5,47.139,02-native-scale2/native-20261024-075349/video.mp4
+03-native-scale3,native,3,960x1440,2376x1080,60.196,1198,19.901811,60.4,41.8,27.1,16.56,1.391,1.527,0.000,1.165,0.091,34.0,47.116,03-native-scale3/native-20261024-075545/video.mp4
+04-sync-fsr-scale2,upscale-depth-gpu,2,640x960,2376x1080,21.096,419,19.861956,20.3,5.7,2.9,49.26,2.787,2.142,0.790,1.726,0.125,34.3,43.092,04-sync-fsr-scale2/upscale-depth-gpu-20261024-075743/video.mp4
+05-async-fsr-scale1,upscale-depth-gpu-async,1,320x480,2376x1080,50.899,1012,19.882344,51.8,36.3,22.3,19.31,2.767,2.299,0.613,1.886,0.117,34.7,45.761,05-async-fsr-scale1/upscale-depth-gpu-async-20261024-075939/video.mp4
+06-async-fsr-scale2,upscale-depth-gpu-async,2,640x960,2376x1080,50.488,1004,19.885844,50.4,38.1,25.7,19.84,2.817,2.313,0.649,1.893,0.124,35.4,45.674,06-async-fsr-scale2/upscale-depth-gpu-async-20261024-080141/video.mp4
+07-async-fsr-scale3,upscale-depth-gpu-async,3,960x1440,2376x1080,44.808,892,19.907333,45.1,35.4,22.2,22.17,2.795,2.416,0.524,1.986,0.136,36.0,45.847,07-async-fsr-scale3/upscale-depth-gpu-async-20261024-080336/video.mp4
+08-async-direct-scale2,upscale-depth-gpu-async-direct,2,640x960,2376x1080,46.655,928,19.890889,46.7,35.3,23.1,21.41,4.373,3.471,1.048,3.053,0.123,36.7,45.675,08-async-direct-scale2/upscale-depth-gpu-async-direct-20261024-080533/video.mp4
+09-async-direct-scale3,upscale-depth-gpu-async-direct,3,960x1440,2376x1080,43.169,859,19.898578,43.7,31.3,25.3,22.88,2.802,2.487,0.460,2.063,0.136,37.5,45.115,09-async-direct-scale3/upscale-depth-gpu-async-direct-20261024-080728/video.mp4

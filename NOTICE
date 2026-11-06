@@ -1,0 +1,34 @@
+NOTICE — derived works and attribution
+======================================
+
+This repository is an **unofficial fork** and is not affiliated with, endorsed
+by, or maintained by the touchHLE project, the HyperHLE project, or Electronic
+Arts.
+
+It contains code derived from the following MPL-2.0 licensed projects:
+
+1. touchHLE — https://github.com/touchHLE/touchHLE — MPL-2.0
+   Independent iPhone OS / iOS high-level emulator.
+   The core emulator source in this repository descends from touchHLE.
+
+2. HyperHLE — https://github.com/HyperHLE/HyperHLE — MPL-2.0
+   An independently developed fork of touchHLE. This repository is forked from
+   HyperHLE commit 2281c14 (2026-09-26), and the Dead Space compatibility
+   changes listed in CHANGES.md were developed against that fork.
+
+Both upstream projects are licensed under the Mozilla Public License 2.0; the
+full license text is in LICENSE. Modified MPL-covered files remain under
+MPL-2.0, and their source is available in this repository.
+
+Trademarks
+----------
+"touchHLE", "HyperHLE" and "Dead Space" are the property of their respective
+owners. "Dead Space" (a trademark of Electronic Arts) is used here only
+descriptively, to identify the application this fork's compatibility work
+targets.
+
+No game data is distributed
+---------------------------
+This repository contains only emulator source code and documentation. It does
+not include application binaries or game assets; you must supply your own
+legally obtained copy of any application you wish to run.
