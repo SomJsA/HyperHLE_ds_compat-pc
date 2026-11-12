@@ -11414,6 +11414,8 @@ fn glProgramParameteri(env: &mut Environment, program: GLuint, pname: GLenum, va
 }
 
 unsafe fn clamp_fog_state_values(gles: &mut dyn GLES) -> Option<(f32, f32)> {
+    // ES2/3 has shader fog; fixed-function enum queries poison GL error state.
+    if gles.is_es2() { return None; }
     let mut fog_enabled: GLboolean = 0;
     gles.GetBooleanv(gles11::FOG, &mut fog_enabled);
     if fog_enabled != 0 {
@@ -11994,4 +11996,23 @@ mod hd_replacement_marker_tests {
         ds_clear_hd_texture_replaced(texture);
         assert!(!ds_hd_texture_was_replaced(texture));
     }
+}
+
+#[cfg(test)]
+mod r4_fixed_fog_boundary_tests {
+    use super::*;
+    struct Driver { shader:bool, enabled:bool, start:f32, end:f32, queries:u32, writes:Vec<(GLenum,f32)> }
+    impl GLES for Driver {
+        fn is_es2(&self)->bool {self.shader}
+        unsafe fn GetBooleanv(&mut self,p:GLenum,v:*mut GLboolean) {assert!(!self.shader,"fixed-function query on shader driver");assert_eq!(p,gles11::FOG);self.queries+=1;*v=self.enabled as GLboolean;}
+        unsafe fn GetFloatv(&mut self,p:GLenum,v:*mut GLfloat) {self.queries+=1;*v=match p {gles11::FOG_START=>self.start,gles11::FOG_END=>self.end,_=>panic!("unexpected query")};}
+        unsafe fn Fogf(&mut self,p:GLenum,v:GLfloat) {self.writes.push((p,v));}
+    }
+    fn driver(shader:bool,enabled:bool,start:f32,end:f32)->Driver {Driver {shader,enabled,start,end,queries:0,writes:Vec::new()}}
+    #[test]
+    fn shader_draws_never_query_fixed_function_fog() {let mut g=driver(true,true,2.,2.);unsafe {assert!(clamp_fog_state_values(&mut g).is_none());}assert_eq!(g.queries,0);assert!(g.writes.is_empty());}
+    #[test]
+    fn fixed_function_degenerate_range_still_clamps_and_restores() {let mut g=driver(false,true,2.,2.);unsafe {let old=clamp_fog_state_values(&mut g);assert_eq!(old,Some((2.,2.)));restore_fog_state_values(&mut g,old);}assert_eq!(g.queries,3);assert_eq!(g.writes,vec![(gles11::FOG_START,1.999),(gles11::FOG_START,2.),(gles11::FOG_END,2.)]);}
+    #[test]
+    fn fixed_function_disabled_and_valid_ranges_keep_original_state() {for (enabled,start,end,n) in [(false,2.,2.,1),(true,1.,2.,3)] {let mut g=driver(false,enabled,start,end);unsafe {assert!(clamp_fog_state_values(&mut g).is_none());}assert_eq!(g.queries,n);assert!(g.writes.is_empty());}}
 }
