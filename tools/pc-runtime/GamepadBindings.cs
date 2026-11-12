@@ -13,7 +13,7 @@ namespace DeadSpaceBootstrap
         private static readonly string[] PadNames = { "交互 / QTE", "念力", "装弹", "静滞", "近战 / 踩踏", "瞄准时主攻击", "光标模式", "暂停 / 恢复", "定位器（默认 R3）", "快速转身（默认 L3）" };
         private static readonly string[] PadDefaults = { "A", "B", "X", "Y", "LB", "RB", "START", "BACK", "RS", "LS" };
         private readonly List<ComboBox> padBoxes = new List<ComboBox>();
-        private readonly ComboBox inputMode = new ComboBox();
+        private readonly ComboBox inputMode = new NoWheelComboBox();
         private readonly CheckBox padInvertX = new CheckBox();
         private readonly CheckBox padInvertY = new CheckBox();
         private readonly NumericUpDown padLookSensitivity = new NumericUpDown();
@@ -24,13 +24,21 @@ namespace DeadSpaceBootstrap
             Heading(page, "手柄设置", "数字按钮可交换；下方有独立的摇杆镜头设置。", 22);
             for (int i = 0; i < PadActions.Length; i++)
             {
-                var box = new ComboBox(); padBoxes.Add(box);
-                AddComboRow(page, PadNames[i], 94 + i * 43, box, PadDefaults);
+                var box = new NoWheelComboBox(); padBoxes.Add(box);
+                int y = 94 + i * 43;
+                // English captions such as "Primary Fire While Aiming" are
+                // wider than the original Chinese column. Give the label a
+                // stable single-line lane so it cannot clip into the combo.
+                LabelText(page, PadNames[i], 30, y + 4, 190, 30);
+                box.DropDownStyle = ComboBoxStyle.DropDownList;
+                box.Items.AddRange(PadDefaults);
+                box.SetBounds(225, y, 220, 28);
+                page.Controls.Add(box);
                 box.SelectedIndex = i;
             }
-            var reset = new Button { Text = "恢复手柄默认键位", Location = new Point(440, 100), Size = new Size(210, 38) };
+            var reset = new Button { Text = "恢复手柄默认键位", Location = new Point(470, 100), Size = new Size(210, 38) };
             reset.Click += delegate { ResetGamepadBindings(); }; page.Controls.Add(reset);
-            LabelText(page, "LS = L3，RS = R3；同一按钮不能绑定两个动作。\r\n光标模式中的点击/退出也跟随交互/念力键位，更改下次启动生效。", 30, 538, 660, 50);
+            LabelText(page, "十字键：↑等离子切割器 · →切割锯 · ↓线性枪 · ←岩石取芯器\r\n长按任一方向约 450 ms 选择大脉冲。LS = L3，RS = R3。\r\n同一按钮不能绑定两个动作；更改下次启动生效。", 30, 532, 660, 66);
             Heading(page, "摇杆镜头", "独立于鼠标设置；更改下次启动生效。向下滚动可调灵敏度与死区。", 608);
             padInvertX.Text = "反转横向"; padInvertX.SetBounds(174, 686, 150, 30);
             padInvertY.Text = "反转纵向"; padInvertY.SetBounds(350, 686, 150, 30);
@@ -89,3 +97,4 @@ namespace DeadSpaceBootstrap
         }
     }
 }
+

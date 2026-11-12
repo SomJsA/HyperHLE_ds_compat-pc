@@ -19,20 +19,24 @@ namespace DeadSpaceBootstrap
         [StructLayout(LayoutKind.Sequential)] private struct PadState
         { public uint Packet; public Pad Gamepad; }
         [DllImport("xinput1_4.dll")] private static extern uint XInputGetState(uint index, out PadState state);
+        [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr handle);
+        [DllImport("user32.dll")] private static extern void SwitchToThisWindow(IntPtr handle, bool restore);
+        [DllImport("user32.dll")] private static extern bool AllowSetForegroundWindow(int processId);
+        [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr handle, IntPtr insertAfter, int x, int y, int width, int height, uint flags);
+        private static readonly IntPtr HwndTopmost = new IntPtr(-1);
+        private const uint SwpNoMove = 0x0002, SwpNoSize = 0x0001, SwpShowWindow = 0x0040;
         private sealed class DialogOwner : IWin32Window
         { public IntPtr Handle { get; private set; } public DialogOwner(IntPtr handle) { Handle = handle; } }
 
         internal static int Run(int processId)
         {
-            IntPtr handle = IntPtr.Zero;
-            try { handle = Process.GetProcessById(processId).MainWindowHandle; } catch { }
             using (var dialog = new QuitConfirmation())
-                return dialog.ShowDialog(new DialogOwner(handle)) == DialogResult.Yes ? 10 : 0;
+                return dialog.ShowDialog() == DialogResult.Yes ? 10 : 0;
         }
 
         private QuitConfirmation()
         {
-            Text = "Dead Space · 退出游戏";
+            Text = "死亡空间移动版（IOS端高清移植） · 退出游戏";
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterParent;
             ClientSize = new Size(560, 276);
@@ -52,7 +56,12 @@ namespace DeadSpaceBootstrap
             SetupButton(cancel, "取消  [Q / B]", new Point(30, 194), DialogResult.Cancel);
             SetupButton(quit, "退出游戏  [E / A]", new Point(292, 194), DialogResult.Yes);
             CancelButton = cancel;
-            Shown += (s, e) => { Activate(); BringToFront(); cancel.Select(); };
+            Shown += (s, e) => {
+                Activate(); BringToFront(); cancel.Select();
+                // Exclusive fullscreen may remain above an owned modal for a
+                // compositor tick. Reassert foreground/topmost after showing.
+                BeginInvoke((Action)ForceForeground);
+            };
             KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.Q || e.KeyCode == Keys.Escape) Finish(DialogResult.Cancel);
                 else if (e.KeyCode == Keys.E || e.KeyCode == Keys.Enter) Finish(quit.Focused ? DialogResult.Yes : DialogResult.Cancel);
@@ -87,6 +96,15 @@ namespace DeadSpaceBootstrap
             Controls.Add(button);
         }
         private void Finish(DialogResult result) { DialogResult = result; Close(); }
+        private void ForceForeground()
+        {
+            if (IsDisposed || !IsHandleCreated) return;
+            AllowSetForegroundWindow(-1);
+            SetWindowPos(Handle, HwndTopmost, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpShowWindow);
+            SetForegroundWindow(Handle);
+            SwitchToThisWindow(Handle, true);
+            Activate(); BringToFront();
+        }
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);

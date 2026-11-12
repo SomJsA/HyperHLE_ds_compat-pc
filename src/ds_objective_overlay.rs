@@ -7,6 +7,8 @@ use crate::Environment;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 static READY: AtomicBool = AtomicBool::new(false);
 static SNAPSHOT: AtomicU64 = AtomicU64::new(0);
+static FORCE_TARGET_REPLAY: AtomicBool = AtomicBool::new(false);
+static FORCE_TARGET_FRAME: AtomicU64 = AtomicU64::new(u64::MAX);
 
 #[derive(Default)]
 pub(crate) struct State {
@@ -72,6 +74,34 @@ pub(crate) fn observe(env: &mut Environment) {
         && policy::visible(phase, eligible, word(env,hud.saturating_add(0x234)).unwrap_or(u32::MAX),
             word(env,hud.saturating_add(0x240)).unwrap_or(u32::MAX), word(env,hud.saturating_add(0xdb4)).unwrap_or(1),
             word(env,hud.saturating_add(0x374)).unwrap_or(u32::MAX));
+    // A zero-G deck can reset the native objective popup without providing a
+    // route mesh. Replay the last objective through the host card so the
+    // target remains visible even when the native draw path has no geometry.
+    let started = FORCE_TARGET_FRAME.load(Ordering::Acquire);
+    let force_replay = FORCE_TARGET_REPLAY.load(Ordering::Acquire)
+        && started != u64::MAX
+        && crate::window::DS_FRAME_COUNTER
+            .load(Ordering::Relaxed)
+            .saturating_sub(started) <= 360;
+    if FORCE_TARGET_REPLAY.load(Ordering::Acquire) && !force_replay {
+        FORCE_TARGET_REPLAY.store(false, Ordering::Release);
+        FORCE_TARGET_FRAME.store(u64::MAX, Ordering::Release);
+    }
+    if force_replay && owner != (0, 0) && index.is_some() && READY.load(Ordering::Acquire) {
+        let patched = suppress(env, true);
+        let forced_phase = phase.max(1);
+        let value = if patched {
+            (u64::from(env.framework_state.opengles.ds_objective.serial) << 32)
+                | (u64::from(forced_phase) << 16)
+                | u64::from(index.unwrap())
+        } else { 0 };
+        SNAPSHOT.store(value, Ordering::Release);
+        return;
+    }
+    if force_replay && (owner == (0, 0) || phase > 3) {
+        FORCE_TARGET_REPLAY.store(false, Ordering::Release);
+        FORCE_TARGET_FRAME.store(u64::MAX, Ordering::Release);
+    }
     let patched = suppress(env,show);
     let value = if show && patched {
         (u64::from(env.framework_state.opengles.ds_objective.serial)<<32) | (u64::from(phase)<<16) | u64::from(index.unwrap())
@@ -110,3 +140,7 @@ pub extern "system" fn Java_org_touchhle_android_ObjectiveOverlay_nativeSetReady
 
 pub(crate) fn host_ready(ready:bool) { READY.store(ready, Ordering::Release); }
 pub(crate) fn host_snapshot()->u64 { SNAPSHOT.load(Ordering::Acquire) }
+pub(crate) fn force_target_replay() {
+    FORCE_TARGET_FRAME.store(crate::window::DS_FRAME_COUNTER.load(Ordering::Relaxed), Ordering::Release);
+    FORCE_TARGET_REPLAY.store(true, Ordering::Release);
+}

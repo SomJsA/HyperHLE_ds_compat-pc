@@ -135,7 +135,7 @@ namespace DeadSpaceBootstrap
             } else {EnsureResolutionOption(AutomaticResolution);SetCombo(displayResolution,AutomaticResolution);SetCombo(scaleHack,AutomaticRenderScale);}
             windowMode.SelectedIndex=2;fpsCap.SelectedIndex=3;
             fsrMode.SelectedIndex=0;msaaSamples.SelectedIndex=2;anisotropy.SelectedIndex=1;
-            sharpen.Checked=false;fastPresent.Checked=true;gpuPresentCopy.Checked=true;gpuTextOverlay.Checked=true;
+            sharpen.Checked=false;fastPresent.Checked=true;safeBlackFloor.Checked=false;safeBlackGray.Value=10;gpuPresentCopy.Checked=true;gpuTextOverlay.Checked=true;
             texture2x.Checked=false;texture4x.Checked=true;texture6x.Checked=false;hdTextures.Checked=true;
             UpdateTextureDescription();
             status.Text="已识别："+detectedHardware.GpuName+" · 已按屏幕预置；保存后下次直接读取配置。";

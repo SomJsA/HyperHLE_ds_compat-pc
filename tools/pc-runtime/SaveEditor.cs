@@ -10,9 +10,9 @@ namespace DeadSpaceBootstrap
 {
     internal sealed partial class LauncherForm
     {
-        private readonly ComboBox editorSlot = new ComboBox(), editorKind = new ComboBox(), editorGroup = new ComboBox();
+        private readonly ComboBox editorSlot = new NoWheelComboBox(), editorKind = new NoWheelComboBox(), editorGroup = new NoWheelComboBox();
         private readonly DataGridView saveGrid = new DataGridView();
-        private readonly Label editorSummary = new Label();
+        private readonly Label editorSummary = new DeadSpaceUi.UiLanguage.LocalizedLabel();
         private readonly Dictionary<string, string> pendingSaveChanges = new Dictionary<string, string>();
         private SaveDocument editorDocument;
         private string editorImportedDirectory;
@@ -20,10 +20,10 @@ namespace DeadSpaceBootstrap
 
         private void BuildSaveEditor(Control page)
         {
-            Heading(page, "存档编辑器", "三个槽位分别编辑；设置与章节/成就记录由三个槽共享。保存前完整备份。", 22);
+            Heading(page, "自由字段修改（下）", "读取后按分组编辑全部可编辑字段；金钱 / 信用点、能量节点和大脉冲可在资源与武器分组中修改。修改前请先导出 ZIP。", 22);
             foreach (var box in new[] { editorSlot, editorKind, editorGroup }) box.DropDownStyle = ComboBoxStyle.DropDownList;
             editorSlot.Items.AddRange(new[] { "存档 1（00）", "存档 2（01）", "存档 3（02）" });
-            editorKind.Items.AddRange(new[] { "检查点", "章节存档", "生存存档", "共享设置 / 内购", "共享章节 / 成就" });
+            editorKind.Items.AddRange(new[] { "检查点", "章节存档", "生存存档", "共享设置 / 内购插件", "共享章节 / 成就" });
             editorSlot.Location = new Point(30, 96); editorSlot.Size = new Size(130, 28);
             editorKind.Location = new Point(170, 96); editorKind.Size = new Size(170, 28);
             page.Controls.Add(editorSlot); page.Controls.Add(editorKind);
@@ -52,25 +52,30 @@ namespace DeadSpaceBootstrap
                 else pendingSaveChanges[path] = value;
             };
             page.Controls.Add(saveGrid);
-            editorGroup.Items.AddRange(new[] { "资源与升级", "武器", "背包", "章节与周目", "共享设置", "进度（只读）", "全部" });
+            editorGroup.Items.AddRange(new[] { "资源与升级", "武器", "背包", "内购插件", "章节与周目", "共享设置", "进度（只读）", "全部" });
             editorGroup.Location = new Point(30, 430); editorGroup.Size = new Size(165, 28);
-            editorGroup.SelectedIndexChanged += delegate { PopulateSaveGrid(); }; page.Controls.Add(editorGroup);
-            LabelText(page, "0/1 为开关；物品类型须在本档中已有。背包格数量与场景状态保留。", 210, 433, 495, 26);
-            var preview = new Button { Text = "预览更改", Location = new Point(30, 470), Size = new Size(140, 32) };
+            editorGroup.SelectedIndexChanged += delegate { if (!DeadSpaceUi.UiLanguage.IsApplying) PopulateSaveGrid(); }; page.Controls.Add(editorGroup);
+            LabelText(page, "帮助：0/1 为开关；物品类型须在本档中已有。只写当前文件，保存前自动备份并检查源文件未变化；不确定的数值不要修改。", 210, 433, 495, 80);
+            var preview = new Button { Text = "预览更改", Location = new Point(30, 526), Size = new Size(140, 32) };
             preview.Click += delegate { PreviewEditorChanges(); }; page.Controls.Add(preview);
-            var write = new Button { Text = "备份并保存", Location = new Point(185, 470), Size = new Size(150, 32) };
-            write.Click += delegate { WriteEditorChanges(); }; page.Controls.Add(write);
-            var active = new Button { Text = "返回所选存档位置", Location = new Point(350, 470), Size = new Size(190, 32) };
+            var active = new Button { Text = "返回所选存档位置", Location = new Point(185, 526), Size = new Size(165, 32) };
             active.Click += delegate { editorImportedDirectory = null; InvalidateEditor(); ReadEditorSave(); }; page.Controls.Add(active);
-            var restore = new Button { Text = "恢复整组备份", Location = new Point(555, 470), Size = new Size(155, 32) };
+            var restore = new Button { Text = "恢复整组备份", Location = new Point(365, 526), Size = new Size(155, 32) };
             restore.Click += delegate { RestoreEditorBackup(); }; page.Controls.Add(restore);
             editorSlot.SelectedIndexChanged += delegate { InvalidateEditor(); };
             editorKind.SelectedIndexChanged += delegate { editorSlot.Enabled = editorKind.SelectedIndex < 3; InvalidateEditor(); };
             editorSlot.SelectedIndex = 0; editorKind.SelectedIndex = 0; editorGroup.SelectedIndex = 0;
+            foreach (Control control in page.Controls)
+            {
+                if (control is Label && control.Top == 64) control.Height = 44;
+                else if (control.Top >= 486) control.Top += 72;
+                else if (control.Top >= 94) control.Top += 24;
+            }
         }
 
         private void InvalidateEditor()
         {
+            if (DeadSpaceUi.UiLanguage.IsApplying) return;
             saveGrid.CancelEdit();
             editorDocument = null; pendingSaveChanges.Clear(); saveGrid.Rows.Clear();
             editorSummary.Text = "文件或位置已切换，请点击读取。";
@@ -89,8 +94,8 @@ namespace DeadSpaceBootstrap
                 saveGrid.CancelEdit();
                 pendingSaveChanges.Clear(); editorDocument = new SaveDocument(EditorFile());
                 editorSummary.Text = (editorImportedDirectory == null ? "所选存档位置：" : "实验副本：") + editorDocument.FilePath + "\r\nSHA256 " + editorDocument.Sha256.Substring(0, 16) + "…；仅编辑此文件，读取后保存会检查源文件未变。";
-                if (editorKind.SelectedIndex >= 3) editorGroup.SelectedItem = editorKind.SelectedIndex == 3 ? "共享设置" : "章节与周目";
-                else if (editorKind.SelectedIndex == 2) editorGroup.SelectedItem = "全部";
+                if (editorKind.SelectedIndex >= 3) editorGroup.SelectedIndex = editorKind.SelectedIndex == 3 ? 3 : 4;
+                else if (editorKind.SelectedIndex == 2) editorGroup.SelectedIndex = 7;
                 PopulateSaveGrid();
             }
             catch (Exception error) { editorDocument = null; saveGrid.Rows.Clear(); status.Text = "无法读取存档：" + error.Message; }
@@ -101,16 +106,19 @@ namespace DeadSpaceBootstrap
             saveGrid.EndEdit(); populatingSaveGrid = true;
             try
             {
-                saveGrid.Rows.Clear(); string group = Convert.ToString(editorGroup.SelectedItem);
+                saveGrid.Rows.Clear();
+                // Category identity is independent of the translated caption.
+                string[] groups = { "资源与升级", "武器", "背包", "内购插件", "章节与周目", "共享设置", "进度（只读）", "全部" };
+                string group = groups[Math.Max(0, editorGroup.SelectedIndex)];
                 var paths = new List<string>(editorDocument.Values.Keys); paths.Sort(StringComparer.Ordinal);
                 foreach (string path in paths)
                 {
                     var field = editorDocument.Values[path]; if (group != "全部" && field.Group != group) continue;
                     string pending; pendingSaveChanges.TryGetValue(path, out pending);
-                    int index = saveGrid.Rows.Add(EditorLabel(field), field.Value, pending ?? ""); var row = saveGrid.Rows[index]; row.Tag = path;
+                    int index = saveGrid.Rows.Add(DeadSpaceUi.UiLanguage.TranslateEditorLabel(EditorLabel(field)), field.Value, pending ?? ""); var row = saveGrid.Rows[index]; row.Tag = path;
                     row.Cells[0].ToolTipText = path;
                     row.Cells[2].ReadOnly = !field.Editable;
-                    if (!field.Editable) row.Cells[2].Value = "只读";
+                    if (!field.Editable) row.Cells[2].Value = DeadSpaceUi.UiLanguage.Translate("只读");
                 }
             }
             finally { populatingSaveGrid = false; }
@@ -118,11 +126,12 @@ namespace DeadSpaceBootstrap
         private string EditorLabel(SaveValue field)
         {
             string path = field.Path;
-            var labels = new Dictionary<string, string> { { "hp", "生命值" }, { "credits", "信用点" }, { "nodes", "能量节点" },
+            var labels = new Dictionary<string, string> { { "hp", "生命值" }, { "credits", "金钱 / 信用点" }, { "nodes", "能量节点" },
                 { "upgrade_level_rig", "护甲等级（RIG）" }, { "upgrade_level_health", "生命升级" }, { "upgrade_level_o2", "氧气升级" },
                 { "telekinesis_available", "念力可用" }, { "plasmasaw_available", "切割锯可用" }, { "gameCompleted", "通关标志" }, { "plus", "周目标志" },
                 { "available", "持有" }, { "clip", "弹匣 / 能量数值" }, { "altmode", "副模式状态" }, { "current", "当前装备" }, { "unlocked", "已解锁" },
                 { "complete", "完成标志" }, { "level", "关卡" }, { "difficulty", "难度" }, { "name", "名称" }, { "level_id", "保存关卡" }, { "savetype", "保存类型" },
+                { "attack", "攻击增强" }, { "defense", "防御增强" }, { "loot", "资源增强" }, { "nodes_2", "节点增强" }, { "nodes_1_registration", "注册增强" },
                 { "subtitles_enabled", "字幕" }, { "auto_reload", "自动装弹" }, { "tutorials_enabled", "教程提示" }, { "y_flipped", "反转垂直" },
                 { "plus_unlocked", "新周目解锁提示" }, { "sfx_volume", "音效音量" }, { "music_volume", "音乐音量" }, { "brightness", "亮度" }, { "sensitivity", "灵敏度" } };
             int last = path.LastIndexOf('/'); string leaf = path.Substring(last + 1), label;
@@ -130,7 +139,7 @@ namespace DeadSpaceBootstrap
             if (path.StartsWith("player/weapons/"))
             {
                 string[] parts = path.Split('/');
-                var weapons = new Dictionary<string, string> { { "plasmacutter", "等离子切割器" }, { "ripper", "切割锯" }, { "linegun", "线性枪" }, { "corer", "聚能枪" }, { "burst_rifle", "突击步枪" }, { "stasis", "静滞" } };
+                var weapons = new Dictionary<string, string> { { "plasmacutter", "等离子切割器" }, { "ripper", "切割锯" }, { "linegun", "线性枪" }, { "corer", "岩石取芯器" }, { "burst_rifle", "大脉冲" }, { "stasis", "静滞" } };
                 string weapon; if (!weapons.TryGetValue(parts[2], out weapon)) weapon = parts[2]; return weapon + " · " + label;
             }
             if (path.StartsWith("levelCompletes/") || path.StartsWith("achievementCompletes/"))
@@ -153,8 +162,43 @@ namespace DeadSpaceBootstrap
         }
         private void WriteEditorChanges()
         {
-            try { var changes = EditorChanges(); string backup = editorDocument.Write(changes); ReadEditorSave(); status.Text = "已保存并重读；完整备份：" + backup; }
-            catch (Exception error) { status.Text = "未保存：" + error.Message; }
+            ApplyAllSaveChanges();
+        }
+        private void ApplyAllSaveChanges()
+        {
+            try
+            {
+                SaveStorage.RequireStopped();
+                bool attack = attackPlugin.Checked, defense = defensePlugin.Checked, loot = lootPlugin.Checked;
+                bool pluginChanges = loadedSave != null && (loadedSave.NeedsInitialization ||
+                    attack != loadedSave.Enabled("attack") || defense != loadedSave.Enabled("defense") || loot != loadedSave.Enabled("loot"));
+                var backups = new List<string>();
+                var changes = editorDocument == null ? new Dictionary<string, string>() : EditorChanges();
+                if (editorDocument != null && changes.Count != 0) editorDocument.EditBytes(changes);
+                if (pluginChanges) { loadedSave.RequireUnchanged(); loadedSave.EditBytes(attack, defense, loot); }
+                if (editorDocument != null && changes.Count != 0)
+                {
+                    backups.Add(editorDocument.Write(changes));
+                    ReadEditorSave();
+                    // The shared settings editor above may point at the same file.
+                    // Refresh it after the lower editor writes so the optimistic
+                    // source-hash check does not treat our own write as a conflict.
+                    if (loadedSave != null) ReadCurrentSave();
+                }
+                if (pluginChanges)
+                {
+                    backups.Add(loadedSave.Write(attack, defense, loot));
+                    ReadCurrentSave();
+                }
+                if (backups.Count == 0) throw new InvalidDataException("请先读取存档并修改字段或插件勾选");
+                status.Text = "已应用全部存档修改并重读；自动备份：" + String.Join("；", backups.ToArray());
+                saveStatus.Text = "已应用全部存档修改并重读。自动备份：\r\n" + String.Join("\r\n", backups.ToArray());
+            }
+            catch (Exception error)
+            {
+                status.Text = "未应用存档修改：" + error.Message;
+                saveStatus.Text = error.Message;
+            }
         }
         private void ImportEditorCopy()
         {
@@ -200,3 +244,4 @@ namespace DeadSpaceBootstrap
         }
     }
 }
+

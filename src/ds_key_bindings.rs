@@ -1,7 +1,7 @@
 //! Semantic PC bindings. Host keys are translated before both Down and Up.
 use std::collections::HashMap;
 
-pub const ACTIONS: [(&str, &str); 17] = [
+pub const ACTIONS: [(&str, &str); 18] = [
     ("forward", "W"),
     ("left", "A"),
     ("back", "S"),
@@ -19,6 +19,7 @@ pub const ACTIONS: [(&str, &str); 17] = [
     ("weapon3", "3"),
     ("weapon4", "4"),
     ("weapon5", "5"),
+    ("zero_gravity_jump", "CTRL"),
 ];
 
 pub fn parse(text: &str) -> Result<HashMap<String, String>, String> {
@@ -38,9 +39,8 @@ pub fn parse(text: &str) -> Result<HashMap<String, String>, String> {
             return Err(format!("unknown or repeated action: {action}"));
         }
         let key = key.trim().to_ascii_uppercase();
-        // Ctrl is an explicit locator choice; other modifier/function keys
-        // remain reserved for capture, menus and diagnostics.
-        if !(action == "locator" && key == "CTRL") && (key.len() != 1
+        // Ctrl is the keyboard default for the zero-gravity jump.
+        if !(action == "zero_gravity_jump" && key == "CTRL") && (key.len() != 1
             || !key.as_bytes()[0].is_ascii_alphanumeric()
             || ["M", "N", "P", "V"].contains(&key.as_str()))
         {
@@ -58,19 +58,19 @@ pub fn parse(text: &str) -> Result<HashMap<String, String>, String> {
     Ok(result)
 }
 
-/// Explicit assignments win. The three factory locator keys are aliases
-/// while locator uses that family; a custom locator binding replaces them.
+/// Explicit assignments win. G and B remain factory locator aliases while
+/// locator uses that family; Ctrl now belongs to the zero-gravity jump.
 pub fn resolve<'a>(map: Option<&'a HashMap<String, String>>, key: &'a str) -> Option<&'a str> {
     if let Some(value) = map.and_then(|m| m.get(key)) { return Some(value); }
-    let family = map.map_or(true, |m| ["CTRL", "G", "B"].iter().any(|k| m.get(*k).is_some_and(|v| v == "G")));
-    if family && ["CTRL", "G", "B"].contains(&key) { return Some("G"); }
+    let family = map.map_or(true, |m| ["G", "B"].iter().any(|k| m.get(*k).is_some_and(|v| v == "G")));
+    if family && ["G", "B"].contains(&key) { return Some("G"); }
     if map.is_some() && ACTIONS.iter().any(|(_, default)| *default == key) { None } else { Some(key) }
 }
 
 pub fn locator_keys(map: Option<&HashMap<String, String>>) -> Vec<String> {
-    let aliases: Vec<_> = ["CTRL", "G", "B"].into_iter()
+    let aliases: Vec<_> = ["G", "B"].into_iter()
         .filter(|key| resolve(map, key) == Some("G"))
-        .map(|key| if key == "CTRL" { "Ctrl".into() } else { key.into() }).collect();
+        .map(|key| key.into()).collect();
     if !aliases.is_empty() { return aliases; }
     vec![map.and_then(|m| m.iter().find(|(_, value)| value.as_str() == "G").map(|(key, _)| key.clone())).unwrap_or_else(|| "G".into())]
 }
@@ -81,15 +81,17 @@ mod tests {
     #[test]
     fn locator_aliases_follow_assignments_and_custom_bindings() {
         let defaults = parse("").unwrap();
-        for key in ["CTRL", "G", "B"] { assert_eq!(resolve(Some(&defaults), key), Some("G")); }
+        for key in ["G", "B"] { assert_eq!(resolve(Some(&defaults), key), Some("G")); }
+        assert_eq!(resolve(Some(&defaults), "CTRL"), Some("CTRL"));
         let custom = parse("locator=T").unwrap();
         assert_eq!(resolve(Some(&custom), "T"), Some("G"));
         assert_eq!(resolve(Some(&custom), "G"), None);
         assert_eq!(resolve(Some(&custom), "B"), Some("B"));
         let reused = parse("interact=B").unwrap();
         assert_eq!(resolve(Some(&reused), "B"), Some("E"));
-        assert_eq!(locator_keys(Some(&reused)), ["Ctrl", "G"]);
-        assert_eq!(resolve(Some(&parse("locator=CTRL").unwrap()), "CTRL"), Some("G"));
+        assert_eq!(locator_keys(Some(&reused)), ["G"]);
+        assert!(parse("locator=CTRL").is_err());
+        assert_eq!(resolve(Some(&parse("zero_gravity_jump=H").unwrap()), "H"), Some("CTRL"));
     }
     #[test]
     fn defaults_and_swap() {
@@ -98,6 +100,7 @@ mod tests {
         assert_eq!(defaults["G"], "G");
         assert_eq!(defaults["Z"], "Z");
         assert_eq!(defaults["C"], "C");
+        assert_eq!(defaults["CTRL"], "CTRL");
         let shortcuts = parse("locator=Z\nquick_turn=G").unwrap();
         assert_eq!(shortcuts["Z"], "G");
         assert_eq!(shortcuts["G"], "Z");

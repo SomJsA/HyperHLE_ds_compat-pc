@@ -26,7 +26,7 @@ if (Test-Path -LiteralPath (Join-Path $programDirectory 'Assets/texture-packs'))
 New-Item -ItemType Directory -Path $outputDirectory | Out-Null
 $programZip = Join-Path $outputDirectory 'program-payload.zip'
 $uninstaller = Join-Path $outputDirectory 'DeadSpace-Uninstall.exe'
-$installer = Join-Path $outputDirectory 'DeadSpace-R15-PC-Installer-20261106.exe'
+$installer = Join-Path $outputDirectory 'DEAD-SPACE-MOBILE-PC-Installer-20261112-R4.exe'
 
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -38,13 +38,17 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ `
     "/out:$uninstaller" `
+    "/win32icon:$PSScriptRoot/../pc-runtime/assets/DeadSpace.ico" `
     /r:System.Windows.Forms.dll `
     /r:System.Drawing.dll `
-    (Join-Path $PSScriptRoot 'Uninstaller.cs')
+    (Join-Path $PSScriptRoot 'Uninstaller.cs') `
+    (Join-Path $PSScriptRoot 'UninstallerAssemblyInfo.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Uninstaller compilation failed.' }
 
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ `
     "/out:$installer" `
+    "/win32icon:$PSScriptRoot/../pc-runtime/assets/DeadSpace.ico" `
+    "/win32manifest:$PSScriptRoot/../pc-runtime/Windows.manifest" `
     "/resource:$programZip,DeadSpaceInstaller.Program.zip" `
     "/resource:$uninstaller,DeadSpaceInstaller.Uninstall.exe" `
     /r:System.Windows.Forms.dll `
@@ -52,7 +56,12 @@ if ($LASTEXITCODE -ne 0) { throw 'Uninstaller compilation failed.' }
     /r:System.IO.Compression.dll `
     /r:System.IO.Compression.FileSystem.dll `
     /r:System.Web.Extensions.dll `
-    (Join-Path $PSScriptRoot 'Installer.cs')
+    (Join-Path $PSScriptRoot 'Installer.cs') `
+    (Join-Path $PSScriptRoot 'InstallerForm.cs') `
+    (Join-Path $PSScriptRoot 'InstallerLanguage.cs') `
+    (Join-Path $PSScriptRoot 'InstallerAssemblyInfo.cs') `
+    (Join-Path $PSScriptRoot '../pc-runtime/ReleaseUi.cs') `
+    (Join-Path $PSScriptRoot '../pc-runtime/UiLanguage.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 
 & $installer --verify-embedded --log (Join-Path $outputDirectory 'embedded-check.txt')

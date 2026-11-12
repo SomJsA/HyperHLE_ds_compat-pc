@@ -12,6 +12,8 @@
 mod eagl;
 mod gles_guest;
 pub(crate) use gles_guest::ds_test_assist;
+#[cfg(all(windows, target_arch = "x86_64"))]
+pub(crate) use gles_guest::ds_current_hud_player_public;
 
 use touchHLE_gl_bindings::gles11::types::GLenum;
 
@@ -37,12 +39,21 @@ pub struct State {
     pub(crate) ds_pc_skin_shadow: crate::ds_pc_skin_shadow::State,
     #[cfg(all(windows, target_arch = "x86_64"))]
     pub(crate) ds_pc_transform: crate::ds_pc_transform::State,
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    pub(crate) ds_pc_inverse_cache: crate::ds_pc_inverse_cache::State,
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    pub(crate) ds_pc_animation_position_cache:
+        crate::ds_pc_animation_position_cache::State,
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    pub(crate) ds_pc_keyframe_cache: crate::ds_pc_keyframe_cache::State,
     pub(crate) ds_qte_geometry: crate::ds_qte_geometry::State,
     pub(crate) ds_subtitle: crate::ds_subtitle_overlay::State,
     pub(crate) ds_objective: crate::ds_objective_overlay::State,
     pub(crate) ds_tutorial: crate::ds_tutorial_overlay::State,
-    /// Current EAGLContext for each thread
-    current_ctxs: std::collections::HashMap<crate::ThreadId, Option<crate::objc::id>>,
+    /// Current EAGLContext for each thread. Thread IDs are indices into the
+    /// emulator's contiguous `Environment::threads` vector, so a direct
+    /// table avoids hashing on every guest GL call.
+    current_ctxs: Vec<Option<crate::objc::id>>,
     /// `glGetString()` results cache, keyed by `(is_es2, name)` so that an
     /// ES 2.0 context does not return the ES 1.1 `OpenGL ES-CM 1.1` version
     /// string (Bad Piggies / Unity 3.5 checks the version string to decide
@@ -52,9 +63,21 @@ pub struct State {
     ds_aim_hold_requested: bool,
     ds_aim_hold_player: u32,
     ds_aim_timeout_lease: Option<(u32, u32)>,
+    /// A physical LT release can arrive while a native control/QTE has
+    /// temporarily hidden the player object. Keep the release alive until
+    /// the guest exposes the player again; otherwise the old aim bit leaks
+    /// through the control state and the weapon returns up after release.
+    ds_aim_release_pending: bool,
     ds_pc_move_player: u32,
     ds_pc_move_active: bool,
     ds_pc_forward_limited: bool,
+    /// Optional per-present-frame cache for the native HUD/player lookup.
+    /// The guest callback remains the source of truth whenever the cache is
+    /// disabled or a new frame begins.
+    ds_hud_player_cache_frame: u64,
+    ds_hud_player_cache_thread: crate::ThreadId,
+    ds_hud_player_cache_sampled: bool,
+    ds_hud_player_cache_value: Option<(u32, u32)>,
     ds_pc_look: crate::window::ds_pc_input::NativeLook,
     ds_player_action_cache: crate::ds_player_action_cache::Cache,
 }
@@ -65,13 +88,25 @@ pub(crate) fn release_pc_aim_timeout(env: &mut crate::Environment) {
 
 impl State {
     fn current_ctx_for_thread(&mut self, thread: crate::ThreadId) -> &mut Option<crate::objc::id> {
-        self.current_ctxs.entry(thread).or_insert(None)
+        if thread >= self.current_ctxs.len() {
+            self.current_ctxs.resize(thread + 1, None);
+        }
+        &mut self.current_ctxs[thread]
     }
 
     /// The EAGL object whose actual GL context backs this thread's calls.
-    fn effective_ctx_id(&mut self, thread: crate::ThreadId) -> Option<crate::objc::id> {
-        (*self.current_ctx_for_thread(thread)).or_else(||
-            (*self.current_ctx_for_thread(0)).filter(|&context| context != crate::objc::nil))
+    fn effective_ctx_id(&self, thread: crate::ThreadId) -> Option<crate::objc::id> {
+        self.current_ctxs
+            .get(thread)
+            .copied()
+            .flatten()
+            .or_else(|| {
+                self.current_ctxs
+                    .first()
+                    .copied()
+                    .flatten()
+                    .filter(|&context| context != crate::objc::nil)
+            })
     }
 
     /// True when GL calls on `thread` have no usable context *and* the
@@ -83,11 +118,13 @@ impl State {
     /// per-thread lookup would silently drop every one of those GL calls,
     /// producing a black window, so we fall back to the main thread's
     /// context.
-    fn effective_ctx_missing(&mut self, thread: crate::ThreadId) -> bool {
-        if (*self.current_ctx_for_thread(thread)).is_some() {
-            return false;
-        }
-        (*self.current_ctx_for_thread(0)).is_none()
+    fn effective_ctx_missing(&self, thread: crate::ThreadId) -> bool {
+        self.current_ctxs
+            .get(thread)
+            .copied()
+            .flatten()
+            .is_none()
+            && self.current_ctxs.first().copied().flatten().is_none()
     }
 }
 
@@ -113,7 +150,24 @@ fn sync_context<'objc, 'win: 'objc>(
     window: &'win mut crate::window::Window,
     current_thread: crate::ThreadId,
 ) -> Option<crate::gles::GLESHandle<'objc>> {
-    let gles_ctx = get_thread_context(state, objc, current_thread)?;
+    let Some(current_ctx) = state.effective_ctx_id(current_thread) else {
+        log!("[gl-debug] thread {} has no current EAGL ctx; bindings={:?}", current_thread, state.current_ctxs);
+        return None;
+    };
+    sync_context_with_id(state, objc, window, current_thread, current_ctx)
+}
+
+/// Bind a context whose ID has already been resolved. The normal wrapper above
+/// keeps the existing call sites unchanged; the guest GL hot path uses this
+/// form to avoid resolving the same ThreadId twice in one call.
+fn sync_context_with_id<'objc, 'win: 'objc>(
+    state: &mut State,
+    objc: &'objc mut crate::objc::ObjC,
+    window: &'win mut crate::window::Window,
+    current_thread: crate::ThreadId,
+    current_ctx: crate::objc::id,
+) -> Option<crate::gles::GLESHandle<'objc>> {
+    let gles_ctx = get_thread_context_with_id(state, objc, current_thread, current_ctx)?;
     Some(gles_ctx.make_current_handle(window))
 }
 
@@ -135,6 +189,15 @@ fn get_thread_context<'objc>(
         log!("[gl-debug] thread {} has no current EAGL ctx; bindings={:?}", current_thread, state.current_ctxs);
         return None;
     };
+    get_thread_context_with_id(state, objc, current_thread, current_ctx)
+}
+
+fn get_thread_context_with_id<'objc>(
+    state: &mut State,
+    objc: &'objc mut crate::objc::ObjC,
+    current_thread: crate::ThreadId,
+    current_ctx: crate::objc::id,
+) -> Option<&'objc mut dyn crate::gles::GLESContext> {
     let host_obj = objc.borrow_mut::<eagl::EAGLContextHostObject>(current_ctx);
     let gles_ctx: Option<&mut (dyn crate::gles::GLESContext + 'static)> =
         host_obj.gles_ctx.as_deref_mut();

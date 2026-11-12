@@ -33,8 +33,8 @@ pub(crate) fn content(id:&str,original:&str)->(String,Vec<String>) {
             keys.push(p("locator")); (text,keys)
         },
         "TUTORIAL_BENCH_TEXT" | "TUTORIAL_STORE_TEXT" => (format!("靠近设施，按 {}／手柄 {} 打开界面。\n{}",k("interact"),p("interact"),if id.contains("BENCH"){"使用能量节点升级 RIG 和武器。"}else{"购买护服、弹药和能量节点。"}),vec![k("interact"),p("interact")]),
-        "TUTORIAL_WEAPON_SELECT_TEXT" => (format!("键鼠：{} / {} / {} / {} / {} 选择武器。\n手柄：十字键选择四个武器槽，长按任一方向切换大脉冲。",k("weapon1"),k("weapon2"),k("weapon3"),k("weapon4"),k("weapon5")),vec![k("weapon1"),k("weapon2"),k("weapon3"),k("weapon4"),k("weapon5"),"十字键".into()]),
-        "TUTORIAL_ZERO_G_JUMP_TEXT" => (format!("瞄准能落脚的表面，按 Shift + Space／手柄 LT + {} 进行零重力跳跃。",p("quick_turn")),vec!["Shift".into(),"Space".into(),"LT".into(),p("quick_turn")]),
+        "TUTORIAL_WEAPON_SELECT_TEXT" => (format!("{} 等离子切割器 / {} 切割锯 / {} 线性枪 / {} 岩石取芯器 / {} 大脉冲。\n手柄 ↑等离子 / →切割锯 / ↓线性枪 / ←岩石；长按任一方向约450ms选大脉冲。",k("weapon1"),k("weapon2"),k("weapon3"),k("weapon4"),k("weapon5")),vec![k("weapon1"),k("weapon2"),k("weapon3"),k("weapon4"),k("weapon5"),"十字键".into()]),
+        "TUTORIAL_ZERO_G_JUMP_TEXT" => ("瞄准能落脚的表面，按 Shift + Space、V 或 Ctrl／手柄 LT + L3 进行零重力跳跃。".into(),vec!["Shift".into(),"Space".into(),"V".into(),"Ctrl".into(),"LT".into(),"L3".into()]),
         _ => (original.to_owned(),Vec::new()),
     };(text,keys)
 }
@@ -52,7 +52,7 @@ pub(crate) fn icon_kind(id:&str,index:usize)->&'static str {
         "TUTORIAL_KINESIS_TEXT"=>&["key","pad","mouse","pad"],
         "TUTORIAL_MELEE_TEXT"=>&["key","pad","key","pad"],
         "TUTORIAL_WEAPON_SELECT_TEXT"=>&["key","key","key","key","key","dpad"],
-        "TUTORIAL_ZERO_G_JUMP_TEXT"=>&["key","key","pad","pad"],
+        "TUTORIAL_ZERO_G_JUMP_TEXT"=>&["key","key","key","key","pad","pad"],
         _=>&["key","pad"],
     };kinds.get(index).copied().unwrap_or("key")
 }

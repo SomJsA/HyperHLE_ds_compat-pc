@@ -158,7 +158,9 @@ fn ds_remap_key(key:sdl2::keyboard::Keycode)->Option<sdl2::keyboard::Keycode> {
     use sdl2::keyboard::Keycode;
     let name = if matches!(key, Keycode::LCtrl | Keycode::RCtrl) { "CTRL".into() } else { key.name().to_ascii_uppercase() };
     let semantic = ds_key_bindings::resolve(ds_key_map().as_ref(), &name)?;
-    if semantic == name { Some(key) } else { Keycode::from_name(semantic) }
+    if semantic == "CTRL" || semantic == "zero_gravity_jump" { Some(Keycode::LCtrl) }
+    else if semantic == name { Some(key) }
+    else { Keycode::from_name(semantic) }
 }
 use crate::gles::{
     create_gles1_ctx_no_parent_stack, create_gles2_ctx_no_parent_stack, GLESContext, GLES,
@@ -177,6 +179,15 @@ use std::f32::consts::{FRAC_PI_2, PI};
 use std::num::NonZeroU32;
 use std::ptr::null_mut;
 use std::time::{Duration, Instant};
+
+#[cfg(windows)]
+fn allow_foreground_process(process_id: u32) {
+    #[link(name = "user32")]
+    extern "system" { fn AllowSetForegroundWindow(process_id: u32) -> i32; }
+    unsafe { let _ = AllowSetForegroundWindow(process_id); }
+}
+#[cfg(not(windows))]
+fn allow_foreground_process(_process_id: u32) {}
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -1039,6 +1050,10 @@ fn ds_aim_point() -> Option<(f32, f32)> {
 /// "the player is aiming right now" (`SetAiming`, 0x0003f884). Used by
 /// `TOUCHHLE_DS_MOUSE_LOOK=aim` to decide when to capture the mouse.
 pub static DS_AIM_ACTIVE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Physical LT state survives native control states so hold-to-aim can replay
+/// its edge after stasis/kinesis releases the player.
+pub static DS_CONTROLLER_LT_HELD: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
 
 /// Relative-mouse look mode (`TOUCHHLE_DS_MOUSE_LOOK`):
 ///
@@ -1292,12 +1307,8 @@ pub struct Window {
     /// wave at 12 fps cannot exceed ~2 Hz, and the guest samples the
     /// accelerometer far more often than that).
     ds_shake_start: Option<std::time::Instant>,
-    /// Which synthetic shake gesture `V` is currently selecting. `V` cycles so
-    /// the user can find the axis/strength the guest actually reacts to.
-    ds_shake_variant: u8,
-    /// Live shake parameters, re-read from `ds-shake.txt` (next to the exe)
-    /// every time `V`/Shift+Space is pressed, so the numbers can be tuned
-    /// without rebuilding anything.
+    /// Fixed parameters from the tested zero-g gesture. No runtime parameter
+    /// probe is exposed.
     ds_shake_amp: f32,
     ds_shake_dur: f32,
     ds_shake_freq: f32,
@@ -1328,6 +1339,11 @@ pub struct Window {
     ds_gamepad_cursor_mode: bool,
     ds_gamepad_start_down: Option<Instant>,
     ds_gamepad_start_long: bool,
+    /// A pause-resume press must consume its matching release. Otherwise a
+    /// Start press can resume the native pause screen on ButtonDown and then
+    /// queue a second pause when ButtonUp arrives after the HUD has returned
+    /// to gameplay.
+    ds_gamepad_resume_latched: Option<sdl2::controller::Button>,
     ds_script: Vec<(u64, String)>,
     ds_script_loaded: bool,
     ds_control_inbox: ds_control_inbox::Inbox,
@@ -1478,13 +1494,19 @@ impl Window {
                 if recapture { self.ds_set_mouse_capture(true, "quit retained"); }
                 return false;
             }
+            // Let the compositor finish leaving exclusive scanout before the
+            // owned WinForms confirmation is created.
+            std::thread::sleep(Duration::from_millis(180));
+            self.event_pump.pump_events();
         }
         self.window.raise();
         let launcher = std::env::var_os("TOUCHHLE_DS_LAUNCHER_PATH").map(std::path::PathBuf::from)
             .or_else(|| std::env::current_exe().ok().and_then(|p| p.parent().map(|p| p.join("DeadSpace Launcher.exe"))));
         let styled_result = launcher.filter(|p| p.is_file() && p.with_file_name("DeadSpace-quit-dialog-v1.txt").is_file()).and_then(|path| {
             match std::process::Command::new(path).arg("--confirm-quit").arg(std::process::id().to_string()).spawn() {
-                Ok(mut child) => loop {
+                Ok(mut child) => {
+                    allow_foreground_process(child.id());
+                    loop {
                     // ShowDialog disables its cross-process owner with native
                     // window messages. A blocking child wait prevents SDL's
                     // window thread from servicing them, stranding the modal.
@@ -1496,7 +1518,9 @@ impl Window {
                         Ok(None) => std::thread::sleep(Duration::from_millis(10)),
                         Err(error) => { echo!("[DSquit] themed dialog wait failed; game retained: {error}"); break Some(false); }
                     }
-                },
+                }
+                }
+                ,
                 Err(error) => { echo!("[DSquit] themed dialog unavailable: {error}"); None }
             }
         });
@@ -1567,6 +1591,57 @@ impl Window {
         self.ds_look_accum=(0.0,0.0);self.controller_look_pending=false;
     }
 
+    fn ds_start_zero_g_jump(&mut self, source: &str) {
+        self.ds_shake_start = Some(std::time::Instant::now());
+        echo!(
+            "[DSjump] {source}: tested gesture amp={}g dur={}s freq={}Hz axis={}",
+            self.ds_shake_amp,
+            self.ds_shake_dur,
+            self.ds_shake_freq,
+            ["faithful", "x", "y", "z", "all", "tumble"]
+                [(self.ds_shake_axis % 6) as usize]
+        );
+    }
+
+    fn ds_controller_lt_pressed(&self) -> bool {
+        self.controller_lt_down
+            || self
+                .controllers
+                .iter()
+                .any(|controller| controller.axis(sdl2::controller::Axis::TriggerLeft) > 16000)
+    }
+
+    /// Refresh the physical LT level once per input turn. Native control/QTE
+    /// can consume the SDL axis edge, leaving the old logical aim latch set;
+    /// sampling the controller itself makes release-after-control authoritative
+    /// instead of restoring aim merely because it was active before the grab.
+    fn ds_refresh_controller_lt_state(&mut self) {
+        let physical = self
+            .controllers
+            .iter()
+            .any(|controller| controller.axis(sdl2::controller::Axis::TriggerLeft) > 16000);
+        if physical {
+            self.controller_lt_physical_down = true;
+            DS_CONTROLLER_LT_HELD.store(true, std::sync::atomic::Ordering::Relaxed);
+            return;
+        }
+        if !self.controller_lt_physical_down && !self.controller_lt_down {
+            return;
+        }
+        let was_logical = self.controller_lt_down;
+        self.controller_lt_physical_down = false;
+        self.controller_lt_down = false;
+        self.ds_aim_active = false;
+        DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
+        if was_logical && !ds_aim_toggle("CONTROLLER") {
+            DS_AIM_REQUEST.store(0, std::sync::atomic::Ordering::Relaxed);
+        }
+        if self.controller_rt_down || self.controller_rb_down {
+            DS_FIRE_RELEASE_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed);
+        }
+        echo!("[DSpad] LT physical release sampled -> aim cleared");
+    }
+
     fn ds_set_gamepad_cursor_mode(&mut self, enabled: bool) {
         if self.ds_gamepad_cursor_mode == enabled {
             return;
@@ -1583,6 +1658,7 @@ impl Window {
                     .store(true, std::sync::atomic::Ordering::Relaxed);
             }
             self.controller_lt_down = false;
+            DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
             self.controller_rt_down = false;
             self.controller_rb_down = false;
             self.ds_aim_active = false;
@@ -1723,6 +1799,9 @@ impl Window {
         // drivers because they cause duplicated controllers on macOS
         // (https://github.com/libsdl-org/SDL/issues/7479). Once that's fixed,
         // remove this (https://github.com/touchHLE/touchHLE/issues/85).
+        // Keep the duplicate-device workaround scoped to macOS. Windows needs
+        // SDL's HIDAPI drivers for PlayStation and Switch controllers.
+        #[cfg(target_os = "macos")]
         sdl2::hint::set("SDL_JOYSTICK_HIDAPI", "0");
 
         if env::consts::OS == "android" {
@@ -1873,6 +1952,8 @@ impl Window {
         let event_pump = sdl_ctx.event_pump().unwrap();
 
         let controller_ctx = sdl_ctx.game_controller().unwrap();
+        log!("Controller discovery: HIDAPI={} (SDL default=1)",
+            sdl2::hint::get("SDL_JOYSTICK_HIDAPI").unwrap_or_else(|| "default".into()));
 
         let sensor_ctx = sdl_ctx.sensor().unwrap();
         let mut accelerometer: Option<sdl2::sensor::Sensor> = None;
@@ -1958,7 +2039,6 @@ impl Window {
             ds_mouse_right_down: false,
             controller_lt_physical_down: false,
             ds_shake_start: None,
-            ds_shake_variant: 0,
             ds_shake_amp: 6.0,
             ds_shake_dur: 3.0,
             ds_shake_freq: 4.0,
@@ -1974,6 +2054,7 @@ impl Window {
             ds_gamepad_cursor_mode: false,
             ds_gamepad_start_down: None,
             ds_gamepad_start_long: false,
+            ds_gamepad_resume_latched: None,
             ds_script: Vec::new(),
             ds_script_loaded: false,
             ds_control_inbox: ds_control_inbox::Inbox::default(),
@@ -2258,7 +2339,6 @@ impl Window {
                     let coords=transform_input_coords(self,self.ds_look_position,true);
                     self.event_queue.push_back(Event::TouchesCancelled(HashMap::from([(FingerId::Look,coords)])));self.ds_look_dragging=false;
                 }
-                self.ds_sample_native_inputs(options,focused);
             } else {
             let want = self.ds_mouse_capture.look_active(focused, self.controller_look_pending);
             if want {
@@ -2501,7 +2581,8 @@ impl Window {
         );
         self.ds_gamepad_start_tick();
         let ui_capture=crate::ds_frontend_controller::capture_menu()||crate::ds_frontend_controller::capture_scene_dialog();
-        if ui_capture&&!self.ds_ui_capture_previous {self.ds_cancel_inputs();}
+        if ui_capture&&!self.ds_ui_capture_previous {self.ds_cancel_inputs_for_ui();}
+        if !ui_capture&&self.ds_ui_capture_previous {self.ds_reconcile_aim_after_ui();}
         self.ds_ui_capture_previous=ui_capture;
         if ui_capture || self.ds_capture_suspended || self.ds_gamepad_cursor_mode || !ds_native_hud_enabled() {
             self.pad_weapons.clear();
@@ -2618,6 +2699,12 @@ impl Window {
                     win_event: sdl2::event::WindowEvent::FocusLost,
                     ..
                 } => {
+                    // Win/Alt-Tab must go through the game's own HUD pause
+                    // handler before gameplay input is cleared. The request
+                    // is state-gated and coalesced by the frontend controller.
+                    if crate::ds_frontend_controller::request_native_pause() {
+                        echo!("[DSfocus] focus lost -> native pause queued");
+                    }
                     // Win/Alt-Tab temporarily releases the mouse. If capture was
                     // active, remember it and restore it automatically on focus
                     // return; an explicit F8/right-click click mode stays off.
@@ -2635,6 +2722,7 @@ impl Window {
                             .store(true, std::sync::atomic::Ordering::Relaxed);
                     }
                     self.controller_lt_down = false;
+                    DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
                     self.controller_rt_down = false;
                     self.controller_rb_down = false;
                     self.ds_look_accum = (0.0, 0.0);
@@ -2781,6 +2869,20 @@ impl Window {
             // diagnostic action trigger when experimental native HUD is off.
             if let E::KeyDown { keycode: Some(key), repeat: false, .. } = event {
                 use sdl2::keyboard::Keycode as K;
+                // ESC is a first-class native HUD toggle. Do this before the
+                // macro/legacy paths so it cannot be swallowed by a stale
+                // frontend capture or a remapped P macro. In a pause state
+                // the same key routes to the native play/continue button.
+                if key == K::Escape && ds_native_hud_enabled() {
+                    if crate::ds_frontend_controller::pause_menu() {
+                        crate::ds_frontend_controller::request_native_resume();
+                        echo!("[DSkey] ESC -> native resume");
+                    } else {
+                        ds_queue_hud(ds_hud_commands::HudCommand::Pause);
+                        echo!("[DSkey] ESC -> native pause");
+                    }
+                    continue;
+                }
                 match key {
                     K::G => { DS_LOCATOR_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed); continue; }
                     K::Z => { DS_QUICK_TURN_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed); continue; }
@@ -2983,6 +3085,8 @@ impl Window {
                 E::ControllerButtonUp { button, .. }
                 | E::ControllerButtonDown { button, .. }
                     if ds_frontend_pad_action(button).is_some()
+                        && !(button == sdl2::controller::Button::Start
+                            && crate::ds_frontend_controller::pause_menu())
                         && (crate::ds_frontend_controller::capture_menu()
                             || crate::ds_frontend_controller::capture_scene_dialog()) =>
                 {
@@ -3028,26 +3132,68 @@ impl Window {
                 // Note that accelerometer simulation with analog sticks is
                 // handled with polling, rather than being event-based.
                 E::ControllerButtonUp { button, .. } | E::ControllerButtonDown { button, .. } => {
-                    if crate::ds_frontend_controller::capture_menu()
-                        || crate::ds_frontend_controller::capture_scene_dialog() { continue; }
                     controller_updated = true;
                     let semantic_down = matches!(event, E::ControllerButtonDown { .. });
-                    if button == sdl2::controller::Button::Back && ds_native_hud_enabled() {
-                        if semantic_down && !self.ds_gamepad_cursor_mode { ds_queue_hud(ds_hud_commands::HudCommand::Pause); }
+                    // Keep the physical press that resumed the game from
+                    // becoming a new pause toggle when its release arrives
+                    // after the native HUD has already switched back to
+                    // gameplay. This is most visible with Start, but the
+                    // same guard also makes Back/B deterministic.
+                    if self.ds_gamepad_resume_latched == Some(button) {
+                        if !semantic_down {
+                            self.ds_gamepad_resume_latched = None;
+                        }
                         continue;
                     }
                     if button == sdl2::controller::Button::Start {
                         if semantic_down {
                             self.ds_gamepad_start_down = Some(Instant::now());
                             self.ds_gamepad_start_long = false;
+                            if crate::ds_frontend_controller::pause_menu() {
+                                self.ds_gamepad_resume_latched = Some(button);
+                                crate::ds_frontend_controller::request_native_resume();
+                                echo!("[DSpad] Start down -> native resume");
+                            }
                         } else if self.ds_gamepad_start_down.take().is_some() {
                             let long = self.ds_gamepad_start_long;
                             self.ds_gamepad_start_long = false;
                             if !long && !self.ds_gamepad_cursor_mode {
-                                ds_queue_hud(ds_hud_commands::HudCommand::Pause);
-                                echo!("[DSpad] Start short-press -> pause/resume");
+                                if crate::ds_frontend_controller::pause_menu() {
+                                    crate::ds_frontend_controller::request_native_resume();
+                                    echo!("[DSpad] Start short-press -> native resume");
+                                } else {
+                                    ds_queue_hud(ds_hud_commands::HudCommand::Pause);
+                                    echo!("[DSpad] Start short-press -> pause");
+                                }
                             }
                         }
+                        continue;
+                    }
+                    if button == sdl2::controller::Button::Back
+                        && crate::ds_frontend_controller::pause_menu()
+                    {
+                        if semantic_down {
+                            self.ds_gamepad_resume_latched = Some(button);
+                            crate::ds_frontend_controller::request_native_resume();
+                            echo!("[DSpad] Back down -> native resume");
+                        }
+                        continue;
+                    }
+                    // B is a convenient XInput resume key while the native
+                    // pause page owns focus. It remains kinesis in gameplay.
+                    if button == sdl2::controller::Button::B
+                        && semantic_down
+                        && crate::ds_frontend_controller::pause_menu()
+                    {
+                        self.ds_gamepad_resume_latched = Some(button);
+                        crate::ds_frontend_controller::request_native_resume();
+                        echo!("[DSpad] B -> native resume");
+                        continue;
+                    }
+                    if crate::ds_frontend_controller::capture_menu()
+                        || crate::ds_frontend_controller::capture_scene_dialog() { continue; }
+                    if button == sdl2::controller::Button::Back && ds_native_hud_enabled() {
+                        if semantic_down && !self.ds_gamepad_cursor_mode { ds_queue_hud(ds_hud_commands::HudCommand::Pause); }
                         continue;
                     }
                     if self.ds_gamepad_cursor_mode {
@@ -3069,9 +3215,10 @@ impl Window {
                     // above consumes them without leaking through an open UI.
                     if matches!(button, sdl2::controller::Button::LeftStick | sdl2::controller::Button::RightStick) {
                         if semantic_down {
-                            if button == sdl2::controller::Button::RightStick && self.controller_lt_down {
-                                self.ds_shake_start=Some(std::time::Instant::now());
-                                echo!("[DSjump] LT + RS -> zero-g shake");
+                            if button == sdl2::controller::Button::RightStick
+                                && self.ds_controller_lt_pressed()
+                            {
+                                self.ds_start_zero_g_jump("LT+R3");
                                 continue;
                             }
                             let request = if button == sdl2::controller::Button::LeftStick { &DS_LOCATOR_REQUEST } else { &DS_QUICK_TURN_REQUEST };
@@ -3468,7 +3615,7 @@ impl Window {
                     }
                 }
                 E::ControllerAxisMotion { axis, value, .. } => {
-                    if crate::ds_frontend_controller::capture_scene_dialog() { continue; }
+                    let scene_dialog = crate::ds_frontend_controller::capture_scene_dialog();
                     controller_updated = true;
                     let norm = (value as f32 / 32768.0).clamp(-1.0, 1.0);
                     if axis == sdl2::controller::Axis::RightX
@@ -3504,30 +3651,38 @@ impl Window {
                             continue;
                         }
                         if value > 16000 && !self.controller_lt_down {
-                            self.controller_lt_down = true;
                             self.controller_lt_physical_down = true;
-                            self.ds_aim_active = true;
-                            crate::window::DS_AIM_REQUEST
-                                .store(if ds_aim_toggle("CONTROLLER") { 2 } else { 1 }, std::sync::atomic::Ordering::Relaxed);
-                            if ds_aim_toggle("CONTROLLER") { DS_FIRE_RELEASE_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed); }
-                            echo!("[DSpad] LT down -> native aim mode={}", if ds_aim_toggle("CONTROLLER") { "toggle" } else { "hold" });
+                            DS_CONTROLLER_LT_HELD.store(true, std::sync::atomic::Ordering::Relaxed);
+                            if !scene_dialog {
+                                self.controller_lt_down = true;
+                                self.ds_aim_active = true;
+                                crate::window::DS_AIM_REQUEST
+                                    .store(if ds_aim_toggle("CONTROLLER") { 2 } else { 1 }, std::sync::atomic::Ordering::Relaxed);
+                                if ds_aim_toggle("CONTROLLER") { DS_FIRE_RELEASE_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed); }
+                                echo!("[DSpad] LT down -> native aim mode={}", if ds_aim_toggle("CONTROLLER") { "toggle" } else { "hold" });
+                            } else {
+                                echo!("[DSpad] LT down retained during native control");
+                            }
                         } else if value < 6000 && (self.controller_lt_physical_down || self.controller_lt_down) {
+                            let logical_down = self.controller_lt_down;
                             let release = ds_take_aim_release(
                                 &mut self.controller_lt_physical_down,
                                 self.controller_lt_down,
                             );
                             self.controller_lt_down = false;
                             self.ds_aim_active = false;
-                            if release && !ds_aim_toggle("CONTROLLER") {
+                            DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
+                            if release && logical_down && !ds_aim_toggle("CONTROLLER") {
                                 if self.controller_rt_down || self.controller_rb_down {
                                     crate::window::DS_FIRE_RELEASE_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed);
                                 }
                                 crate::window::DS_AIM_REQUEST.store(0, std::sync::atomic::Ordering::Relaxed);
                             }
-                            echo!("[DSpad] LT up mode={}", if ds_aim_toggle("CONTROLLER") { "toggle" } else { "hold" });
+                            echo!("[DSpad] LT up mode={} logical={}", if ds_aim_toggle("CONTROLLER") { "toggle" } else { "hold" }, logical_down);
                         }
                         continue;
                     }
+                    if scene_dialog { continue; }
                     if axis == sdl2::controller::Axis::TriggerRight {
                         if self.ds_gamepad_cursor_mode {
                             continue;
@@ -3880,80 +4035,8 @@ impl Window {
                     repeat: false,
                     ..
                 } => {
-                    // Zero-g jump. Pressing V pops up a small dialog for the
-                    // shake parameters (amplitude / duration / frequency / axis),
-                    // which is written to ds-shake.txt. We then wait ~1 s before
-                    // actually shaking, so the user has time to click back into
-                    // the game window.
-                    //
-                    // If that dialog script is missing we fall back to cycling
-                    // the built-in gestures.
-                    let mut got = false;
-                    let script = std::path::Path::new("shake-dialog.ps1");
-                    if script.exists() {
-                        let _ = std::fs::remove_file("ds-shake.txt");
-                        let status = std::process::Command::new("powershell")
-                            .args([
-                                "-NoProfile",
-                                "-ExecutionPolicy",
-                                "Bypass",
-                                "-File",
-                                "shake-dialog.ps1",
-                            ])
-                            .status();
-                        if status.is_ok() {
-                            if let Ok(txt) = std::fs::read_to_string("ds-shake.txt") {
-                                let txt = txt.trim().to_string();
-                                if txt.is_empty() || txt.starts_with("cancel") {
-                                    echo!("[DSjump] V: dialog cancelled");
-                                } else {
-                                    let f: Vec<&str> = txt.split(',').map(|s| s.trim()).collect();
-                                    if let Some(a) = f.first().and_then(|s| s.parse::<f32>().ok()) {
-                                        self.ds_shake_amp = a;
-                                    }
-                                    if let Some(d) = f.get(1).and_then(|s| s.parse::<f32>().ok()) {
-                                        self.ds_shake_dur = d;
-                                    }
-                                    if let Some(w) = f.get(2).and_then(|s| s.parse::<f32>().ok()) {
-                                        self.ds_shake_freq = w;
-                                    }
-                                    if let Some(ax) = f.get(3) {
-                                        self.ds_shake_axis = match ax.to_ascii_lowercase().as_str()
-                                        {
-                                            "x" => 1,
-                                            "y" => 2,
-                                            "z" => 3,
-                                            "all" => 4,
-                                            "faithful" => 0,
-                                            _ => 5,
-                                        };
-                                    }
-                                    got = true;
-                                    echo!(
-                                        "[DSjump] V: amp={}g dur={}s freq={}Hz axis={} (shake starts in 1s)",
-                                        self.ds_shake_amp,
-                                        self.ds_shake_dur,
-                                        self.ds_shake_freq,
-                                        txt
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    if !got {
-                        self.ds_shake_variant = (self.ds_shake_variant + 1) % 6;
-                        self.ds_shake_axis = (self.ds_shake_axis + 1) % 6;
-                        echo!(
-                            "[DSjump] V: no dialog; built-in variant {} (amp={}g dur={}s freq={}Hz)",
-                            self.ds_shake_variant,
-                            self.ds_shake_amp,
-                            self.ds_shake_dur,
-                            self.ds_shake_freq
-                        );
-                    }
-                    // start one second from now, so focus can return to the game
-                    self.ds_shake_start =
-                        Some(std::time::Instant::now() + std::time::Duration::from_millis(1000));
+                    // V is a direct alias for the tested zero-g gesture.
+                    self.ds_start_zero_g_jump("V");
                     continue;
                 }
                 E::KeyDown {
@@ -3992,6 +4075,14 @@ impl Window {
                     self.ds_space_held=false;continue;
                 }
                 E::KeyDown {
+                    keycode: Some(sdl2::keyboard::Keycode::LCtrl),
+                    repeat: false,
+                    ..
+                } => {
+                    self.ds_start_zero_g_jump("Ctrl");
+                    continue;
+                }
+                E::KeyDown {
                     keycode: Some(sdl2::keyboard::Keycode::Space),
                     keymod,
                     repeat: false,
@@ -4000,18 +4091,7 @@ impl Window {
                     if keymod
                         .intersects(sdl2::keyboard::Mod::LSHIFTMOD | sdl2::keyboard::Mod::RSHIFTMOD)
                     {
-                        // Zero-g jump: the guest expects a device shake. Emit a
-                        // synthetic shake (see get_acceleration); the variant
-                        // stays whatever `V` last selected.
-                        self.ds_shake_start = Some(std::time::Instant::now());
-                        echo!(
-                            "[DSjump] Shift+Space: amp={}g dur={}s freq={}Hz axis={}",
-                            self.ds_shake_amp,
-                            self.ds_shake_dur,
-                            self.ds_shake_freq,
-                            ["faithful", "x", "y", "z", "all", "tumble"]
-                                [(self.ds_shake_axis % 6) as usize]
-                        );
+                        self.ds_start_zero_g_jump("Shift+Space");
                     } else {
                         if crate::ds_frontend_controller::capture_menu() || crate::ds_frontend_controller::capture_scene_dialog(){continue;}
                         self.ds_space_held=true;
@@ -4126,6 +4206,17 @@ impl Window {
             };
             self.record_touch_event(&produced);
             self.event_queue.push_back(produced);
+        }
+
+        // Sample native movement/look after SDL events have been consumed.
+        // The old order sampled once before the event loop, so a right-stick
+        // or LT change could not reach the guest until the next poll. Keeping
+        // this after the loop makes controller aim/look respond in the same
+        // input turn while preserving the single native sample per poll.
+        self.ds_refresh_controller_lt_state();
+        if ds_native_inputs() {
+            let focused = unsafe { sdl2_sys::SDL_GetKeyboardFocus() == self.window.raw() };
+            self.ds_sample_native_inputs(options, focused);
         }
 
         if (controller_updated && !ds_native_inputs()) || self.ds_cursor_mode_active() {
@@ -4310,6 +4401,7 @@ impl Window {
         self.ds_look_accum = (0.0, 0.0);
         self.controller_look_pending = false;
         self.controller_lt_down = false;
+        DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
         self.controller_rt_down = false;
         self.controller_rb_down = false;
         self.ds_mouse_right_down = false;
@@ -4321,6 +4413,9 @@ impl Window {
         self.mouse_left_button.cancel();
         self.ds_diag_native_stick=None;
         self.ds_diag_native_look=(0.0,0.0);
+        self.ds_gamepad_resume_latched = None;
+        self.ds_gamepad_start_down = None;
+        self.ds_gamepad_start_long = false;
         *DS_PC_INPUT.lock().unwrap()=ds_pc_input::Input::new();
         self.virtual_cursor_last = None;
         use std::sync::atomic::Ordering::Relaxed;
@@ -4333,6 +4428,56 @@ impl Window {
         for flag in [&DS_EKEY_INTERACT, &DS_FKEY_KINESIS, &DS_RT_KINESIS_LAUNCH_REQUEST, &DS_MOUSE_KINESIS_LAUNCH_REQUEST, &DS_DEATH_CANCEL_REQUEST, &DS_CKEY_STASIS, &DS_RKEY_RELOAD, &DS_XKEY_ROTATE, &DS_LOCATOR_REQUEST, &DS_QUICK_TURN_REQUEST] { flag.store(false, Relaxed); }
     }
 
+    /// Native control/QTE owns the player for a while, but a hold-to-aim LT
+    /// edge still belongs to the physical controller. Preserve that edge when
+    /// cancelling gameplay touches so a release or a held press observed during
+    /// the modal can be reconciled after the player object returns.
+    fn ds_cancel_inputs_for_ui(&mut self) {
+        let lt_physical = self.controller_lt_physical_down
+            || self
+                .controllers
+                .iter()
+                .any(|controller| controller.axis(sdl2::controller::Axis::TriggerLeft) > 16000);
+        self.ds_cancel_inputs();
+        if lt_physical {
+            self.controller_lt_physical_down = true;
+            DS_CONTROLLER_LT_HELD.store(true, std::sync::atomic::Ordering::Relaxed);
+        }
+    }
+
+    /// SDL can omit a trigger edge while a native control/QTE owns the input
+    /// loop. Re-read the physical LT state when that modal releases ownership
+    /// so hold-to-aim cannot remain latched after the player let go.
+    fn ds_reconcile_aim_after_ui(&mut self) {
+        let physical = self
+            .controllers
+            .iter()
+            .any(|controller| controller.axis(sdl2::controller::Axis::TriggerLeft) > 16000);
+        if physical {
+            self.controller_lt_physical_down = true;
+            DS_CONTROLLER_LT_HELD.store(true, std::sync::atomic::Ordering::Relaxed);
+            if !ds_aim_toggle("CONTROLLER") && !self.controller_lt_down {
+                self.controller_lt_down = true;
+                self.ds_aim_active = true;
+                DS_AIM_REQUEST.store(1, std::sync::atomic::Ordering::Relaxed);
+                echo!("[DSpad] LT held through native control -> aim rearmed");
+            }
+        } else {
+            let was_logical = self.controller_lt_down;
+            self.controller_lt_physical_down = false;
+            self.controller_lt_down = false;
+            self.ds_aim_active = false;
+            DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
+            if was_logical || !ds_aim_toggle("CONTROLLER") {
+                DS_AIM_REQUEST.store(0, std::sync::atomic::Ordering::Relaxed);
+            }
+            if self.controller_rt_down || self.controller_rb_down {
+                DS_FIRE_RELEASE_REQUEST.store(true, std::sync::atomic::Ordering::Relaxed);
+            }
+            echo!("[DSpad] LT released during native control -> aim cleared");
+        }
+    }
+
     fn controller_added(&mut self, joystick_idx: u32) {
         let Ok(controller) = self.controller_ctx.open(joystick_idx) else {
             log!("Warning: A new controller was connected, but it couldn't be accessed!");
@@ -4340,6 +4485,10 @@ impl Window {
         };
 
         let controller_name = controller.name();
+        // Repeated add events must not create duplicate logical inputs.
+        if self.controllers.iter().any(|open| open.instance_id() == controller.instance_id()) {
+            return;
+        }
         if env::consts::OS == "android" && controller_name.starts_with("uinput-") {
             log!("ignoring fingerprint device: {}", controller_name);
             return;
@@ -4352,6 +4501,7 @@ impl Window {
     }
     fn controller_removed(&mut self, instance_id: u32) {
         if !cfg!(target_os = "android") { self.ds_cancel_inputs(); }
+        DS_CONTROLLER_LT_HELD.store(false, std::sync::atomic::Ordering::Relaxed);
         let Some(idx) = self
             .controllers
             .iter()
@@ -4394,17 +4544,13 @@ impl Window {
     /// Get the real or simulated accelerometer output.
     /// See also [crate::frameworks::uikit::ui_accelerometer].
     pub fn get_acceleration(&self, options: &Options) -> (f32, f32, f32) {
-        // Zero-g jump (V / Shift+Space): synthesise a *vigorous* device shake.
+        // Zero-g jump (V / Shift+Space / Ctrl / LT+R3): synthesise the tested
+        // *vigorous* device shake.
         // The real gesture is "shake the phone up and down, fairly hard", so
         // the old alternation every 2 presented frames (about 2 Hz, +/-1 g on
         // one axis) was far too gentle and on the wrong axis. Drive it from the
-        // wall clock instead and let `V` cycle through several gestures.
+        // wall clock instead of the presented-frame counter.
         if let Some(t0) = self.ds_shake_start {
-            // `ds_shake_start` may be in the future (V schedules the shake ~1 s
-            // ahead so the user can click back into the game window).
-            if std::time::Instant::now() < t0 {
-                return (0.0, 0.0, -1.0);
-            }
             let el = t0.elapsed().as_secs_f32();
             let dur = self.ds_shake_dur.max(0.2);
             if el < dur {

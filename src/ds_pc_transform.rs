@@ -1,15 +1,26 @@
 //! Explicit original-verified PC matrix fast path. No guest/GL worker sharing.
 use crate::{abi::GuestFunction,cpu::Cpu,mem::{ConstVoidPtr,MutPtr},Environment};
-use std::{path::PathBuf,sync::atomic::Ordering::Relaxed,time::{Duration,Instant}};
+use std::{path::PathBuf,sync::{atomic::Ordering::Relaxed,OnceLock},time::{Duration,Instant}};
 const ENTRY:u32=0x4ea204;
 const FIRST_ADD:u32=0xe2802010;
 const BKPT:u32=0xe1200070;
 const FINGERPRINT:u64=15179455414201691398;
 
+#[derive(Clone, Copy)]
+struct CacheEntry {
+    a: [u32; 16],
+    b: [u32; 16],
+    bytes: [u8; 64],
+    flags: u32,
+}
+
+const CACHE_SLOTS: usize = 4;
+
 #[derive(Default)]
 pub(crate) struct State {
     configured:bool,trigger:Option<PathBuf>,last_frame:u64,armed:bool,disabled:bool,host:bool,
     calls:u64,compared:u64,mismatches:u64,unsupported:u64,host_calls:u64,until_recheck:u16,
+    cache:[Option<CacheEntry>; CACHE_SLOTS],cache_next:usize,cache_hits:u64,cache_misses:u64,
     last_report:Option<Instant>,
 }
 fn bytes(env:&Environment,at:u32,len:u32)->Option<&[u8]> {
@@ -68,6 +79,35 @@ pub(crate) fn poll(env:&mut Environment) {
     if arm(env){echo!("[DSpc-transform] armed frame={}; exact first ADD replay",frame);}
 }
 struct Snapshot {destination:u32,a:[f32;16],b:[f32;16]}
+
+fn cache_key(values:&[f32;16])->[u32;16] {
+    std::array::from_fn(|index| values[index].to_bits())
+}
+
+fn cache_lookup(state:&State,a:&[f32;16],b:&[f32;16])->Option<crate::ds_pc_transform_math::Output> {
+    let a=cache_key(a);let b=cache_key(b);
+    let newest=state.cache_next.wrapping_sub(1)%CACHE_SLOTS;
+    let output=|entry:&CacheEntry|crate::ds_pc_transform_math::Output{bytes:entry.bytes,flags:entry.flags};
+    if let Some(entry)=state.cache[newest].as_ref() {
+        if entry.a==a&&entry.b==b {return Some(output(entry));}
+    }
+    state.cache.iter().enumerate().filter(|(index,_)|*index!=newest).find_map(|(_,entry)|
+        entry.as_ref().filter(|entry|entry.a==a&&entry.b==b).map(output))
+}
+
+fn cache_store(state:&mut State,a:&[f32;16],b:&[f32;16],output:&crate::ds_pc_transform_math::Output) {
+    let slot=state.cache_next%CACHE_SLOTS;
+    state.cache[slot]=Some(CacheEntry{a:cache_key(a),b:cache_key(b),bytes:output.bytes,flags:output.flags});
+    state.cache_next=state.cache_next.wrapping_add(1);
+}
+
+fn cache_enabled()->bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        std::env::var("TOUCHHLE_DS_PC_TRANSFORM_CACHE").as_deref() != Ok("0")
+    })
+}
+
 fn matrix(env:&Environment,object:u32)->Result<(u32,[f32;16]),&'static str> {
     let at=object.checked_add(16).filter(|v|*v>=0x1000&&*v&3==0).ok_or("matrix-address")?;
     if object<0x1000 {return Err("matrix-object");}
@@ -107,9 +147,18 @@ pub(crate) fn handle_breakpoint(env:&mut Environment)->bool {
     }
     let args=[env.cpu.regs()[0],env.cpu.regs()[1]];let before_fp=env.cpu.fpscr();
     let snapshot=capture(env,args);
-    let candidate=snapshot.as_ref().map_err(|e|*e).and_then(|s|crate::ds_pc_transform_math::calculate(&s.a,&s.b));
-    let s=&env.framework_state.opengles.ds_pc_transform;
-    let accelerate=s.host&&s.compared>=64&&s.until_recheck>0;
+    let accelerate={let s=&env.framework_state.opengles.ds_pc_transform;s.host&&s.compared>=64&&s.until_recheck>0};
+    let use_cache=cache_enabled();
+    let cached=snapshot.as_ref().ok().and_then(|snapshot|if accelerate&&use_cache {
+        let state=&env.framework_state.opengles.ds_pc_transform;
+        cache_lookup(state,&snapshot.a,&snapshot.b)
+    } else {None});
+    {
+        let s=&mut env.framework_state.opengles.ds_pc_transform;
+        if accelerate&&use_cache {if cached.is_some(){s.cache_hits+=1;}else{s.cache_misses+=1;}}
+    }
+    let cached_hit=cached.is_some();
+    let candidate=if let Some(output)=cached {Ok(output)} else {snapshot.as_ref().map_err(|e|*e).and_then(|s|crate::ds_pc_transform_math::calculate(&s.a,&s.b))};
     if accelerate {
         if let (Ok(snapshot),Ok(candidate))=(&snapshot,&candidate) {
             let Some(dest)=env.mem.get_bytes_fallible_mut(ConstVoidPtr::from_bits(snapshot.destination),64) else {
@@ -119,6 +168,7 @@ pub(crate) fn handle_breakpoint(env:&mut Environment)->bool {
             if dest.len()!=64 {restore(env);env.framework_state.opengles.ds_pc_transform.disabled=true;
                 env.cpu.branch(GuestFunction::from_addr_and_thumb_flag(ENTRY,false));return true;}
             dest.copy_from_slice(&candidate.bytes);
+            if use_cache&&!cached_hit {cache_store(&mut env.framework_state.opengles.ds_pc_transform,&snapshot.a,&snapshot.b,candidate);}
             let ret=GuestFunction::from_addr_with_thumb_bit(env.cpu.regs()[Cpu::LR]);
             apply_register_outputs(&mut env.cpu,args,&snapshot.a,&snapshot.b,&candidate.bytes);
             env.cpu.set_fpscr(before_fp|candidate.flags);env.cpu.branch(ret);
@@ -148,7 +198,50 @@ fn report(env:&mut Environment) {
         let now=Instant::now();
         if s.calls>4 && s.mismatches==0 && s.last_report.is_some_and(|t|now.duration_since(t)<Duration::from_secs(2)) {return;}
         s.last_report=Some(now);
-        echo!("[DSpc-transform] frame={} calls={} compared={} mismatch={} unsupported={} host_calls={} recheck_remaining={}; counts,notCPUtime",
-            crate::window::DS_FRAME_COUNTER.load(Relaxed),s.calls,s.compared,s.mismatches,s.unsupported,s.host_calls,s.until_recheck);
+        echo!("[DSpc-transform] frame={} calls={} compared={} mismatch={} unsupported={} host_calls={} cache={} cache_hits={} cache_misses={} recheck_remaining={}; counts,notCPUtime",
+            crate::window::DS_FRAME_COUNTER.load(Relaxed),s.calls,s.compared,s.mismatches,s.unsupported,s.host_calls,cache_enabled(),s.cache_hits,s.cache_misses,s.until_recheck);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn transform_cache_is_bit_exact_and_bounded() {
+        let mut state = State::default();
+        let a = [1.0f32; 16];
+        let b = [2.0f32; 16];
+        let output = crate::ds_pc_transform_math::Output { bytes: [7; 64], flags: 0x20 };
+        cache_store(&mut state, &a, &b, &output);
+        assert_eq!(cache_lookup(&state, &a, &b).unwrap().bytes, [7; 64]);
+
+        let mut signed_zero = a;
+        signed_zero[0] = -0.0;
+        assert!(cache_lookup(&state, &signed_zero, &b).is_none());
+
+        for index in 0..(CACHE_SLOTS + 1) {
+            let mut key = a;
+            key[0] = index as f32 + 10.0;
+            cache_store(&mut state, &key, &b, &output);
+        }
+        assert!(state.cache.iter().all(Option::is_some));
+        assert!(cache_lookup(&state, &a, &b).is_none());
+    }
+
+    #[test]
+    fn transform_cache_prefers_newest_duplicate_key() {
+        let mut state = State::default();
+        let a = [1.0f32; 16];
+        let b = [2.0f32; 16];
+        let old = crate::ds_pc_transform_math::Output { bytes: [1; 64], flags: 1 };
+        let new = crate::ds_pc_transform_math::Output { bytes: [9; 64], flags: 9 };
+        cache_store(&mut state, &a, &b, &old);
+        let mut other = a;
+        other[0] = 3.0;
+        cache_store(&mut state, &other, &b, &old);
+        cache_store(&mut state, &a, &b, &new);
+        assert_eq!(cache_lookup(&state, &a, &b).unwrap().bytes, [9; 64]);
+        assert_eq!(cache_lookup(&state, &a, &b).unwrap().flags, 9);
     }
 }

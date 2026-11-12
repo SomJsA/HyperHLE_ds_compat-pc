@@ -323,6 +323,12 @@ public:
     cpu->InvalidateCacheRange(start, size);
   }
 
+  void precompile(touchHLE_Mem* memory, const std::uint32_t* addresses, const bool* thumb,
+                  std::size_t count, std::uint32_t cpsr, std::uint32_t fpscr) {
+    env.mem = memory;
+    cpu->Precompile(addresses, thumb, count, cpsr, fpscr);
+  }
+
   void swap_context(touchHLE_DynarmicContext *context) {
     touchHLE_DynarmicContext tmp = {cpu->Regs(), cpu->ExtRegs(), cpu->Cpsr(),
                                     cpu->Fpscr()};
@@ -410,6 +416,12 @@ void touchHLE_DynarmicWrapper_invalidate_cache_range(DynarmicWrapper *cpu,
                                                      VAddr start,
                                                      std::uint32_t size) {
   cpu->invalidate_cache_range(start, size);
+}
+
+void touchHLE_DynarmicWrapper_precompile(DynarmicWrapper *cpu, touchHLE_Mem *memory,
+                                         const std::uint32_t *addresses, const bool *thumb,
+                                         std::size_t count, std::uint32_t cpsr, std::uint32_t fpscr) {
+  cpu->precompile(memory, addresses, thumb, count, cpsr, fpscr);
 }
 
 std::int32_t touchHLE_DynarmicWrapper_run_or_step(DynarmicWrapper *cpu,

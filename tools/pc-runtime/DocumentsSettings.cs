@@ -92,7 +92,7 @@ namespace DeadSpaceBootstrap
             string readme=Path.Combine(root,"README-Storage.txt");SaveStorage.RequireNoLinks(readme);
             if(!File.Exists(readme))
             {
-                string text="DeadSpace Legacy 资料布局 v1\r\n\r\n游戏原生进度：touchHLE_sandbox/"+SaveStorage.Profile+"\r\nPC启动器、按键及显示配置：config/pc\r\nAndroid平台配置：config/android\r\n\r\n三槽位ZIP是PC与Android正式交换格式，包含已有三个槽位与公共依赖；导入前自动备份。\r\n游戏配置和原生SBIN不做跨版本猜测转换；未知布局版本拒绝写入。平台启动器配置分别保存，不直接互换。\r\n切换位置不会自动合并进度。升级分发包不会覆盖本文档目录；迁移请使用启动器的复制或ZIP导入导出。\r\n请避免两台设备同时改写同一同步目录；先完成导出、备份，再在另一设备导入。\r\n";
+                string text="死亡空间移动版（IOS端高清移植） 资料布局 v1\r\n\r\n游戏原生进度：touchHLE_sandbox/"+SaveStorage.Profile+"\r\nPC启动器、按键及显示配置：config/pc\r\nAndroid平台配置：config/android\r\n\r\n三槽位ZIP是PC与Android正式交换格式，包含已有三个槽位与公共依赖；导入前自动备份。\r\n游戏配置和原生SBIN不做跨版本猜测转换；未知布局版本拒绝写入。平台启动器配置分别保存，不直接互换。\r\n切换位置不会自动合并进度。升级分发包不会覆盖本文档目录；迁移请使用启动器的复制或ZIP导入导出。\r\n请避免两台设备同时改写同一同步目录；先完成导出、备份，再在另一设备导入。\r\n";
                 try{using(var stream=new FileStream(readme,FileMode.CreateNew,FileAccess.Write,FileShare.None))
                     {byte[] data=Encoding.UTF8.GetBytes(text);stream.Write(data,0,data.Length);}}
                 catch(IOException){if(!File.Exists(readme))throw;}

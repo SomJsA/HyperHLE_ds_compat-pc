@@ -59,31 +59,45 @@ pub(super) fn locator(env: &mut Environment) {
     let allowed: u32 =
         GuestFunction::from_addr_and_thumb_flag(0x0003_ae60, false).call_from_host(env, (player,));
     if allowed == 0 {
-        echo!("[DSshortcut] locator ignored: CanUseLocator rejected");
+        // Some zero-g deck transitions intentionally have no locator mesh.
+        // The native touch button still replays the current objective label,
+        // so keep the target popup independent from route eligibility.
+        let target_reset = reset_target_popup(env, hud);
+        echo!(
+            "[DSshortcut] locator route unavailable; target_reset={target_reset}"
+        );
         return;
     }
     // Same player method/argument as BTN_MARKER, with no BTN_RIG event, wheel
     // preparation or HUD state transition. Native code owns flag 0x400.
     let accepted: u32 = GuestFunction::from_addr_and_thumb_flag(0x0004_af1c, false)
         .call_from_host(env, (player, 0u32));
-    if accepted != 0 {
-        let world = word(env, hud + 4).unwrap_or(0);
-        if world != 0 && word(env, world + 0x100).is_some_and(|p| p != 0) {
-            // Preserve BTN_MARKER's original objective text popup. This native
-            // presentation object does not open or navigate a HUD/RIG menu.
-            let _: () = GuestFunction::from_addr_and_thumb_flag(0x002f_7e64, false)
-                .call_from_host(env, (hud + 0xf08,));
-        }
-    }
+    // Preserve BTN_MARKER's original objective text popup even when the
+    // current world has no route pointer (the native deck case). This native
+    // presentation object does not open or navigate a HUD/RIG menu.
+    let target_reset = accepted != 0 && reset_target_popup(env, hud);
     echo!(
-        "[DSshortcut] locator native accepted={} player={:#x} state={}->{} flags={:#x} hud={}",
+        "[DSshortcut] locator native accepted={} target_reset={} player={:#x} state={}->{} flags={:#x} hud={}",
         accepted,
+        target_reset,
         player,
         before,
         word(env, player + 0x208).unwrap_or(u32::MAX),
         word(env, player + 0x204).unwrap_or(0),
         word(env, hud + 0x234).unwrap_or(u32::MAX)
     );
+}
+
+fn reset_target_popup(env: &mut Environment, hud: u32) -> bool {
+    if hud < 0x1000 || word(env, hud + 0xf08).is_none() {
+        return false;
+    }
+    let _: () = GuestFunction::from_addr_and_thumb_flag(0x002f_7e64, false)
+        .call_from_host(env, (hud + 0xf08,));
+    // A zero-G deck may have no locator mesh. Native locator still shows the
+    // current objective, so replay the last target independently of the route.
+    crate::ds_objective_overlay::force_target_replay();
+    true
 }
 
 fn turn_forwarder(env: &mut Environment, player: u32) -> Option<u32> {

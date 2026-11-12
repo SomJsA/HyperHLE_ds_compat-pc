@@ -13,7 +13,9 @@ use crate::gles::{gles11_raw as gles11, GLES};
 use crate::mem::{ConstPtr, ConstVoidPtr, GuestISize, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr};
 use crate::objc::nil;
 use crate::Environment;
+use std::collections::HashMap;
 use std::slice::from_raw_parts;
+use std::sync::{Arc, Mutex, OnceLock};
 
 #[path = "ds_input_region.rs"]
 mod ds_input_region;
@@ -1197,39 +1199,123 @@ fn ds_try_kinesis_launch(
     true
 }
 
+fn ds_hud_player_cache_enabled() -> bool {
+    static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ON.get_or_init(|| {
+        std::env::var("TOUCHHLE_DS_HUD_PLAYER_CACHE").as_deref() == Ok("1")
+    })
+}
+
+fn ds_hud_player_cache_report(hit: bool) {
+    static TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    if !*TRACE.get_or_init(|| {
+        std::env::var("TOUCHHLE_DS_HUD_PLAYER_CACHE_TRACE").as_deref() == Ok("1")
+    }) {
+        return;
+    }
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static CALLBACKS: AtomicU64 = AtomicU64::new(0);
+    static HITS: AtomicU64 = AtomicU64::new(0);
+    let callback_delta = if hit { 0 } else { 1 };
+    let hit_delta = if hit { 1 } else { 0 };
+    let callbacks = CALLBACKS.fetch_add(callback_delta, Ordering::Relaxed) + callback_delta;
+    let hits = HITS.fetch_add(hit_delta, Ordering::Relaxed) + hit_delta;
+    let total = callbacks.saturating_add(hits);
+    if total % 256 == 0 {
+        echo!("[DSpcHudCache] callbacks={} hits={} total={}", callbacks, hits, total);
+    }
+}
+
 fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
     if crate::ds_frontend_controller::capture_menu() {
+        if ds_hud_player_cache_enabled() {
+            let state = &mut env.framework_state.opengles;
+            state.ds_hud_player_cache_frame = crate::window::DS_FRAME_COUNTER
+                .load(std::sync::atomic::Ordering::Relaxed);
+            state.ds_hud_player_cache_thread = env.current_thread;
+            state.ds_hud_player_cache_sampled = true;
+            state.ds_hud_player_cache_value = None;
+        }
         crate::ds_frontend_controller::set_hud_state(crate::ds_frontend_controller::UNKNOWN);
         return None;
+    }
+    let cache_enabled = ds_hud_player_cache_enabled();
+    let frame = crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed);
+    if cache_enabled {
+        let cached = {
+            let state = &env.framework_state.opengles;
+            (state.ds_hud_player_cache_sampled
+                && state.ds_hud_player_cache_frame == frame
+                && state.ds_hud_player_cache_thread == env.current_thread)
+                .then_some(state.ds_hud_player_cache_value)
+        };
+        if let Some(cached) = cached {
+            ds_hud_player_cache_report(true);
+            let Some((hud, player)) = cached else {
+                crate::ds_frontend_controller::set_hud_state(crate::ds_frontend_controller::UNKNOWN);
+                return None;
+            };
+            let hud_state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
+            crate::ds_frontend_controller::set_hud_state(hud_state);
+            return Some((hud, player));
+        }
+    }
+    if cache_enabled {
+        ds_hud_player_cache_report(false);
     }
     let get_hud = GuestFunction::from_addr_and_thumb_flag(0x00030474, false);
     let hud: u32 = get_hud.call_from_host(env, ());
-    if hud == 0 {
+    let result = if hud == 0 {
+        None
+    } else {
+        let world = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
+        let player = if world == 0 {
+            0
+        } else {
+            env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(world + 0xe0))
+        };
+        let player_vt = if player == 0 {
+            0
+        } else {
+            env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player))
+        };
+        (player != 0 && player_vt == 0x00a7a4f8).then(|| {
+            let hud_state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
+            (hud, player, hud_state)
+        })
+    };
+    if cache_enabled {
+        let state = &mut env.framework_state.opengles;
+        state.ds_hud_player_cache_frame = frame;
+        state.ds_hud_player_cache_thread = env.current_thread;
+        state.ds_hud_player_cache_sampled = true;
+        state.ds_hud_player_cache_value = result.map(|(hud, player, _)| (hud, player));
+    }
+    let Some((hud, player, hud_state)) = result else {
         crate::ds_frontend_controller::set_hud_state(crate::ds_frontend_controller::UNKNOWN);
         return None;
-    }
-    let world: u32 = env
-        .mem
-        .read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
-    if world == 0 {
-        crate::ds_frontend_controller::set_hud_state(crate::ds_frontend_controller::UNKNOWN);
-        return None;
-    }
-    let player: u32 = env
-        .mem
-        .read(crate::mem::ConstPtr::<u32>::from_bits(world + 0xe0));
-    if player == 0 {
-        crate::ds_frontend_controller::set_hud_state(crate::ds_frontend_controller::UNKNOWN);
-        return None;
-    }
-    let player_vt: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player));
-    if player_vt != 0x00a7a4f8 {
-        crate::ds_frontend_controller::set_hud_state(crate::ds_frontend_controller::UNKNOWN);
-        return None;
-    }
-    let hud_state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
+    };
     crate::ds_frontend_controller::set_hud_state(hud_state);
     Some((hud, player))
+}
+
+// Native pause resume is itself a HUD command. The ordinary gameplay helper
+// deliberately refuses to inspect a HUD while the frontend controller owns a
+// modal, so use this narrow verified lookup for BTN_PLAY_PAUSE only.
+fn ds_pause_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
+    let hud: u32 = GuestFunction::from_addr_and_thumb_flag(0x0003_0474, false).call_from_host(env, ());
+    let world = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
+    if hud < 0x1000 || world < 0x1000 { return None; }
+    let player = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(world + 0xe0));
+    if player < 0x1000 || env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player)) != 0x00a7_a4f8 { return None; }
+    let state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
+    crate::ds_frontend_controller::set_hud_state(state);
+    Some((hud, player))
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+pub(crate) fn ds_current_hud_player_public(env: &mut Environment) -> Option<(u32, u32)> {
+    ds_current_hud_player(env)
 }
 
 /// Match the acquisition portion of original CanStasis (ARM 0x3b080).
@@ -1511,7 +1597,29 @@ pub(super) fn ds_release_aim_timeout(env: &mut Environment) {
     }
 }
 
+fn ds_rearm_held_controller_aim(env: &mut Environment) {
+    if std::env::var("TOUCHHLE_DS_CONTROLLER_AIM_MODE").as_deref() == Ok("toggle")
+        || env.framework_state.opengles.ds_aim_hold_requested
+        || env.framework_state.opengles.ds_aim_timeout_lease.is_some()
+        || !crate::window::DS_CONTROLLER_LT_HELD.load(std::sync::atomic::Ordering::Relaxed)
+    {
+        return;
+    }
+    // A held LT edge can be consumed while stasis/kinesis owns the player.
+    // Requeue only while the native player is still busy or temporarily
+    // unavailable; state 0 with a deliberate native cancellation remains
+    // untouched.
+    let busy = ds_current_hud_player(env)
+        .map(|(hud, _)| env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234)) != 0)
+        .unwrap_or(true);
+    if busy {
+        crate::window::DS_AIM_REQUEST.store(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
 fn ds_update_aim_timeout(env: &mut Environment) {
+    ds_retry_pending_aim_release(env);
+    ds_rearm_held_controller_aim(env);
     if !env.framework_state.opengles.ds_aim_hold_requested && env.framework_state.opengles.ds_aim_timeout_lease.is_none() { return; }
     let mut eligible = false;
     if let Some((hud, player)) = ds_current_hud_player(env) {
@@ -1547,7 +1655,25 @@ fn ds_update_aim_timeout(env: &mut Environment) {
 }
 
 fn ds_apply_aim_request(env: &mut Environment, request: i32) {
-    if request == 0 { env.framework_state.opengles.ds_aim_hold_requested = false; ds_gamepad_set_aim(env, false); return; }
+    if request == 0 {
+        env.framework_state.opengles.ds_aim_hold_requested = false;
+        // Keep a release edge alive when the native player is hidden by a
+        // control/QTE. The old one-shot request was consumed while the
+        // lookup returned None, leaving +0x1e1 set and restoring aim after
+        // the control ended.
+        env.framework_state.opengles.ds_aim_release_pending = true;
+        // Release can arrive while stasis/kinesis/death owns the player and
+        // the native player lookup is temporarily unavailable. Keep retrying
+        // until native aiming is actually cleared.
+        let applied = ds_gamepad_set_aim(env, false);
+        if applied {
+            env.framework_state.opengles.ds_aim_release_pending = false;
+        }
+        return;
+    }
+    // A fresh LT press supersedes an old release that was waiting for the
+    // player object to become visible again.
+    env.framework_state.opengles.ds_aim_release_pending = false;
     let Some((_hud, player)) = ds_current_hud_player(env) else { ds_release_aim_timeout(env); return; };
     let aiming: u8 = env.mem.read(crate::mem::ConstPtr::from_bits(player + 0x1e1));
     env.framework_state.opengles.ds_aim_hold_requested = request == 1 || (request == 2 && aiming == 0);
@@ -1566,16 +1692,28 @@ fn ds_apply_aim_request(env: &mut Environment, request: i32) {
     ds_gamepad_set_aim(env, entering);
 }
 
-fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) {
+fn ds_retry_pending_aim_release(env: &mut Environment) {
+    if !env.framework_state.opengles.ds_aim_release_pending
+        || crate::window::DS_CONTROLLER_LT_HELD.load(std::sync::atomic::Ordering::Relaxed)
+    {
+        return;
+    }
+    if ds_gamepad_set_aim(env, false) {
+        env.framework_state.opengles.ds_aim_release_pending = false;
+        echo!("[DSpad] delayed aim release applied after native control");
+    }
+}
+
+fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) -> bool {
     let Some((_hud, player)) = ds_current_hud_player(env) else {
         echo!("[DSpad] aim request ignored: no player");
-        return;
+        return false;
     };
     let before: u8 = env
         .mem
         .read(crate::mem::ConstPtr::<u8>::from_bits(player + 0x1e1));
     if before == entering as u8 {
-        return;
+        return true;
     }
     if entering {
         let state: u32 = env
@@ -1583,7 +1721,7 @@ fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) {
             .read(crate::mem::ConstPtr::<u32>::from_bits(player + 0x208));
         if state != 0 && state != 3 {
             echo!("[DSpad] aim enter ignored: player state {state}");
-            return;
+            return false;
         }
     }
     if entering {
@@ -1594,7 +1732,7 @@ fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) {
         // Never send it when already aiming: that would fire a shot.
         if ds_send_player_fire_action(env, player).is_none() {
             echo!("[DSpad] aim enter ignored: no enabled raise-weapon forwarder");
-            return;
+            return false;
         }
     } else {
         let set_aiming = GuestFunction::from_addr_and_thumb_flag(0x0003f884, false);
@@ -1608,6 +1746,7 @@ fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) {
         "[DSpad] native aim {}: {before} -> {after}",
         if entering { "enter" } else { "release" }
     );
+    after == entering as u8
 }
 
 fn ds_invoke_hud_string(env: &mut Environment, hud: u32, command: crate::window::ds_hud_commands::HudCommand) -> Option<u32> {
@@ -1631,7 +1770,11 @@ fn ds_invoke_hud_string(env: &mut Environment, hud: u32, command: crate::window:
 fn ds_native_hud_command(env: &mut Environment, command: crate::window::ds_hud_commands::HudCommand) {
     use crate::window::ds_hud_commands::HudCommand;
     if command == HudCommand::Locator { ds_player_shortcuts::locator(env); return; }
-    let Some((hud, player)) = ds_current_hud_player(env) else {
+    let Some((hud, player)) = (if command == HudCommand::Pause {
+        ds_pause_hud_player(env)
+    } else {
+        ds_current_hud_player(env)
+    }) else {
         echo!("[DShud] {:?} ignored: no live HUD/player", command); return;
     };
     let mut state: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
@@ -1722,6 +1865,8 @@ fn ds_fire_snapshot(env:&mut Environment)->Option<crate::window::ds_fire_control
 fn ds_tick_fire_control(env:&mut Environment){
     use crate::window::ds_fire_control::{self,Effect,Input,Source};
     if !crate::window::ds_native_inputs() && !crate::ds_frontend_controller::configured(){return;}
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    crate::ds_pc_jit_prewarm::maybe(env);
     if crate::window::DS_FIRE_RELEASE_REQUEST.swap(false,std::sync::atomic::Ordering::Relaxed){ds_fire_control::enqueue(Input::Cancel);}
     // Keep the old diagnostic atomic compatible; normal physical events now
     // retain their ordered press/release identity in the native input queue.
@@ -2200,33 +2345,31 @@ fn with_ctx_and_mem<T, U: Default>(env: &mut Environment, f: T) -> U
 where
     T: FnOnce(&mut dyn GLES, &mut Mem) -> U,
 {
-    if env
+    let current_ctx = env
         .framework_state
         .opengles
-        .effective_ctx_missing(env.current_thread)
-    {
+        .effective_ctx_id(env.current_thread);
+    let Some(current_ctx) = current_ctx else {
         log_dbg!(
             "Skipping GLES call without context (line {})",
             std::panic::Location::caller().line()
         );
         return U::default();
-    }
+    };
     let trace = env.options.trace_gl_errors;
     let caller = std::panic::Location::caller();
     let _stutter_span=crate::ds_stutter_probe::Span::new(1,caller.line() as u64);
-    // `sync_context` now returns None when no GL context is bound to the
-    // calling thread. The guard above already short-circuits the common
-    // case where the *guest* never made a context current, but on edge
-    // cases (e.g. context destroyed mid-call, headless GLES driver missing,
-    // see HyperHLE log #5) we may still hit None here. Treat it the same
-    // as the no-context branch above: log once and return the default.
-    let Some(mut gles) = super::sync_context(
+    // The context ID was already resolved above; bind that exact context
+    // without repeating the ThreadId lookup. A context can still disappear
+    // between the lookup and borrow, so preserve the existing fallback.
+    let Some(mut gles) = super::sync_context_with_id(
         &mut env.framework_state.opengles,
         &mut env.objc,
         env.window
             .as_mut()
             .expect("OpenGL ES is not supported in headless mode"),
         env.current_thread,
+        current_ctx,
     ) else {
         log_dbg!(
             "Skipping GLES call after sync_context returned None (line {})",
@@ -4262,6 +4405,21 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                 "First glClear(mask=0x{:x}) [this log will only be shown once]",
                 mask
             );
+        }
+    }
+    if mask & gles11::DEPTH_BUFFER_BIT != 0 {
+        let drawable = crate::frameworks::opengles::gles_guest::drawable_fbo_of_current_ctx(env);
+        if drawable.is_some() {
+            let predicted_frame = crate::window::DS_FRAME_COUNTER
+                .load(std::sync::atomic::Ordering::Relaxed)
+                .saturating_add(1);
+            with_ctx_and_mem(env, |gles, _mem| unsafe {
+                let mut framebuffer: GLint = 0;
+                gles.GetIntegerv(gles11::FRAMEBUFFER_BINDING_OES, &mut framebuffer);
+                if drawable == Some(framebuffer as GLuint) {
+                    crate::ds_msaa::note_guest_drawable_depth_clear(predicted_frame);
+                }
+            });
         }
     }
     // Debug aid: `TOUCHHLE_DS_DUMP_FRAMES=<dir>` writes the colour buffer to a
@@ -6434,6 +6592,13 @@ fn glDeleteTextures(env: &mut Environment, n: GLsizei, textures: ConstPtr<GLuint
     with_ctx_and_mem(env, |gles, mem| {
         let n_usize: GuestUSize = n.try_into().unwrap();
         let textures = mem.ptr_at(textures, n_usize);
+        let texture_names = unsafe { std::slice::from_raw_parts(textures, n_usize as usize) };
+        for &texture in texture_names {
+            // Texture names are recycled by the game. Drop the host-side HD
+            // replacement marker with the GL object so churn cannot grow the
+            // global residency bookkeeping indefinitely.
+            ds_clear_hd_texture_replaced(texture);
+        }
         unsafe { gles.DeleteTextures(n, textures) }
     })
 }
@@ -6922,16 +7087,74 @@ fn ds_clear_hd_texture_replaced(texture: u32) {
 /// Look up (and cache) an HD replacement picture for a texture content key:
 /// `<dir>/<key:08x>.png` -> `(width, height, RGBA bytes, path)`. The cache is
 /// keyed by path so a repeated upload of the same artwork decodes once.
-fn ds_hd_texture(dir: &str, key: u32) -> Option<(u32, u32, Vec<u8>, String)> {
-    use std::sync::{Mutex, OnceLock};
-    type Entry = Option<(u32, u32, Vec<u8>, String)>;
-    static CACHE: OnceLock<Mutex<std::collections::HashMap<String, Entry>>> = OnceLock::new();
+type HdCacheValue = Option<(u32, u32, Arc<Vec<u8>>, String)>;
+
+struct HdCacheState {
+    entries: HashMap<String, (HdCacheValue, u64)>,
+    bytes: usize,
+    serial: u64,
+    limit_bytes: usize,
+}
+
+impl HdCacheState {
+    fn new(limit_bytes: usize) -> Self {
+        Self { entries: HashMap::new(), bytes: 0, serial: 0, limit_bytes }
+    }
+
+    fn value_bytes(value: &HdCacheValue) -> usize {
+        value.as_ref().map_or(0, |(_, _, pixels, _)| pixels.len())
+    }
+
+    fn lookup(&mut self, path: &str) -> Option<HdCacheValue> {
+        self.serial = self.serial.wrapping_add(1);
+        let value = self.entries.get_mut(path)?;
+        value.1 = self.serial;
+        Some(value.0.clone())
+    }
+
+    fn insert(&mut self, path: String, value: HdCacheValue) {
+        self.serial = self.serial.wrapping_add(1);
+        let bytes = Self::value_bytes(&value);
+        if let Some((old, _)) = self.entries.insert(path, (value, self.serial)) {
+            self.bytes = self.bytes.saturating_sub(Self::value_bytes(&old));
+        }
+        self.bytes = self.bytes.saturating_add(bytes);
+        while self.limit_bytes != 0 && self.bytes > self.limit_bytes {
+            let Some(victim) = self
+                .entries
+                .iter()
+                .min_by_key(|(_, (_, stamp))| *stamp)
+                .map(|(path, _)| path.clone())
+            else { break; };
+            let Some((old, _)) = self.entries.remove(&victim) else { break; };
+            self.bytes = self.bytes.saturating_sub(Self::value_bytes(&old));
+        }
+    }
+}
+
+fn ds_hd_texture(
+    dir: &str,
+    key: u32,
+) -> Option<(u32, u32, Arc<Vec<u8>>, String)> {
+    static LIMIT_BYTES: OnceLock<usize> = OnceLock::new();
+    let limit_bytes = *LIMIT_BYTES.get_or_init(|| {
+        let megabytes = std::env::var("TOUCHHLE_DS_HD_CACHE_MB")
+            .ok()
+            .and_then(|value| value.trim().parse::<usize>().ok())
+            .unwrap_or(0);
+        let bytes = megabytes.saturating_mul(1024 * 1024);
+        if bytes != 0 {
+            echo!("[DSTEX cache] HD decoded cache limit={} MiB", megabytes);
+        }
+        bytes
+    });
+    static CACHE: OnceLock<Mutex<HdCacheState>> = OnceLock::new();
     let path = format!("{}/{:08x}.png", dir.trim_end_matches(['/', '\\']), key);
-    let cache = CACHE.get_or_init(|| Mutex::new(std::collections::HashMap::new()));
-    if let Ok(m) = cache.lock() {
-        if let Some(v) = m.get(&path) {
+    let cache = CACHE.get_or_init(|| Mutex::new(HdCacheState::new(limit_bytes)));
+    if let Ok(mut m) = cache.lock() {
+        if let Some(v) = m.lookup(&path) {
             let _scene=crate::ds_scene_diagnostics::Scope::new(crate::ds_scene_diagnostics::Kind::HdCacheHit,v.as_ref().map_or(0,|entry|entry.2.len() as u64),key as u64);
-            return v.clone();
+            return v;
         }
     }
     let _scene=crate::ds_scene_diagnostics::Scope::new(crate::ds_scene_diagnostics::Kind::HdDecode,1,key as u64);
@@ -6940,7 +7163,7 @@ fn ds_hd_texture(dir: &str, key: u32) -> Option<(u32, u32, Vec<u8>, String)> {
         .and_then(|bytes| crate::image::Image::from_bytes(&bytes).ok())
         .map(|img| {
             let (w, h) = img.dimensions();
-            (w, h, img.pixels().to_vec(), path.clone())
+            (w, h, Arc::new(img.pixels().to_vec()), path.clone())
         });
     if let Ok(mut m) = cache.lock() {
         m.insert(path.clone(), decoded.clone());
@@ -6953,11 +7176,31 @@ fn ds_hd_texture(dir: &str, key: u32) -> Option<(u32, u32, Vec<u8>, String)> {
 fn ds_apply_anisotropy(gles: &mut dyn GLES) {
     const TEXTURE_MAX_ANISOTROPY_EXT: GLenum = 0x84fe;
     const MAX_TEXTURE_MAX_ANISOTROPY_EXT: GLenum = 0x84ff;
-    let requested: GLfloat = std::env::var("TOUCHHLE_DS_ANISO")
-        .ok()
-        .and_then(|v| v.trim().parse::<f32>().ok())
-        .filter(|v| v.is_finite() && *v >= 1.0)
-        .unwrap_or(1.0);
+    // The driver limit is immutable for the lifetime of a loaded GL device,
+    // yet the old path queried it for every level-0 texture upload. At high
+    // internal resolution this turns a cheap texture parameter into a large
+    // stream of guest→HLE→driver queries. Keep the old live query behind an
+    // explicit rollback switch for unusual multi-driver hosts.
+    static CACHE_ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    let cache_enabled = *CACHE_ENABLED.get_or_init(|| {
+        std::env::var("TOUCHHLE_DS_ANISO_CACHE").as_deref() != Ok("0")
+    });
+    let requested: GLfloat = if cache_enabled {
+        static REQUESTED: std::sync::OnceLock<GLfloat> = std::sync::OnceLock::new();
+        *REQUESTED.get_or_init(|| {
+            std::env::var("TOUCHHLE_DS_ANISO")
+                .ok()
+                .and_then(|v| v.trim().parse::<f32>().ok())
+                .filter(|v| v.is_finite() && *v >= 1.0)
+                .unwrap_or(1.0)
+        })
+    } else {
+        std::env::var("TOUCHHLE_DS_ANISO")
+            .ok()
+            .and_then(|v| v.trim().parse::<f32>().ok())
+            .filter(|v| v.is_finite() && *v >= 1.0)
+            .unwrap_or(1.0)
+    };
     if requested <= 1.0 {
         static DEFAULT_REPORTED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
         if !DEFAULT_REPORTED.swap(true, std::sync::atomic::Ordering::Relaxed) {
@@ -6965,9 +7208,19 @@ fn ds_apply_anisotropy(gles: &mut dyn GLES) {
         }
         return;
     }
+    static DRIVER_MAX: std::sync::OnceLock<GLfloat> = std::sync::OnceLock::new();
     let mut max: GLfloat = 1.0;
     unsafe {
-        gles.GetFloatv(MAX_TEXTURE_MAX_ANISOTROPY_EXT, &mut max);
+        if cache_enabled {
+            max = *DRIVER_MAX.get_or_init(|| {
+                let mut queried = 1.0;
+                gles.GetFloatv(MAX_TEXTURE_MAX_ANISOTROPY_EXT, &mut queried);
+                queried.max(1.0)
+            });
+        } else {
+            gles.GetFloatv(MAX_TEXTURE_MAX_ANISOTROPY_EXT, &mut max);
+            max = max.max(1.0);
+        }
         let value = requested.min(max.max(1.0));
         gles.TexParameterf(gles11::TEXTURE_2D, TEXTURE_MAX_ANISOTROPY_EXT, value);
         use std::sync::atomic::{AtomicBool, Ordering};
@@ -7003,7 +7256,7 @@ fn ds_synchronize_texture_upload(gles: &mut dyn GLES, payload: bool) {
     if LAST_MODE.swap(code, std::sync::atomic::Ordering::Relaxed) != code {
         echo!("[DSTEX sync] mode={mode:?}");
     }
-    if mode == TextureSyncMode::Off {
+    if !should_synchronize_texture_upload(mode, payload) {
         return;
     }
     let _profile = crate::ds_perf::Timer::new(crate::ds_perf::Stage::TextureSync);
@@ -7014,6 +7267,16 @@ fn ds_synchronize_texture_upload(gles: &mut dyn GLES, payload: bool) {
             TextureSyncMode::Finish => gles.Finish(),
         }
     }
+}
+
+/// Empty/zero-area texture submissions have no pixel payload whose completion
+/// needs to be waited on. The GL call itself remains ordered; avoid turning a
+/// storage allocation or rejected upload into a full driver finish.
+fn should_synchronize_texture_upload(
+    mode: crate::ds_perf_control::TextureSyncMode,
+    payload: bool,
+) -> bool {
+    payload && mode != crate::ds_perf_control::TextureSyncMode::Off
 }
 
 fn glTexImage2D(
@@ -7113,7 +7376,7 @@ fn glTexImage2D(
         // pointer above is only a *host* pointer at this point (outside the
         // closure the same variable is still a guest address, so an override
         // applied there would be translated a second time and lost).
-        let mut hd_hold: Option<Vec<u8>> = None;
+        let mut hd_hold: Option<std::sync::Arc<Vec<u8>>> = None;
         let (width, height, format, type_, pixels) = {
             let (mut w, mut h, mut f, mut t, mut p) = (width, height, format, type_, pixels);
             if level == 0 && target == gles11::TEXTURE_2D && !p.is_null() && w > 0 && h > 0 {
@@ -7146,7 +7409,7 @@ fn glTexImage2D(
                             f = gles11::RGBA;
                             t = gles11::UNSIGNED_BYTE;
                             p = data.as_ptr() as *const GLvoid;
-                            hd_hold = Some(data);
+                            hd_hold = Some(std::sync::Arc::clone(&data));
                             let mut texture: GLint = 0;
                             gles.GetIntegerv(gles11::TEXTURE_BINDING_2D, &mut texture);
                             ds_mark_hd_texture_replaced(texture as u32);
@@ -8021,7 +8284,7 @@ fn glIsRenderbufferOES(env: &mut Environment, renderbuffer: GLuint) -> GLboolean
 ///
 /// Uses the same main-thread fallback as [super::State::effective_ctx_missing]
 /// so worker-thread rendering (Dead Space) finds the context too.
-fn drawable_fbo_of_current_ctx(env: &mut Environment) -> Option<GLuint> {
+pub(crate) fn drawable_fbo_of_current_ctx(env: &mut Environment) -> Option<GLuint> {
     let tid = env.current_thread;
     let ctx = {
         let state = &mut env.framework_state.opengles;
@@ -11625,5 +11888,69 @@ mod shader_preprocessor_normalization_tests {
         let out = normalize_shader_preprocessor_whitespace(&joined);
         assert!(out.contains("#endif //trailing comment"));
         assert!(!out.contains("#endif//trailing comment"));
+    }
+}
+
+#[cfg(test)]
+mod hd_cache_tests {
+    use super::*;
+
+    fn value(bytes: &[u8], name: &str) -> HdCacheValue {
+        Some((1, 1, Arc::new(bytes.to_vec()), name.to_owned()))
+    }
+
+    #[test]
+    fn bounded_cache_shares_pixels_and_evicts_oldest_entry() {
+        let mut cache = HdCacheState::new(4);
+        let pixels = Arc::new(vec![1u8, 2]);
+        cache.insert(
+            "a".to_owned(),
+            Some((1, 1, Arc::clone(&pixels), "a".to_owned())),
+        );
+        cache.insert("b".to_owned(), value(&[3, 4], "b"));
+        let hit = cache.lookup("a").expect("a must be cached").expect("value");
+        assert!(Arc::ptr_eq(&hit.2, &pixels));
+        cache.insert("c".to_owned(), value(&[5, 6], "c"));
+        assert!(cache.lookup("a").is_some());
+        assert!(cache.lookup("c").is_some());
+        assert!(cache.lookup("b").is_none(), "least-recently-used entry survived");
+    }
+}
+
+#[cfg(test)]
+mod texture_sync_tests {
+    use super::should_synchronize_texture_upload;
+    use crate::ds_perf_control::TextureSyncMode;
+
+    #[test]
+    fn empty_uploads_never_request_a_driver_finish() {
+        for mode in [
+            TextureSyncMode::Off,
+            TextureSyncMode::Flush,
+            TextureSyncMode::Finish,
+        ] {
+            assert!(!should_synchronize_texture_upload(mode, false));
+        }
+    }
+
+    #[test]
+    fn payload_uploads_keep_the_selected_sync_mode() {
+        assert!(!should_synchronize_texture_upload(TextureSyncMode::Off, true));
+        assert!(should_synchronize_texture_upload(TextureSyncMode::Flush, true));
+        assert!(should_synchronize_texture_upload(TextureSyncMode::Finish, true));
+    }
+}
+
+#[cfg(test)]
+mod hd_replacement_marker_tests {
+    use super::{ds_clear_hd_texture_replaced, ds_hd_texture_was_replaced, ds_mark_hd_texture_replaced};
+
+    #[test]
+    fn deleting_a_texture_can_release_its_replacement_marker() {
+        let texture = 0xfeed_ba11;
+        ds_mark_hd_texture_replaced(texture);
+        assert!(ds_hd_texture_was_replaced(texture));
+        ds_clear_hd_texture_replaced(texture);
+        assert!(!ds_hd_texture_was_replaced(texture));
     }
 }

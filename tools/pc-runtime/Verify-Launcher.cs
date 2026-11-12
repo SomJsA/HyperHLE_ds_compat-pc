@@ -71,7 +71,7 @@ namespace DeadSpaceBootstrap
                 // Set managed visibility only: no ShowWindow and no foreground window.
                 typeof(Control).GetMethod("SetState", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(form, new object[] { 2, true });
                 form.CreateControl();
-                for (int i = 0; i < 8; i++)
+                for (int i = 0; i < 6; i++)
                 {
                     typeof(LauncherForm).GetMethod("SelectPage", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(form, new object[] { i });
                     CheckLayout(form);
@@ -87,14 +87,13 @@ namespace DeadSpaceBootstrap
                         ((Button)control).PerformClick();
                     }
                 }
-                var preset = (ComboBox)typeof(LauncherForm).GetField("qualityPreset", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(form);
-                var scale = (ComboBox)typeof(LauncherForm).GetField("scaleHack", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(form);
-                string beforeScale = Convert.ToString(scale.SelectedItem);
-                for (int i = 0; i < 4; i++) { preset.SelectedIndex = i; if (Convert.ToString(scale.SelectedItem) != beforeScale) throw new Exception("Quality preset changed independent internal resolution"); }
+                var msaa = (ComboBox)typeof(LauncherForm).GetField("msaaSamples", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(form);
+                var anisotropy = (ComboBox)typeof(LauncherForm).GetField("anisotropy", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(form);
+                if (msaa.Items.Count != 4 || anisotropy.Items.Count != 4) throw new Exception("Direct graphics controls missing");
             }
             Console.WriteLine(skipSaveFixture
-                ? "PASS: UI-only mode; 8 offscreen pages plus expanded settings, no overlapping inputs, 4 working quality presets; save fixture not opened."
-                : "PASS: 8 DLC combinations, byte-exact reversal, corruption rejection, 8 offscreen pages plus expanded settings, no overlapping inputs, 4 working quality presets; live saves untouched.");
+                ? "PASS: UI-only mode; 6 offscreen pages plus expanded settings, no overlapping inputs, direct graphics controls; save fixture not opened."
+                : "PASS: 8 DLC combinations, byte-exact reversal, corruption rejection, 6 offscreen pages plus expanded settings, no overlapping inputs, direct graphics controls; live saves untouched.");
         }
 
         private static bool Input(Control c)

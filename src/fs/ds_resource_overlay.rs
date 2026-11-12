@@ -23,6 +23,7 @@ fn digest(bytes: &[u8]) -> String {
 }
 
 pub(super) fn mount(bundle: &mut FsNode, bundle_id: &str) {
+    mount_subtitles(bundle,bundle_id,std::env::var("TOUCHHLE_DS_SUBTITLE_SUPPLEMENT").as_deref()!=Ok("0"));
     let enabled = std::env::var("TOUCHHLE_DS_NATIVE_TEXT_PATCH").as_deref() != Ok("0");
     let mounted = mount_enabled(bundle, bundle_id, enabled);
     if bundle_id == BUNDLE_ID { crate::ds_startup_report::text_patch(mounted); }
@@ -86,6 +87,36 @@ fn mount_enabled(bundle: &mut FsNode, bundle_id: &str, enabled: bool) -> bool {
     crate::ds_diagnostics::feature("native_text_source_sha256",&source_hash);
     crate::ds_diagnostics::feature("native_text_patch_sha256",&patch_hash);
     log!("[DSresource-overlay] mounted {MEMBER} bytes={} source_sha256={source_hash} patch_sha256={patch_hash}; selected IPA unchanged", PATCH.len());
+    true
+}
+
+
+const SUBTITLE_MEMBER:&str="published/data/subtitles.sb";
+const SUBTITLE_ORIGINAL:&str="8f4e219455148d0acafec5e632f2a762f0d1e60fe375acff787059125bd1d143";
+const SUBTITLE_PATCH:&[u8]=include_bytes!("../../res/overlay/deadspace_subtitles.sb");
+
+fn mount_subtitles(bundle:&mut FsNode,bundle_id:&str,enabled:bool)->bool {
+    if bundle_id != BUNDLE_ID || !enabled { return false; }
+    let mut node=bundle;
+    for part in SUBTITLE_MEMBER.split('/') {
+        let FsNode::Directory {children,..}=node else {return false;};
+        let Some(next)=children.get_mut(part) else {return false;};node=next;
+    }
+    let FsNode::File {location,writeable:false}=node else {return false;};
+    let bytes=match location {
+        FileLocation::Path(path)=>std::fs::read(path),
+        FileLocation::IpaFileRef(file)=>{let mut data=Vec::new();file.open().read_to_end(&mut data).map(|_|data)},
+        FileLocation::EmbeddedFile(file)=>Ok(file.0.to_vec()),
+        FileLocation::ResourceFilePath(_)=>return false,
+    };
+    let Ok(bytes)=bytes else {return false;};
+    let source=digest(&bytes);let patch=digest(SUBTITLE_PATCH);
+    if source != SUBTITLE_ORIGINAL && source != patch {
+        log!("[DSsubtitle-bank] unsupported source_sha256={source}; original table retained");
+        return false;
+    }
+    *location=FileLocation::EmbeddedFile(EmbeddedFile(SUBTITLE_PATCH));
+    log!("[DSsubtitle-bank] mounted read-only bytes={} source_sha256={} patch_sha256={}; selected IPA unchanged",SUBTITLE_PATCH.len(),source,patch);
     true
 }
 
@@ -235,10 +266,11 @@ mod tests {
     }
 
     #[test]
+    // R2 bank (including reviewed text fixes); its accepted hash is also checked by project-guard.
     fn ds_native_patch_embedded_resource_matches_latest_ledger() {
         assert_eq!(
             digest(PATCH),
-            "2f5f8c77d760446f3a63d2ea59ccbecd86eb59791e07f927de1b184e32c37260"
+            "05713dc09dc6988c60a1d4e3f431c96c7d108f6c3d0cd7be278a3da3b277b81a"
         );
         assert_eq!(&PATCH[..8], b"SBIN\x02\0\0\0");
     }
@@ -270,4 +302,21 @@ mod tests {
         }
         format!("{hash:x}", hash = hash.finalize())
     }
+    #[test]
+    fn r4_subtitle_mount_is_readonly_idempotent_and_rejects_unknown_nodes() {
+        fn make(bytes:&'static [u8],writeable:bool)->FsNode {
+            FsNode::dir().with_child("published",FsNode::dir().with_child("data",
+                FsNode::dir().with_child("subtitles.sb",FsNode::File {
+                    location:FileLocation::EmbeddedFile(EmbeddedFile(bytes)),writeable})))
+        }
+        let mut known=make(SUBTITLE_PATCH,false);
+        assert!(mount_subtitles(&mut known,BUNDLE_ID,true));
+        assert!(mount_subtitles(&mut known,BUNDLE_ID,true));
+        assert!(!mount_subtitles(&mut known,BUNDLE_ID,false));
+        assert!(!mount_subtitles(&mut known,"other.application",true));
+        assert!(!mount_subtitles(&mut make(b"unknown",false),BUNDLE_ID,true));
+        assert!(!mount_subtitles(&mut make(SUBTITLE_PATCH,true),BUNDLE_ID,true));
+        assert!(!mount_subtitles(&mut FsNode::dir(),BUNDLE_ID,true));
+    }
+
 }

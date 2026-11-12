@@ -55,6 +55,7 @@ pub(crate) fn prime(env: &mut Environment) {
             return;
         }
         let known = env.bundle.bundle_identifier() == "com.ea.deadspace.bv"
+            && (!cfg!(target_os="windows") || !input_enabled || crate::ds_frontend_controller::native_difficulty_verified(env))
             && (!cfg!(target_os="windows") || !input_enabled || crate::ds_frontend_controller::native_modal_verified(env))
             && (!cfg!(target_os="windows") || word(env,0x0026_b018)==Some(0xeb00_0381))
             && SITES.iter().all(|&(a, op, _)| word(env, a) == Some(op))

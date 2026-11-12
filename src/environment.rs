@@ -386,7 +386,10 @@ impl Environment {
         // Default model picked for each class when the user hasn't chosen one.
         // iPhone 3GS (iPhone2,1) is the historical touchHLE phone default
         // (320x480, GLES2-capable); iPad 2 (iPad2,1) is the tablet default.
-        let default_phone = DeviceFamily::iPhone3GS;
+        let default_phone = if launched_bundle_id == "com.ea.deadspace.bv"
+            && std::env::var("TOUCHHLE_DS_NATIVE_EFFECTS").as_deref() != Ok("0") {
+            DeviceFamily::iPhone4s
+        } else { DeviceFamily::iPhone3GS };
         let default_ipad = DeviceFamily::iPad2;
 
         let device_family = if let Some(dfo) = device_family_override {
@@ -423,6 +426,12 @@ impl Environment {
             default_phone
         };
         log!("{:?} device family is chosen.", device_family);
+        if launched_bundle_id=="com.ea.deadspace.bv" {
+            let machine=device_family.machine_name();
+            let high=machine.starts_with("iPhone4,") || machine.starts_with("iPhone5,");
+            log!("[DSnative-effects] selected_model={} native_high_tier={}",machine,high);
+        }
+
         options.device_family = Some(device_family);
 
         let window = if options.headless {
@@ -1537,6 +1546,12 @@ impl Environment {
         crate::ds_pc_skin_shadow::prime(&mut self);
         #[cfg(all(windows, target_arch = "x86_64"))]
         crate::ds_pc_transform::prime(&mut self);
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        crate::ds_pc_inverse_cache::prime(&mut self);
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        crate::ds_pc_animation_position_cache::prime(&mut self);
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        crate::ds_pc_keyframe_cache::prime(&mut self);
         crate::ds_qte_geometry::prime(&mut self);
         let mut curr_host_context = self.threads[0].host_context.take().unwrap();
         let panic_cell = self.panic_cell.clone();
@@ -1789,7 +1804,11 @@ impl Environment {
 
         #[cfg(all(windows, target_arch = "x86_64"))]
         if matches!(error, cpu::CpuError::Breakpoint)
-            && (crate::ds_pc_skin_shadow::handle_breakpoint(self) || crate::ds_pc_transform::handle_breakpoint(self))
+            && (crate::ds_pc_skin_shadow::handle_breakpoint(self)
+                || crate::ds_pc_transform::handle_breakpoint(self)
+                || crate::ds_pc_inverse_cache::handle_breakpoint(self)
+                || crate::ds_pc_animation_position_cache::handle_breakpoint(self)
+                || crate::ds_pc_keyframe_cache::handle_breakpoint(self))
         { return; }
 
         if matches!(error, cpu::CpuError::Breakpoint)
@@ -2201,13 +2220,28 @@ impl Environment {
                     dyld::Dyld::SVC_LAZY_LINK
                     | dyld::Dyld::SVC_LAZY_LINK_RET_FLAG
                     | dyld::Dyld::SVC_LINKED_FUNCTIONS_BASE.. => {
-                        if let Some(f) = self.dyld.get_svc_handler(
-                            &self.bins,
-                            &mut self.mem,
-                            &mut self.cpu,
-                            svc_pc,
-                            svc,
-                        ) {
+                        let linked = svc & !dyld::Dyld::SVC_LAZY_LINK_RET_FLAG
+                            >= dyld::Dyld::SVC_LINKED_FUNCTIONS_BASE;
+                        let handler = if linked {
+                            self.dyld.get_linked_svc_handler(svc).or_else(|| {
+                                self.dyld.get_svc_handler(
+                                    &self.bins,
+                                    &mut self.mem,
+                                    &mut self.cpu,
+                                    svc_pc,
+                                    svc,
+                                )
+                            })
+                        } else {
+                            self.dyld.get_svc_handler(
+                                &self.bins,
+                                &mut self.mem,
+                                &mut self.cpu,
+                                svc_pc,
+                                svc,
+                            )
+                        };
+                        if let Some(f) = handler {
                             {
                                 let _stutter_span=crate::ds_stutter_probe::Span::new(13,svc_pc as u64);
                                 f.call_from_guest(self);
@@ -2303,6 +2337,12 @@ impl Environment {
             crate::ds_pc_skin_shadow::poll(self);
             #[cfg(all(windows, target_arch = "x86_64"))]
             crate::ds_pc_transform::poll(self);
+            #[cfg(all(windows, target_arch = "x86_64"))]
+            crate::ds_pc_inverse_cache::poll(self);
+            #[cfg(all(windows, target_arch = "x86_64"))]
+            crate::ds_pc_animation_position_cache::poll(self);
+            #[cfg(all(windows, target_arch = "x86_64"))]
+            crate::ds_pc_keyframe_cache::poll(self);
                 let state = self
                     .cpu
                     .run_or_step(&mut self.mem, self.remaining_ticks.as_mut());

@@ -55,6 +55,19 @@ fn main() {
     // This is Windows- and Android-specific because on macOS or Linux, you can
     // easily get Boost with a package manager.
     let os = env::var("CARGO_CFG_TARGET_OS").expect("CARGO_CFG_TARGET_OS was not set");
+    // cmake-rs supplies CMAKE_{C,CXX}_FLAGS_RELEASE for the default MSVC
+    // generator to select the CRT, but that replaces CMake's /O2 /Ob2 /DNDEBUG
+    // defaults. Without an explicit configuration the Rust release executable
+    // embeds an unoptimized, assertion-enabled Dynarmic compiler. Cold guest
+    // code (e.g. the first weapon/effect) then pays that compiler cost in-frame.
+    // Keep debug and other targets unchanged; /MD matches cc-rs's release CRT.
+    if os == "windows"
+        && env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc")
+        && !cfg!(debug_assertions)
+    {
+        build.define("CMAKE_C_FLAGS_RELEASE", "/O2 /Ob2 /DNDEBUG /MD");
+        build.define("CMAKE_CXX_FLAGS_RELEASE", "/O2 /Ob2 /DNDEBUG /MD");
+    }
     let boost_path = workspace_root.join("vendor/boost");
     if (os.eq_ignore_ascii_case("windows") || os.eq_ignore_ascii_case("android"))
         && !boost_path.is_dir()

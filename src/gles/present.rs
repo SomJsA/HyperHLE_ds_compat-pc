@@ -76,6 +76,96 @@ pub(crate) fn present_shadow_amount() -> f32 {
         .clamp(0.0, 1.0)
 }
 
+/// Optional photosensitivity-safe present layer.
+///
+/// `TOUCHHLE_DS_SAFE_FLASH=1` is conservative: only a rapid, global dark drop
+/// is lifted toward 50% of the previous frame's luminance. `=2` is stronger
+/// and lifts toward 65%. Bright frames are never reduced by this layer.
+fn present_safe_flash_mode() -> u8 {
+    std::env::var("TOUCHHLE_DS_SAFE_FLASH")
+        .ok()
+        .and_then(|v| v.trim().parse::<u8>().ok())
+        .filter(|v| (1..=2).contains(v))
+        .unwrap_or(0)
+}
+
+#[derive(Copy, Clone)]
+struct SafePresentParams {
+    history_texture: u32,
+    floor: f32,
+    threshold: f32,
+    mix: f32,
+    history_valid: bool,
+}
+
+fn present_safe_params(mode: u8, history_texture: u32, history_valid: bool) -> Option<SafePresentParams> {
+    match mode {
+        1 => Some(SafePresentParams {
+            history_texture,
+            floor: 0.50,
+            threshold: 0.35,
+            mix: 0.50,
+            history_valid,
+        }),
+        2 => Some(SafePresentParams {
+            history_texture,
+            floor: 0.65,
+            threshold: 0.25,
+            mix: 0.75,
+            history_valid,
+        }),
+        _ => None,
+    }
+}
+
+/// Optional launcher-visible eye-protection mode. This is deliberately a
+/// local, spatial floor: it only lifts near-black pixels in the final GPU
+/// present pass and never needs a previous frame or CPU readback.
+fn present_black_floor_enabled() -> bool {
+    std::env::var("TOUCHHLE_DS_SAFE_BLACK_FLOOR")
+        .ok()
+        .map(|value| {
+            let value = value.trim();
+            value == "1" || value.eq_ignore_ascii_case("true")
+        })
+        .unwrap_or(false)
+}
+
+#[derive(Copy, Clone)]
+pub(crate) struct BlackFloorParams {
+    floor: f32,
+    threshold: f32,
+}
+
+fn present_black_floor_params(enabled: bool) -> Option<BlackFloorParams> {
+    if !enabled {
+        return None;
+    }
+    let gray = std::env::var("TOUCHHLE_DS_SAFE_BLACK_GRAY")
+        .ok()
+        .and_then(|value| value.trim().parse::<u32>().ok())
+        .unwrap_or(10)
+        .min(160);
+    let floor = gray as f32 / 255.0;
+    Some(BlackFloorParams {
+        // The launcher exposes 0..160, with 10/255 as the default value.
+        // A small transition band leaves ordinary dark detail alone above it.
+        floor,
+        threshold: (floor + 0.12).min(1.0),
+    })
+}
+
+fn present_safe_gameplay_allowed() -> bool {
+    let min_frame = std::env::var("TOUCHHLE_DS_SAFE_FLASH_AFTER_FRAME")
+        .ok()
+        .and_then(|v| v.trim().parse::<u64>().ok())
+        .unwrap_or(1500);
+    crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed) > min_frame
+        && !crate::ds_frontend_controller::capture_menu()
+        && !crate::ds_frontend_controller::capture_scene_dialog()
+        && !crate::ds_frontend_controller::pause_menu()
+}
+
 /// `TOUCHHLE_DS_PRESENT_FSR=1|2`: enable the FSR1 spatial pass.
 ///
 /// This is the same kind of final-image overlay used by desktop tools: a
@@ -121,6 +211,14 @@ struct PresentSharpenProgram {
     u_fsr: i32,
     u_aa: i32,
     u_source_size: i32,
+    u_history: i32,
+    u_safe: i32,
+    u_safe_floor: i32,
+    u_safe_threshold: i32,
+    u_safe_mix: i32,
+    u_history_valid: i32,
+    u_black_floor: i32,
+    u_black_threshold: i32,
 }
 
 /// GL names and failure flags belong to one actual GL context, including FBOs
@@ -128,23 +226,34 @@ struct PresentSharpenProgram {
 /// the guest, Core Animation compositor or Android's private shader context.
 #[derive(Default)]
 pub struct PresentState {
+    quad_vbo: u32,
     program: Option<PresentSharpenProgram>,
     shader_failed: bool,
     fsr_target: Option<PresentFsrTarget>,
     fsr_target_failed: bool,
+    safe_target: Option<PresentSafeTarget>,
+    safe_target_failed: bool,
+    safe_history_valid: bool,
 }
 
 impl PresentState {
     /// The owning GL context must be current. Do not call this from Drop:
     /// destruction of a Rust handle does not imply its GL context is current.
     pub(crate) unsafe fn release(&mut self, gles: &mut dyn GLES) {
+        if self.quad_vbo != 0 { gles.DeleteBuffers(1,&self.quad_vbo); self.quad_vbo=0; }
         if let Some(target) = self.fsr_target.take() {
+            gles.DeleteFramebuffersOES(1, &target.framebuffer);
+            gles.DeleteTextures(1, &target.texture);
+        }
+        if let Some(target) = self.safe_target.take() {
             gles.DeleteFramebuffersOES(1, &target.framebuffer);
             gles.DeleteTextures(1, &target.texture);
         }
         if let Some(program) = self.program.take() { gles.DeleteProgram(program.program); }
         self.shader_failed = false;
         self.fsr_target_failed = false;
+        self.safe_target_failed = false;
+        self.safe_history_valid = false;
     }
 }
 
@@ -154,6 +263,14 @@ mod present_context_tests;
 
 #[derive(Copy, Clone)]
 struct PresentFsrTarget {
+    framebuffer: u32,
+    texture: u32,
+    width: u32,
+    height: u32,
+}
+
+#[derive(Copy, Clone)]
+struct PresentSafeTarget {
     framebuffer: u32,
     texture: u32,
     width: u32,
@@ -206,6 +323,14 @@ unsafe fn present_sharpen_program(gles: &mut dyn GLES, state: &mut PresentState)
         uniform float uShadow;\n\
         uniform float uFsr;\n\
         uniform float uAA;\n\
+        uniform sampler2D uHistory;\n\
+        uniform float uSafe;\n\
+        uniform float uSafeFloor;\n\
+        uniform float uSafeThreshold;\n\
+        uniform float uSafeMix;\n\
+        uniform float uHistoryValid;\n\
+        uniform float uBlackFloor;\n\
+        uniform float uBlackThreshold;\n\
         vec4 sampleAt(vec2 uv) {\n\
             vec2 lo = uTexel * 0.5;\n\
             vec2 hi = vec2(1.0) - lo;\n\
@@ -213,6 +338,56 @@ unsafe fn present_sharpen_program(gles: &mut dyn GLES, state: &mut PresentState)
         }\n\
         vec4 tap(vec2 o) { return sampleAt(vUV + o * uTexel); }\n\
         float luma2(vec3 c) { return c.b * 0.5 + (c.r * 0.5 + c.g); }\n\
+        float safeLuma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }\n\
+        float safeAverageCurrent() {\n\
+            float total = 0.0;\n\
+            total += safeLuma(texture2D(uTex, vec2(0.125, 0.125)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.500, 0.125)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.875, 0.125)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.125, 0.500)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.500, 0.500)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.875, 0.500)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.125, 0.875)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.500, 0.875)).rgb);\n\
+            total += safeLuma(texture2D(uTex, vec2(0.875, 0.875)).rgb);\n\
+            return total / 9.0;\n\
+        }\n\
+        float safeAverageHistory() {\n\
+            float total = 0.0;\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.125, 0.125)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.500, 0.125)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.875, 0.125)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.125, 0.500)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.500, 0.500)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.875, 0.500)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.125, 0.875)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.500, 0.875)).rgb);\n\
+            total += safeLuma(texture2D(uHistory, vec2(0.875, 0.875)).rgb);\n\
+            return total / 9.0;\n\
+        }\n\
+        vec3 safeDarkLift(vec3 current) {\n\
+            if (uSafe <= 0.5 || uHistoryValid <= 0.5) return current;\n\
+            float currentLuma = safeAverageCurrent();\n\
+            float previousLuma = safeAverageHistory();\n\
+            float drop = previousLuma - currentLuma;\n\
+            float dropRatio = drop / max(previousLuma, 0.001);\n\
+            float active = step(uSafeThreshold, dropRatio);\n\
+            float target = previousLuma * uSafeFloor;\n\
+            float amount = clamp((target - currentLuma) / max(drop, 0.001), 0.0, 1.0);\n\
+            amount *= active * uSafeMix;\n\
+            vec3 previous = texture2D(uHistory, clamp(vUV, vec2(0.0), vec2(1.0))).rgb;\n\
+            return mix(current, previous, amount);\n\
+        }\n\
+        vec3 blackFloorLift(vec3 current) {\n\
+            if (uBlackFloor <= 0.0) return current;\n\
+            float currentLuma = dot(current, vec3(0.2126, 0.7152, 0.0722));\n\
+            float amount = 1.0 - smoothstep(uBlackFloor, uBlackThreshold, currentLuma);\n\
+            float targetLuma = max(currentLuma, uBlackFloor);\n\
+            vec3 target = currentLuma > 0.001\n\
+                ? min(current * (targetLuma / currentLuma), vec3(1.0))\n\
+                : vec3(targetLuma);\n\
+            return mix(current, target, amount);\n\
+        }\n\
 \n\
         // Scalar FSR1 EASU direction estimator. The four calls correspond to\n\
         // the four bilinear cells of the 2x2 footprint.\n\
@@ -387,7 +562,7 @@ unsafe fn present_sharpen_program(gles: &mut dyn GLES, state: &mut PresentState)
         }\n\
         void main() {\n\
             vec4 c = tap(vec2(0.0));\n\
-            if (uFsr < 0.5 && uSharpen <= 0.0001 && uAA < 0.5 && uShadow <= 0.0) {\n\
+            if (uFsr < 0.5 && uSharpen <= 0.0001 && uAA < 0.5 && uShadow <= 0.0 && uSafe <= 0.5 && uBlackFloor <= 0.0) {\n\
                 gl_FragColor = c;\n\
                 return;\n\
             }\n\
@@ -415,6 +590,8 @@ unsafe fn present_sharpen_program(gles: &mut dyn GLES, state: &mut PresentState)
             if (uAA > 0.5) {\n\
                 outRgb = fxaa(vUV);\n\
             }\n\
+            outRgb = safeDarkLift(outRgb);\n\
+            outRgb = blackFloorLift(outRgb);\n\
             gl_FragColor = vec4(shadowLift(outRgb), c.a);\n\
         }\0";
 
@@ -477,6 +654,14 @@ unsafe fn present_sharpen_program(gles: &mut dyn GLES, state: &mut PresentState)
         u_fsr: gles.GetUniformLocation(program, b"uFsr\0".as_ptr() as *const _),
         u_aa: gles.GetUniformLocation(program, b"uAA\0".as_ptr() as *const _),
         u_source_size: gles.GetUniformLocation(program, b"uSourceSize\0".as_ptr() as *const _),
+        u_history: gles.GetUniformLocation(program, b"uHistory\0".as_ptr() as *const _),
+        u_safe: gles.GetUniformLocation(program, b"uSafe\0".as_ptr() as *const _),
+        u_safe_floor: gles.GetUniformLocation(program, b"uSafeFloor\0".as_ptr() as *const _),
+        u_safe_threshold: gles.GetUniformLocation(program, b"uSafeThreshold\0".as_ptr() as *const _),
+        u_safe_mix: gles.GetUniformLocation(program, b"uSafeMix\0".as_ptr() as *const _),
+        u_history_valid: gles.GetUniformLocation(program, b"uHistoryValid\0".as_ptr() as *const _),
+        u_black_floor: gles.GetUniformLocation(program, b"uBlackFloor\0".as_ptr() as *const _),
+        u_black_threshold: gles.GetUniformLocation(program, b"uBlackThreshold\0".as_ptr() as *const _),
     };
     state.program = Some(result);
     gles.DeleteShader(vs);
@@ -501,6 +686,21 @@ pub(crate) unsafe fn draw_present_sharpen_quad(
     amount: f32,
     fsr: f32,
     aa: f32,
+    black_floor: Option<BlackFloorParams>,
+) -> bool {
+    draw_present_shader_quad(gles, state, tex_mat, source_size, amount, fsr, aa, None, black_floor)
+}
+
+unsafe fn draw_present_shader_quad(
+    gles: &mut dyn GLES,
+    state: &mut PresentState,
+    tex_mat: &Matrix<4>,
+    source_size: (u32, u32),
+    amount: f32,
+    fsr: f32,
+    aa: f32,
+    safe: Option<SafePresentParams>,
+    black_floor: Option<BlackFloorParams>,
 ) -> bool {
     let Some(p) = present_sharpen_program(gles, state) else {
         return false;
@@ -518,6 +718,14 @@ pub(crate) unsafe fn draw_present_sharpen_quad(
     }
 
     // Same texture-unit convention as the ES 2.0 presenter: sample unit 0.
+    // The optional safety history is bound temporarily on unit 1 and restored
+    // before returning to the guest.
+    let mut old_texture_unit1: i32 = 0;
+    if let Some(params) = safe {
+        gles.ActiveTexture(gles2::TEXTURE1);
+        gles.GetIntegerv(gles11::TEXTURE_BINDING_2D, &mut old_texture_unit1);
+        gles.BindTexture(gles11::TEXTURE_2D, params.history_texture);
+    }
     gles.ActiveTexture(gles2::TEXTURE0);
     let mut old_program: i32 = 0;
     gles.GetIntegerv(gles2::CURRENT_PROGRAM, &mut old_program);
@@ -557,39 +765,63 @@ pub(crate) unsafe fn draw_present_sharpen_quad(
     if p.u_aa >= 0 {
         gles.Uniform1f(p.u_aa, aa);
     }
+    if p.u_history >= 0 {
+        gles.Uniform1i(p.u_history, 1);
+    }
+    if p.u_safe >= 0 {
+        gles.Uniform1f(p.u_safe, if safe.is_some() { 1.0 } else { 0.0 });
+    }
+    if p.u_safe_floor >= 0 {
+        gles.Uniform1f(p.u_safe_floor, safe.map_or(0.0, |v| v.floor));
+    }
+    if p.u_safe_threshold >= 0 {
+        gles.Uniform1f(p.u_safe_threshold, safe.map_or(1.0, |v| v.threshold));
+    }
+    if p.u_safe_mix >= 0 {
+        gles.Uniform1f(p.u_safe_mix, safe.map_or(0.0, |v| v.mix));
+    }
+    if p.u_history_valid >= 0 {
+        gles.Uniform1f(p.u_history_valid, safe.map_or(0.0, |v| if v.history_valid { 1.0 } else { 0.0 }));
+    }
+    if p.u_black_floor >= 0 {
+        gles.Uniform1f(p.u_black_floor, black_floor.map_or(0.0, |v| v.floor));
+    }
+    if p.u_black_threshold >= 0 {
+        gles.Uniform1f(p.u_black_threshold, black_floor.map_or(1.0, |v| v.threshold));
+    }
 
-    let vertices: [f32; 12] = [
-        -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0,
+    let mut old_array=0;
+    gles.GetIntegerv(gles2::ARRAY_BUFFER_BINDING,&mut old_array);
+    let saved=[
+        super::present_attrib::SavedAttrib::capture(gles,p.a_pos as u32),
+        super::present_attrib::SavedAttrib::capture(gles,p.a_uv as u32),
     ];
-    let tex_coords: [f32; 12] = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0];
-    // Client-side arrays, exactly like the fixed-function quad: present_frame
-    // binds ARRAY_BUFFER 0 before it draws.
-    gles.BindBuffer(gles11::ARRAY_BUFFER, 0);
+    if state.quad_vbo == 0 {
+        let vertices:[f32;24]=[
+            -1.,-1.,0.,0., -1.,1.,0.,1., 1.,-1.,1.,0.,
+            1.,-1.,1.,0., -1.,1.,0.,1., 1.,1.,1.,1.,
+        ];
+        gles.GenBuffers(1,&mut state.quad_vbo);
+        gles.BindBuffer(gles2::ARRAY_BUFFER,state.quad_vbo);
+        gles.BufferData(gles2::ARRAY_BUFFER,std::mem::size_of_val(&vertices) as isize,
+            vertices.as_ptr().cast(),gles2::STATIC_DRAW);
+    } else { gles.BindBuffer(gles2::ARRAY_BUFFER,state.quad_vbo); }
     gles.EnableVertexAttribArray(p.a_pos as u32);
-    gles.VertexAttribPointer(
-        p.a_pos as u32,
-        2,
-        gles2::FLOAT,
-        gles2::FALSE,
-        0,
-        vertices.as_ptr() as *const _,
-    );
     gles.EnableVertexAttribArray(p.a_uv as u32);
-    gles.VertexAttribPointer(
-        p.a_uv as u32,
-        2,
-        gles2::FLOAT,
-        gles2::FALSE,
-        0,
-        tex_coords.as_ptr() as *const _,
-    );
-    gles.DrawArrays(gles2::TRIANGLES, 0, 6);
-    gles.DisableVertexAttribArray(p.a_pos as u32);
-    gles.DisableVertexAttribArray(p.a_uv as u32);
+    gles.VertexAttribPointer(p.a_pos as u32,2,gles2::FLOAT,gles2::FALSE,16,std::ptr::null());
+    gles.VertexAttribPointer(p.a_uv as u32,2,gles2::FLOAT,gles2::FALSE,16,8usize as *const _);
+    gles.DrawArrays(gles2::TRIANGLES,0,6);
+    for value in saved { value.restore(gles); }
+    gles.BindBuffer(gles2::ARRAY_BUFFER,old_array as u32);
     // The present paths on ES 1.1 intentionally don't save/restore the current
     // program (nothing there binds one), so we must put back whatever was
     // bound before our pass — otherwise we'd leak our program into the guest.
     gles.UseProgram(old_program as u32);
+    if safe.is_some() {
+        gles.ActiveTexture(gles2::TEXTURE1);
+        gles.BindTexture(gles11::TEXTURE_2D, old_texture_unit1 as u32);
+        gles.ActiveTexture(gles2::TEXTURE0);
+    }
 
     {
         static LOGGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -606,6 +838,17 @@ pub(crate) unsafe fn draw_present_sharpen_quad(
         }
     }
     true
+}
+
+unsafe fn draw_present_safe_quad(
+    gles: &mut dyn GLES,
+    state: &mut PresentState,
+    tex_mat: &Matrix<4>,
+    source_size: (u32, u32),
+    safe: SafePresentParams,
+    black_floor: Option<BlackFloorParams>,
+) -> bool {
+    draw_present_shader_quad(gles, state, tex_mat, source_size, 0.0, 0.0, 0.0, Some(safe), black_floor)
 }
 
 /// Lazily creates (or resizes) the intermediate texture used by the two-pass
@@ -717,6 +960,123 @@ unsafe fn ensure_present_fsr_target(
     Some(target)
 }
 
+/// Lazily creates the source-sized history texture used by the optional safe
+/// present layer. It intentionally stores the raw game frame, before cursor or
+/// host text overlays, so those UI layers never ghost into the next frame.
+unsafe fn ensure_present_safe_target(
+    gles: &mut dyn GLES,
+    state: &mut PresentState,
+    width: u32,
+    height: u32,
+) -> Option<PresentSafeTarget> {
+    if width == 0 || height == 0 || state.safe_target_failed {
+        return None;
+    }
+    if let Some(target) = state.safe_target {
+        if target.width == width && target.height == height {
+            return Some(target);
+        }
+    }
+
+    let mut old_fbo: i32 = 0;
+    let mut old_texture: i32 = 0;
+    gles.GetIntegerv(gles11::FRAMEBUFFER_BINDING_OES, &mut old_fbo);
+    gles.GetIntegerv(gles11::TEXTURE_BINDING_2D, &mut old_texture);
+    if let Some(old) = state.safe_target.take() {
+        gles.DeleteFramebuffersOES(1, &old.framebuffer);
+        gles.DeleteTextures(1, &old.texture);
+    }
+
+    let mut texture: gles11::types::GLuint = 0;
+    gles.GenTextures(1, &mut texture);
+    gles.BindTexture(gles11::TEXTURE_2D, texture);
+    gles.TexImage2D(
+        gles11::TEXTURE_2D,
+        0,
+        gles11::RGBA as _,
+        width as _,
+        height as _,
+        0,
+        gles11::RGBA,
+        gles11::UNSIGNED_BYTE,
+        std::ptr::null(),
+    );
+    gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_MIN_FILTER, gles11::LINEAR as _);
+    gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_MAG_FILTER, gles11::LINEAR as _);
+    gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_WRAP_S, gles11::CLAMP_TO_EDGE as _);
+    gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_WRAP_T, gles11::CLAMP_TO_EDGE as _);
+
+    let mut framebuffer: gles11::types::GLuint = 0;
+    gles.GenFramebuffersOES(1, &mut framebuffer);
+    gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, framebuffer);
+    gles.FramebufferTexture2DOES(
+        gles11::FRAMEBUFFER_OES,
+        gles11::COLOR_ATTACHMENT0_OES,
+        gles11::TEXTURE_2D,
+        texture,
+        0,
+    );
+    let status = gles.CheckFramebufferStatusOES(gles11::FRAMEBUFFER_OES);
+    if status != gles11::FRAMEBUFFER_COMPLETE_OES {
+        log!(
+            "Warning: safe present history target {}x{} incomplete (status {:#x}); safe layer disabled",
+            width,
+            height,
+            status
+        );
+        gles.DeleteTextures(1, &texture);
+        gles.DeleteFramebuffersOES(1, &framebuffer);
+        gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
+        gles.BindTexture(gles11::TEXTURE_2D, old_texture as _);
+        state.safe_target_failed = true;
+        return None;
+    }
+
+    let target = PresentSafeTarget { framebuffer, texture, width, height };
+    state.safe_target = Some(target);
+    state.safe_history_valid = false;
+    log!(
+        "[DSpresent-safe] initialized history target={} texture={} size={}x{}",
+        framebuffer,
+        texture,
+        width,
+        height
+    );
+    gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
+    gles.BindTexture(gles11::TEXTURE_2D, old_texture as _);
+    Some(target)
+}
+
+/// Copy the raw source frame into the source-sized history target. The caller
+/// has already drawn the scene to the host backbuffer; this pass is kept before
+/// cursor/text overlays so the history remains scene-only.
+unsafe fn update_present_safe_history(
+    gles: &mut dyn GLES,
+    state: &mut PresentState,
+    target: PresentSafeTarget,
+    source_size: (u32, u32),
+    source_texture: u32,
+) {
+    let mut old_fbo: i32 = 0;
+    let mut old_texture: i32 = 0;
+    let mut old_viewport = [0i32; 4];
+    gles.GetIntegerv(gles11::FRAMEBUFFER_BINDING_OES, &mut old_fbo);
+    gles.GetIntegerv(gles11::TEXTURE_BINDING_2D, &mut old_texture);
+    gles.GetIntegerv(gles11::VIEWPORT, old_viewport.as_mut_ptr());
+    gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, target.framebuffer);
+    gles.Viewport(0, 0, source_size.0 as _, source_size.1 as _);
+    gles.ActiveTexture(gles2::TEXTURE0);
+    gles.BindTexture(gles11::TEXTURE_2D, source_texture);
+    let identity = Matrix::<4>::identity();
+    let copied = draw_present_sharpen_quad(gles, state, &identity, source_size, 0.0, 0.0, 0.0, None);
+    gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
+    gles.Viewport(old_viewport[0], old_viewport[1], old_viewport[2], old_viewport[3]);
+    gles.BindTexture(gles11::TEXTURE_2D, old_texture as _);
+    if copied {
+        state.safe_history_valid = true;
+    }
+}
+
 /// Optional final-window capture for A/B testing the complete present stack.
 ///
 /// `TOUCHHLE_DS_PRESENT_CAPTURE=<path.ppm>` writes the backbuffer after EASU,
@@ -724,7 +1084,7 @@ unsafe fn ensure_present_fsr_target(
 /// dump this includes the present-layer image processing. Set
 /// `TOUCHHLE_DS_PRESENT_CAPTURE_AT` (default 600) chooses the frame number, or
 /// `TOUCHHLE_DS_PRESENT_CAPTURE_AFTER_MS` chooses a wall-clock delay instead.
-unsafe fn maybe_capture_present_backbuffer(gles: &mut dyn GLES, viewport: (u32, u32, u32, u32)) {
+pub(crate) unsafe fn maybe_capture_present_backbuffer(gles: &mut dyn GLES, viewport: (u32, u32, u32, u32)) {
     let Ok(path) = std::env::var("TOUCHHLE_DS_PRESENT_CAPTURE") else {
         return;
     };
@@ -792,6 +1152,178 @@ unsafe fn maybe_capture_present_backbuffer(gles: &mut dyn GLES, viewport: (u32, 
     }
 }
 
+
+#[derive(Clone, Copy)]
+pub(crate) struct ProcessedPresent {
+    pub drawn: bool, pub fsr_mode:u8, pub fsr:bool, pub sharpen_amount:f32,
+    pub fsr_final_submitted:bool, pub fsr_source_redundant:bool,
+}
+pub(crate) unsafe fn draw_present_processed_quad(
+    gles:&mut dyn GLES, state:&mut PresentState, centered_rotation:&Matrix<4>,
+    source_size:Option<(u32,u32)>, viewport:(u32,u32,u32,u32), solid_color:bool,
+) -> ProcessedPresent {
+    let mut source_texture=0;
+    gles.GetIntegerv(gles11::TEXTURE_BINDING_2D,&mut source_texture);
+    let shader_capable = gles.is_es2() || !gles.is_native_es1();
+    let sharpen_amount = match source_size {
+        Some((w, h)) if shader_capable && w > 0 && h > 0 => present_sharpen_amount(),
+        _ => 0.0,
+    };
+    let fsr_mode = present_fsr_mode();
+    let fsr_source_redundant = source_size.is_some_and(|(w, h)| {
+        w > 0
+            && h > 0
+            && viewport.2 > 0
+            && viewport.3 > 0
+            && w as u64 * h as u64 * 100
+                >= viewport.2 as u64 * viewport.3 as u64 * 115
+    });
+    if fsr_mode != 0 && fsr_source_redundant {
+        log_once!(
+            "[DSsharpen] FSR disabled: source is already >=115% of viewport area"
+        );
+    }
+    let fsr = fsr_mode != 0 && shader_capable && !fsr_source_redundant;
+    let aa = present_aa_mode() && shader_capable;
+    let shadow = if shader_capable { present_shadow_amount() } else { 0.0 };
+    let safe_mode = present_safe_flash_mode();
+    let safe_allowed = safe_mode != 0 && shader_capable && !solid_color && present_safe_gameplay_allowed();
+    let black_floor = if shader_capable && !solid_color {
+        present_black_floor_params(present_black_floor_enabled())
+    } else {
+        None
+    };
+    if !safe_allowed {
+        state.safe_history_valid = false;
+    }
+    let safe_target = if safe_allowed {
+        source_size.and_then(|(w, h)| ensure_present_safe_target(gles, state, w, h))
+    } else {
+        None
+    };
+    let safe_params = safe_target.and_then(|target| {
+        present_safe_params(safe_mode, target.texture, state.safe_history_valid)
+    });
+    let mut sharpened = false;
+    let mut fsr_final_submitted = false;
+
+    // EASU's "fast" mode has no second RCAS dependency. Draw it directly to
+    // the window unless FXAA also needs a post-EASU source texture.
+    if fsr && fsr_mode >= 2 && !aa && shadow == 0.0 && !solid_color && viewport.2 > 0 && viewport.3 > 0 {
+        if let Some(size) = source_size {
+            sharpened = draw_present_sharpen_quad(
+                gles,
+                state,
+                centered_rotation,
+                size,
+                sharpen_amount,
+                1.0,
+                0.0,
+                black_floor,
+            );
+            fsr_final_submitted = sharpened;
+        }
+    }
+
+    if !sharpened && fsr && !solid_color && viewport.2 > 0 && viewport.3 > 0 {
+        if let Some(size) = source_size {
+            let mut old_fbo: i32 = 0;
+            gles.GetIntegerv(gles11::FRAMEBUFFER_BINDING_OES, &mut old_fbo);
+            let mut old_texture: i32 = 0;
+            gles.GetIntegerv(gles11::TEXTURE_BINDING_2D, &mut old_texture);
+
+            if let Some(target) = ensure_present_fsr_target(gles, state, viewport.2, viewport.3) {
+                // First pass: source texture -> EASU -> final-sized texture.
+                gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, target.framebuffer);
+                gles.Viewport(0, 0, target.width as _, target.height as _);
+                gles.ClearColor(0.0, 0.0, 0.0, 1.0);
+                gles.Clear(gles11::COLOR_BUFFER_BIT);
+                let first = draw_present_sharpen_quad(
+                    gles,
+                    state,
+                    centered_rotation,
+                    size,
+                    sharpen_amount,
+                    1.0,
+                    0.0,
+                    None,
+                );
+
+                // Second pass: EASU texture -> RCAS (quality mode) or copy
+                // (fast mode), optionally followed by FXAA. This pass always
+                // samples the final-sized intermediate so FXAA works on
+                // reconstructed pixels rather than on the low-resolution input.
+                gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
+                gles.Viewport(
+                    viewport.0 as _,
+                    viewport.1 as _,
+                    viewport.2 as _,
+                    viewport.3 as _,
+                );
+                gles.ClearColor(0.0, 0.0, 0.0, 1.0);
+                gles.Clear(gles11::COLOR_BUFFER_BIT);
+                gles.BindTexture(gles11::TEXTURE_2D, target.texture);
+                let identity = Matrix::<4>::identity();
+                let second = draw_present_sharpen_quad(
+                    gles,
+                    state,
+                    &identity,
+                    (target.width, target.height),
+                    sharpen_amount,
+                    if fsr_mode >= 2 { 3.0 } else { 2.0 },
+                    if aa { 1.0 } else { 0.0 },
+                    black_floor,
+                );
+                gles.BindTexture(gles11::TEXTURE_2D, old_texture as _);
+                gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
+                sharpened = first && second;
+                fsr_final_submitted = sharpened;
+            }
+        }
+    }
+    if !sharpened && (sharpen_amount > 0.0 || aa || shadow > 0.0) && !solid_color {
+        if let Some(size) = source_size {
+            sharpened = draw_present_sharpen_quad(
+                gles,
+                state,
+                centered_rotation,
+                size,
+                sharpen_amount,
+                0.0,
+                if aa { 1.0 } else { 0.0 },
+                black_floor,
+            );
+        }
+    }
+    if !sharpened {
+        if let (Some(size), Some(params)) = (source_size, safe_params) {
+            sharpened = draw_present_safe_quad(gles, state, centered_rotation, size, params, black_floor);
+            if sharpened && safe_mode != 0 { log_once!("[DSpresent-safe] active"); }
+        } else if let Some(size) = source_size {
+            if black_floor.is_some() {
+                sharpened = draw_present_sharpen_quad(
+                    gles,
+                    state,
+                    centered_rotation,
+                    size,
+                    0.0,
+                    0.0,
+                    0.0,
+                    black_floor,
+                );
+                if sharpened { log_once!("[DSpresent-safe-black] active"); }
+            }
+        }
+    }
+    if let (Some(target), Some(size)) = (safe_target, source_size) {
+        if source_texture > 0 {
+            update_present_safe_history(gles, state, target, size, source_texture as u32);
+        }
+    }
+
+    ProcessedPresent {drawn:sharpened,fsr_mode,fsr,fsr_final_submitted,fsr_source_redundant,sharpen_amount}
+}
+
 /// Present the the latest frame (e.g. the app's splash screen or rendering
 /// output), provided as a texture bound to `GL_TEXTURE_2D`, by drawing it on
 /// the window. It may be rotated, scaled and/or letterboxed as necessary. The
@@ -819,6 +1351,8 @@ pub unsafe fn present_frame(
     // so these need to be updated in tandem.
 
     use gles11::types::*;
+    gles.gpu_profile_poll();
+    gles.gpu_profile_begin(3);
 
     // Draw the quad
     gles.Viewport(
@@ -884,108 +1418,8 @@ pub unsafe fn present_frame(
     // entry points. The Android-only present helper creates a small shared
     // ES 2.0 context for these passes instead, so don't attempt (and fail)
     // shader compilation in the guest ES 1.1 context itself.
-    let shader_capable = gles.is_es2() || !gles.is_native_es1();
-    let sharpen_amount = match source_size {
-        Some((w, h)) if shader_capable && w > 0 && h > 0 => present_sharpen_amount(),
-        _ => 0.0,
-    };
-    let fsr_mode = present_fsr_mode();
-    let fsr_source_redundant = source_size.is_some_and(|(w, h)| {
-        w > 0
-            && h > 0
-            && viewport.2 > 0
-            && viewport.3 > 0
-            && w as u64 * h as u64 * 100
-                >= viewport.2 as u64 * viewport.3 as u64 * 115
-    });
-    if fsr_mode != 0 && fsr_source_redundant {
-        log_once!(
-            "[DSsharpen] FSR disabled: source is already >=115% of viewport area"
-        );
-    }
-    let fsr = fsr_mode != 0 && shader_capable && !fsr_source_redundant;
-    let aa = present_aa_mode() && shader_capable;
-    let shadow = if shader_capable { present_shadow_amount() } else { 0.0 };
-    let mut sharpened = false;
-    let mut fsr_final_submitted = false;
-
-    // EASU's "fast" mode has no second RCAS dependency. Draw it directly to
-    // the window unless FXAA also needs a post-EASU source texture.
-    if fsr && fsr_mode >= 2 && !aa && shadow == 0.0 && !solid_color && viewport.2 > 0 && viewport.3 > 0 {
-        if let Some(size) = source_size {
-            sharpened =
-                draw_present_sharpen_quad(gles, state, &centered_rotation, size, sharpen_amount, 1.0, 0.0);
-            fsr_final_submitted = sharpened;
-        }
-    }
-
-    if !sharpened && fsr && !solid_color && viewport.2 > 0 && viewport.3 > 0 {
-        if let Some(size) = source_size {
-            let mut old_fbo: i32 = 0;
-            gles.GetIntegerv(gles11::FRAMEBUFFER_BINDING_OES, &mut old_fbo);
-            let mut old_texture: i32 = 0;
-            gles.GetIntegerv(gles11::TEXTURE_BINDING_2D, &mut old_texture);
-
-            if let Some(target) = ensure_present_fsr_target(gles, state, viewport.2, viewport.3) {
-                // First pass: source texture -> EASU -> final-sized texture.
-                gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, target.framebuffer);
-                gles.Viewport(0, 0, target.width as _, target.height as _);
-                gles.ClearColor(0.0, 0.0, 0.0, 1.0);
-                gles.Clear(gles11::COLOR_BUFFER_BIT);
-                let first = draw_present_sharpen_quad(
-                    gles,
-                    state,
-                    &centered_rotation,
-                    size,
-                    sharpen_amount,
-                    1.0,
-                    0.0,
-                );
-
-                // Second pass: EASU texture -> RCAS (quality mode) or copy
-                // (fast mode), optionally followed by FXAA. This pass always
-                // samples the final-sized intermediate so FXAA works on
-                // reconstructed pixels rather than on the low-resolution input.
-                gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
-                gles.Viewport(
-                    viewport.0 as _,
-                    viewport.1 as _,
-                    viewport.2 as _,
-                    viewport.3 as _,
-                );
-                gles.ClearColor(0.0, 0.0, 0.0, 1.0);
-                gles.Clear(gles11::COLOR_BUFFER_BIT);
-                gles.BindTexture(gles11::TEXTURE_2D, target.texture);
-                let identity = Matrix::<4>::identity();
-                let second = draw_present_sharpen_quad(
-                    gles,
-                    state,
-                    &identity,
-                    (target.width, target.height),
-                    sharpen_amount,
-                    if fsr_mode >= 2 { 3.0 } else { 2.0 },
-                    if aa { 1.0 } else { 0.0 },
-                );
-                gles.BindTexture(gles11::TEXTURE_2D, old_texture as _);
-                gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_fbo as _);
-                sharpened = first && second;
-                fsr_final_submitted = sharpened;
-            }
-        }
-    }
-    if !sharpened && (sharpen_amount > 0.0 || aa || shadow > 0.0) && !solid_color {
-        if let Some(size) = source_size {
-            sharpened = draw_present_sharpen_quad(
-                gles,
-                state,
-                &centered_rotation,
-                size,
-                sharpen_amount,
-                0.0,
-                if aa { 1.0 } else { 0.0 },
-            );
-        }
-    }
+    let processed=draw_present_processed_quad(gles,state,&centered_rotation,source_size,viewport,solid_color);
+    let ProcessedPresent {drawn:sharpened,fsr_mode,fsr,fsr_final_submitted,fsr_source_redundant,sharpen_amount}=processed;
     if !sharpened {
         gles.MatrixMode(gles11::TEXTURE);
         gles.LoadMatrixf(centered_rotation.columns().as_ptr() as *const _);
@@ -1177,5 +1611,6 @@ pub unsafe fn present_frame(
     super::ds_input_prompts::draw(gles);
     crate::ds_diagnostics::capture_problem_frame(gles,viewport);
     maybe_capture_present_backbuffer(gles, viewport);
+    gles.gpu_profile_end(3);
     sharpened
 }

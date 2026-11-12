@@ -11,7 +11,7 @@
 | 用户说“目标”大号却扩大正文 | 标题与正文被混为同一字号 | `labelFontSize=18`单独断言，正文7.2基础独立适配；还检查卡片尺寸/锚点与真实字体度量 |
 | CREDITS再次错成制作团队 | 同名英文用途混淆，台账再导入会覆盖手改 | `text-corrections.json`随确定性导入生效；SBIN/JSON逐键相同且CREDITS固定信用点，制作名单为credits_list |
 | 字体“存在”却不对 | 源码/准备目录/APK/实际渲染度量不是同一检查 | 三层字体哈希+实际原生章节图。通用Noto需1000/1448度量换算，章节专用字体不重复缩放 |
-| 手柄左右按下被读反 | canonical动作分发表不等于物理默认 | 读取解析器最终映射与教程语义：L3转身/R3定位；Ctrl/G/B定位。非默认改键也要测 |
+| 手柄左右按下被读反 | canonical动作分发表不等于物理默认 | 读取解析器最终映射与教程语义：L3转身/R3定位；Ctrl无重力跳跃、G/B定位。非默认改键也要测 |
 | 换弹完成后未按住仍举枪 | 逻辑输入被换弹/取消路径重置后，松开边沿可能漏发；持久aim租约继续 | 物理鼠标右键/LT按下状态与逻辑状态分离；换弹中释放后连续probe必须`aiming=0`，toggle模式不变 |
 | E抽搐、交互失效、换甲动画消失 | 移动/疾跑和站点模态/动画争用；释放事件被吞、空扫描结果缓存 | 既有native所有权修复保留。三次进入/退出+完整22→23→24状态链+运动/朝向边界；不绕过原生门槛 |
 | HD包有文件但没起效 | 原图自动mip路径先返回，跳过5个已选择PNG | PC已修复，2/4/8x各5个实际上传和alpha-aware mip日志核验。存在/显存估算不能代替实际上传或性能 |
@@ -39,6 +39,28 @@
 5. Android更新前新鲜备份当前APK/存档/偏好，更新后读回APK SHA。隔离包实际测；主包不拿实验种子覆盖用户进度。所有device worker finally熄屏，闲时不唤醒。
 6. 原生画面、状态/时间推进和日志联合验收；只有测试夹具不能写真人验收通过。任何失败先判断游戏、导航、输入计划还是观测器。
 7. 恢复隔离环境并字节核验。输出本次证据、包路径/哈希、仍开放的验收项与下一步；最新状态明确supersedes哪份历史结论。
+
+## 2026-11-07 PC性能与首枪边界
+
+以下保留该日期的历史采样边界，不代表当前待办或默认开关状态。后续首枪预热、
+综合优化及默认策略已有更新；最新任务以项目根 `TODO.md` 和对应交付报告为准。
+
+当前`3AFF…` EXE的辅助ENDLESS六窗口A/B有效：host skin聚合`+8.59% FPS`、
+`-8.98% process CPU/frame`，相邻配对中位`+5.44%/-5.26%`，4/5同向但末窗反向。
+运行观察到Slasher/Lurker/Exploder/Pregnant/Swarm/Brute，零mismatch、23次原生
+fallback、正常退出和受保护文件不变。场景漂移使其不能晋级默认或冒充无辅助全游戏FPS。
+
+同二进制host-off/host-on saved-IP采样确认`OptimizedSkinningEngine::ProcessSkin`
+主簇消失：moving JIT `322/640→225/643`，static `328/644→219/642`。host-on后
+剩余top guest JIT为`Transform::PostMultiply`、`KeyframeSequence::Sample`、
+`Vectormath::Aos::inverse(Matrix4)`、动画属性更新和碰撞辅助；下一受控实验是把
+现有original-verified transform host叠加到host skin，之后再评估animation/inverse。
+
+首枪不能由host skin掩盖：host-requested冷进程在首枪后一帧才首次武装skin hook，
+首枪仍走原ARM输出。host-requested/host-off观测到下一帧`544.388ms/77.892ms`，但
+敌人出现和场景负载不同步，不能据此声称因果回归。接下来必须用轻量输入、原生
+action、目标/字幕和saved-IP同时序证据定位首个武器动作的冷执行；不得在首枪动作
+内启动64次实时验证作为修复。
 
 ## 必须保留的完整验收范围
 

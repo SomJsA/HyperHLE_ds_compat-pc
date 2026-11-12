@@ -23,6 +23,12 @@ until the user confirms. The source marker is opened read-only. After install,
 the launcher reads the installed GameData and no longer needs the marker until
 the selected resource generation is changed.
 
+An existing installation can be upgraded or downgraded with only the new
+installer EXE. Leave the resource source empty; the installer follows the
+registered program and GameData roots, replaces program files, and preserves
+the installed IPA, textures, configuration, saves and unknown files. A marker
+is needed again only when adding or changing resource tiers.
+
 Build:
 
 ```powershell

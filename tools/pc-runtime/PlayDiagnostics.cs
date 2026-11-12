@@ -180,9 +180,9 @@ namespace DeadSpaceBootstrap
 
     internal sealed partial class LauncherForm
     {
-        private readonly CheckBox playDiagnostics=new CheckBox{Checked=true};
-        private readonly ComboBox diagnosticDetail=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList};
-        private readonly Label diagnosticStatus=new Label();
+        private readonly CheckBox playDiagnostics=new CheckBox{Checked=false};
+        private readonly ComboBox diagnosticDetail=new NoWheelComboBox{DropDownStyle=ComboBoxStyle.DropDownList};
+        private readonly Label diagnosticStatus=new DeadSpaceUi.UiLanguage.LocalizedLabel();
         private readonly TextBox problemNote=new TextBox{MaxLength=500};
         private string diagnosticSession;
         private bool diagnosticExporting;
@@ -191,33 +191,33 @@ namespace DeadSpaceBootstrap
             // Keep the existing navigation and advanced grouping. Diagnostics
             // are visible first; the existing advanced controls remain below.
             Panel outer=(Panel)page;
-            foreach(Control control in outer.Controls)if(control.Top>=90)control.Top+=370;
-            var diagnosticPanel=new Panel{Location=new Point(0,90),Size=new Size(710,360)};outer.Controls.Add(diagnosticPanel);page=diagnosticPanel;
-            AddCheck(page,playDiagnostics,90,"外测自动诊断（默认开启，异常保留前30秒关键数据）",true);
-            LabelText(page,"后台记录，不做周期截图、不录屏、不记逐键输入、不自动上传。\r\nF7 一键 dump 和截图，自动编号记录任意问题。",30,130,670,48);
-            problemNote.SetBounds(30,185,385,30);page.Controls.Add(problemNote);
-            var mark=new Button{Text="标记问题 / 保存前30秒",Location=new Point(430,182),Size=new Size(245,36)};page.Controls.Add(mark);
+            var diagnosticPanel=new Panel{Location=new Point(0,850),Size=new Size(710,420)};outer.Controls.Add(diagnosticPanel);page=diagnosticPanel;
+            AddCheck(page,playDiagnostics,0,"自动诊断（默认关闭；手动开启=按档位全量采集）",false);
+            LabelText(page,"关闭时完全关闭持续诊断、场景追踪和卡顿探针；F7 仍可单次保存问题截图和信息。\r\n开启后按采集档位记录前后时序；不录屏、不记逐键输入、不自动上传。",30,40,670,48);
+            problemNote.SetBounds(30,95,385,30);page.Controls.Add(problemNote);
+            var mark=new Button{Text="自动诊断：标记前30秒",Location=new Point(430,92),Size=new Size(245,36)};page.Controls.Add(mark);
             mark.Click+=delegate{
-                try{if(String.IsNullOrEmpty(diagnosticSession)||!ReviewProcessAlive(gameProcess))throw new IOException("请在启用自动诊断的游戏会话中标记。");
+                try{if(String.IsNullOrEmpty(diagnosticSession)||!ReviewProcessAlive(gameProcess))throw new IOException("此按钮需要自动诊断；游戏内 F7 可独立保存。");
                     DiagnosticFiles.Mark(diagnosticSession,problemNote.Text);status.Text="已请求保存问题前30秒和后约3秒可用数据；记录异步完成。";}
                 catch(Exception error){status.Text="未标记："+error.Message;}
             };
-            var export=new Button{Text="导出诊断 ZIP…",Location=new Point(30,227),Size=new Size(200,36)};page.Controls.Add(export);export.Click+=delegate{ExportPlayDiagnostics();};
-            var details=new Button{Text="查看本次诊断状态",Location=new Point(248,227),Size=new Size(230,36)};page.Controls.Add(details);details.Click+=delegate{UpdateDiagnosticStatus();MessageBox.Show(this,diagnosticStatus.Text,"诊断状态",MessageBoxButtons.OK,MessageBoxIcon.Information);};
-            var folder=new Button{Text="打开诊断文件夹",Location=new Point(496,227),Size=new Size(179,36)};page.Controls.Add(folder);
+            var export=new Button{Text="导出诊断 ZIP…",Location=new Point(30,137),Size=new Size(200,36)};page.Controls.Add(export);export.Click+=delegate{ExportPlayDiagnostics();};
+            var details=new Button{Text="查看本次诊断状态",Location=new Point(248,137),Size=new Size(230,36)};page.Controls.Add(details);details.Click+=delegate{UpdateDiagnosticStatus();MessageBox.Show(this,diagnosticStatus.Text,"诊断状态",MessageBoxButtons.OK,MessageBoxIcon.Information);};
+            var folder=new Button{Text="打开诊断文件夹",Location=new Point(496,137),Size=new Size(179,36)};page.Controls.Add(folder);
             folder.Click+=delegate{
                 try{string root=DiagnosticFiles.Root(baseDir);SaveStorage.RequireNoLinks(root);
-                    if(!Directory.Exists(root))throw new IOException("尚未产生诊断记录，请先开启自动诊断游玩。");
+                    if(!Directory.Exists(root))throw new IOException("尚无记录；可在游戏内按 F7 保存，或开启自动诊断。");
                     Process.Start(new ProcessStartInfo{FileName=root,UseShellExecute=true});
                     status.Text="交回此 play-sessions 文件夹中的全部子目录和文件，或退出游戏后导出全部会话 ZIP。";}
                 catch(Exception error){status.Text="无法打开诊断目录："+error.Message;}
             };
-            diagnosticStatus.SetBounds(30,275,665,65);diagnosticStatus.Text="全章节采集包默认超级诊断；开销和缺口会记录。导出请先退出游戏。";page.Controls.Add(diagnosticStatus);
-            LabelText(page,"采集档位",30,350,160,25);
+            diagnosticStatus.SetBounds(30,185,665,65);diagnosticStatus.Text="自动诊断默认完全关闭；勾选后手动开启，选择“超级”即全量档位；F7 始终可单次保存。";page.Controls.Add(diagnosticStatus);
+            LabelText(page,"采集档位",30,260,160,25);
             diagnosticDetail.Items.AddRange(new object[]{"基础：帧时间 / 原生状态","增强：全程资源 / 渲染 / JIT 活动","超级：全程活动 + 慢调用定位（开销较高）"});
-            diagnosticDetail.SetBounds(200,346,470,36);diagnosticDetail.SelectedIndex=2;page.Controls.Add(diagnosticDetail);
-            LabelText(page,"完整流程采集优先；正常性能验收另测。默认无整屏识别。",30,394,650,42);
-            foreach(Control control in page.Controls)control.Top-=90;
+            diagnosticDetail.SetBounds(200,256,470,36);diagnosticDetail.SelectedIndex=2;page.Controls.Add(diagnosticDetail);
+            LabelText(page,"采集档位仅用于自动诊断；F7 单次保存不会启用持续采集。",30,304,650,42);
+            // Leave room for both wrapped description lines at the system DPI.
+            foreach(Control control in page.Controls) if(control.Top>=92) control.Top+=32;
             int bottom=0;foreach(Control control in outer.Controls)if(!Object.Equals(control.Tag,"advanced-content"))bottom=Math.Max(bottom,control.Bottom);outer.AutoScrollMinSize=new Size(710,bottom+16);
         }
         private static object CopyDiagnosticMap(string basePath,string session,Dictionary<string,object> manifest)
@@ -235,7 +235,9 @@ namespace DeadSpaceBootstrap
         {
             info.EnvironmentVariables["TOUCHHLE_DS_SCENE_TRACE"]="0";info.EnvironmentVariables["TOUCHHLE_DS_STUTTER_PROBE"]="0";
             info.EnvironmentVariables["TOUCHHLE_DS_DIAGNOSTICS"]="0";info.EnvironmentVariables.Remove("TOUCHHLE_DS_DIAGNOSTICS_DIR");diagnosticSession=null;
-            if(!playDiagnostics.Checked){diagnosticStatus.Text="本次自动诊断已关闭；既有会话仍保留，可在退出游戏后导出。";return;}
+            string manualRoot=DiagnosticFiles.Root(baseDir);SaveStorage.RequireNoLinks(manualRoot);
+            info.EnvironmentVariables["TOUCHHLE_DS_MANUAL_DIAGNOSTICS_ROOT"]=manualRoot;
+            if(!playDiagnostics.Checked){diagnosticStatus.Text="自动诊断已关闭；F7 可单次保存。未主动采集前不提供前30秒历史。";return;}
             try
             {
                 string dataRoot=baseDir;DiagnosticFiles.InspectPrevious(dataRoot);
@@ -343,3 +345,4 @@ namespace DeadSpaceBootstrap
         }
     }
 }
+

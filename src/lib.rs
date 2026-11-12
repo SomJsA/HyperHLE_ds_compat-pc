@@ -53,11 +53,13 @@ mod ds_tutorial_prompts;
 mod ds_qte_overlay;
 mod ds_perf;
 mod ds_perf_control;
+mod ds_msaa;
 mod ds_monitor;
 mod dyld;
 mod environment;
 mod ds_startup_report;
 mod ds_diagnostics;
+mod ds_flicker_trace;
 mod ds_exit_trace;
 mod ds_scene_diagnostics;
 mod ds_draw_env;
@@ -70,7 +72,15 @@ mod ds_pc_transform_math;
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod ds_pc_transform;
 #[cfg(all(windows, target_arch = "x86_64"))]
+mod ds_pc_inverse_cache;
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod ds_pc_animation_position_cache;
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod ds_pc_keyframe_cache;
+#[cfg(all(windows, target_arch = "x86_64"))]
 mod ds_pc_skin_shadow;
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod ds_pc_jit_prewarm;
 mod ds_stutter_probe;
 mod ds_player_action_cache;
 /// Bounded best-effort flush on process teardown, never on a normal frame.

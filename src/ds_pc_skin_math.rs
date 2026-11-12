@@ -5,6 +5,19 @@ pub(crate) struct Output {
     pub bytes: Vec<u8>,
     pub flags: u32,
 }
+
+pub(crate) struct OutputView<'a> {
+    pub bytes: &'a [u8],
+    pub flags: u32,
+}
+
+pub(crate) fn pack_bytes<'a>(values: &[f32], bytes: &'a mut Vec<u8>, flags: u32) -> OutputView<'a> {
+    bytes.resize(values.len() * 4, 0);
+    for (chunk, value) in bytes.chunks_exact_mut(4).zip(values) {
+        chunk.copy_from_slice(&value.to_le_bytes());
+    }
+    OutputView { bytes, flags }
+}
 extern "C" {
     fn touchHLE_pc_skin_positions(
         dst: *mut f32,
@@ -54,7 +67,54 @@ pub(crate) fn calculate(
             }
         }
     }
-    let mut output = vec![0.0f32; n * 3];
+    calculate_validated(pos, wgt, idx, mat, count)
+}
+
+/// Run the kernel after the caller has already validated the complete input
+/// spans, active indices, finite values, and destination bounds. The shadow
+/// capture path performs those checks before borrowing guest memory, so doing
+/// them again here only adds CPU work to every skin call.
+pub(crate) fn calculate_validated(
+    pos: &[f32],
+    wgt: &[f32],
+    idx: &[i8],
+    mat: &[f32],
+    count: u32,
+) -> Result<Output, &'static str> {
+    let mut output = Vec::new();
+    calculate_validated_into(pos, wgt, idx, mat, count, &mut output)
+}
+
+/// Run the validated packed kernel with caller-owned output storage.
+pub(crate) fn calculate_validated_into(
+    pos: &[f32],
+    wgt: &[f32],
+    idx: &[i8],
+    mat: &[f32],
+    count: u32,
+    output: &mut Vec<f32>,
+) -> Result<Output, &'static str> {
+    output.clear();
+    let mut bytes = Vec::new();
+    let view = calculate_validated_into_reuse(pos, wgt, idx, mat, count, output, &mut bytes)?;
+    Ok(Output {
+        bytes: view.bytes.to_vec(),
+        flags: view.flags,
+    })
+}
+
+pub(crate) fn calculate_validated_into_reuse<'a>(
+    pos: &[f32],
+    wgt: &[f32],
+    idx: &[i8],
+    mat: &[f32],
+    count: u32,
+    output: &mut Vec<f32>,
+    bytes: &'a mut Vec<u8>,
+) -> Result<OutputView<'a>, &'static str> {
+    let n = count as usize;
+    output.clear();
+    output.resize(n * 3, 0.0);
     // Every active index and buffer extent validated above; output is independent.
     let flags = unsafe {
         touchHLE_pc_skin_positions(
@@ -69,10 +129,7 @@ pub(crate) fn calculate(
     if flags & 0x80000000 != 0 {
         return Err("fp-exception-native-required");
     }
-    Ok(Output {
-        bytes: output.into_iter().flat_map(f32::to_le_bytes).collect(),
-        flags,
-    })
+    Ok(pack_bytes(output, bytes, flags))
 }
 #[cfg(test)]
 #[path = "ds_pc_skin_oracle.rs"]

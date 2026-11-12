@@ -10,7 +10,9 @@ const SIZE: (u32, u32) = (512, 384);
 enum Icon {
     E,
     Q,
+    Escape,
     Enter,
+    Alt,
     A,
     X,
     Arrows,
@@ -26,7 +28,9 @@ impl Icon {
         match self {
             Self::E => [8., 8., 96., 96.],
             Self::Q => [120., 8., 96., 96.],
+            Self::Escape => [448., 8., 64., 96.],
             Self::Enter => [232., 8., 96., 96.],
+            Self::Alt => [448., 264., 64., 60.],
             Self::A => [344., 8., 96., 96.],
             Self::X => [8., 120., 96., 96.],
             Self::Arrows => [120., 120., 192., 128.],
@@ -35,7 +39,9 @@ impl Icon {
             Self::Delete => [8., 264., 96., 96.],
             Self::Start => [120., 264., 96., 64.],
             Self::Press => [232.,264.,40.,60.],
-            Self::Continue => [280.,264.,168.,60.],
+            // The label starts at x=232. The old x=280 crop dropped the
+            // first glyph, which rendered the pause hint as "以继续".
+            Self::Continue => [232.,264.,216.,60.],
         }
     }
     fn width(self, height: f32) -> f32 {
@@ -67,6 +73,23 @@ fn geometry() -> (Vec<f32>, Vec<f32>) {
     let (controls, navigation) = ui::prompt_controls();
     let (mut vertices, mut uv) = (Vec::new(), Vec::new());
     let keyboard=ui::keyboard_hints();
+    if ui::pause_menu() {
+        let icons: &[Icon] = if keyboard {
+            &[Icon::Escape, Icon::Continue, Icon::Alt]
+        } else {
+            &[Icon::Start, Icon::Continue, Icon::Alt]
+        };
+        let height = 12.;
+        let width: f32 = icons.iter().map(|icon| icon.width(height) + 3.).sum::<f32>() - 3.;
+        let mut x = 240. - width / 2.;
+        for icon in icons {
+            // Leave a safe-area margin below the prompt row so the full
+            // Continue/Alt labels remain visible on the native pause HUD.
+            sprite(&mut vertices, &mut uv, *icon, x, 294., height);
+            x += icon.width(height) + 3.;
+        }
+        return (vertices, uv);
+    }
     let confirm:&[Icon]=if keyboard {&[Icon::E,Icon::Enter]}else{&[Icon::A]};
     if ui::loading_ready() {
         let mut icons=vec![Icon::Press];icons.extend_from_slice(confirm);icons.push(Icon::Continue);
@@ -236,7 +259,9 @@ mod tests {
         for icon in [
             Icon::E,
             Icon::Q,
+            Icon::Escape,
             Icon::Enter,
+            Icon::Alt,
             Icon::A,
             Icon::X,
             Icon::Arrows,

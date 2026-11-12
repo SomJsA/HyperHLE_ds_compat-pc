@@ -38,20 +38,20 @@ namespace DeadSpaceBootstrap
         private readonly string documentsDirectory;
 
         private readonly TextBox ipaPath = new TextBox();
-        private readonly ComboBox scaleHack = new ComboBox();
-        private readonly ComboBox displayResolution = new ComboBox();
-        private readonly ComboBox windowMode = new ComboBox();
-        private readonly ComboBox fpsCap = new ComboBox();
-        private readonly ComboBox fsrMode = new ComboBox();
-        private readonly ComboBox mouseLook = new ComboBox();
-        private readonly ComboBox lookDirection = new ComboBox();
+        private readonly ComboBox scaleHack = new NoWheelComboBox();
+        private readonly ComboBox displayResolution = new NoWheelComboBox();
+        private readonly ComboBox windowMode = new NoWheelComboBox();
+        private readonly ComboBox fpsCap = new NoWheelComboBox();
+        private readonly ComboBox fsrMode = new NoWheelComboBox();
+        private readonly ComboBox mouseLook = new NoWheelComboBox();
+        private readonly ComboBox lookDirection = new NoWheelComboBox();
         private readonly TextBox aimPoint = new TextBox();
         private readonly TextBox stickGain = new TextBox();
         private readonly TextBox lookGain = new TextBox();
-        private readonly ComboBox mouseAimMode = new ComboBox();
-        private readonly ComboBox padAimMode = new ComboBox();
-        private readonly ComboBox padFireMode = new ComboBox();
-        private readonly ComboBox keyboardAltMode = new ComboBox();
+        private readonly ComboBox mouseAimMode = new NoWheelComboBox();
+        private readonly ComboBox padAimMode = new NoWheelComboBox();
+        private readonly ComboBox padFireMode = new NoWheelComboBox();
+        private readonly ComboBox keyboardAltMode = new NoWheelComboBox();
         private readonly CheckBox nativeInputs = new CheckBox();
         private readonly CheckBox aimedWalk = new CheckBox();
         private readonly NumericUpDown aimedForwardPercent = new NumericUpDown();
@@ -64,8 +64,11 @@ namespace DeadSpaceBootstrap
         private bool syncingPointerOptions;
 
         private readonly CheckBox fastPresent = new CheckBox();
+        private readonly CheckBox safeBlackFloor = new CheckBox();
+        private readonly TrackBar safeBlackGray = new TrackBar();
+        private readonly Label safeBlackGrayValue = new Label();
         private readonly CheckBox skipFinish = new CheckBox();
-        private readonly ComboBox textureSync = new ComboBox();
+        private readonly ComboBox textureSync = new NoWheelComboBox();
         private readonly CheckBox gpuPresentCopy = new CheckBox();
         private readonly CheckBox gpuTextOverlay = new CheckBox();
         private readonly CheckBox pcCompat = new CheckBox();
@@ -79,11 +82,12 @@ namespace DeadSpaceBootstrap
         private readonly CheckBox frameDump = new CheckBox();
         private readonly CheckBox nativeHud = new CheckBox();
         private readonly CheckBox overlayEnabled = new CheckBox();
-        private readonly ComboBox subtitleMode = new ComboBox();
+        private readonly ComboBox subtitleMode = new NoWheelComboBox();
         private readonly CheckBox confirmQuit = new CheckBox();
         private readonly CheckBox superMonitor = new CheckBox();
 
-        private readonly Label status = new Label();
+        private readonly Label status = new DeadSpaceUi.UiLanguage.LocalizedLabel();
+        private readonly Button languageToggle = new Button();
 
         public LauncherForm() : this(AppDomain.CurrentDomain.BaseDirectory,
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), DisplayHardware.Detect()) { }
@@ -92,39 +96,66 @@ namespace DeadSpaceBootstrap
             baseDir=Path.GetFullPath(packageRoot);documentsDirectory=Path.GetFullPath(documents);detectedHardware=hardware;
             bool firstConfiguration;
             iniPath = DocumentsSettings.Resolve(baseDir, documentsDirectory, out firstConfiguration);
-            Text = "DeadSpace IOS移植 · 启动器";
+            Text = "死亡空间移动版（IOS端高清移植） · 启动器";
+            Icon embeddedIcon = LoadEmbeddedIcon();
+            Icon = embeddedIcon ?? Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
             StartPosition = FormStartPosition.CenterScreen;
+            AutoScaleDimensions = new SizeF(96, 96);
+            AutoScaleMode = AutoScaleMode.None;
+            SuspendLayout();
             ClientSize = new Size(1000, 740);
-            MinimumSize = new Size(1016, 779);
+            // The page controls are intentionally designed for a 1000px
+            // content lane. Allowing the old 760px minimum clipped the right
+            // column, language toggle and footer actions instead of reflowing
+            // them. Pages still scroll vertically for short displays.
+            MinimumSize = new Size(1000, 620);
             Font = new Font("Microsoft YaHei UI", 9.5f);
             BackColor = Color.FromArgb(236, 241, 245);
 
             BuildShell();
+            BuildLauncherExitButton();
             textureSync.SelectedIndex = 0;
             gpuPresentCopy.Checked = true;
             LoadSettings();
             LoadKeyBindings();
             LoadGamepadBindings();
             if(firstConfiguration){ApplyDetectedGraphicsDefaults();SaveSettings();}
-            UpdateQualityPreset();
             WatchGame();
-            Shown += delegate { EnsureMarkerReady(false); };
+            ApplyUiLanguage();
+            InitializeResponsiveLayout();
+            ResumeLayout(true);
+            Shown += delegate {
+                Rectangle area = Screen.FromControl(this).WorkingArea;
+                MinimumSize = new Size(Math.Min(MinimumSize.Width, area.Width), Math.Min(MinimumSize.Height, area.Height));
+                if (Height > area.Height) Height = area.Height;
+                if (Width > area.Width) Width = area.Width;
+                aboutPanel.StartAutomaticCheck();
+                EnsureMarkerReady(false);
+            };
+        }
+
+        private void ApplyUiLanguage()
+        {
+            DeadSpaceUi.UiLanguage.Apply(this);
+            languageToggle.Text = DeadSpaceUi.UiLanguage.ToggleCaption;
+            if (aboutPanel != null) aboutPanel.ApplyLanguage();
+            LayoutLauncher();
         }
 
         private static void AddComboRow(Control parent, string label, int y, ComboBox combo, string[] items)
         {
-            parent.Controls.Add(new Label { Text = label, Location = new Point(30, y + 4), Size = new Size(135, 24) });
+            parent.Controls.Add(new Label { Text = label, Location = new Point(30, y + 4), Size = new Size(160, 28), AutoEllipsis = false });
             combo.DropDownStyle = ComboBoxStyle.DropDownList;
             combo.Items.AddRange(items);
-            combo.Location = new Point(174, y);
+            combo.Location = new Point(194, y);
             combo.Size = new Size(210, 28);
             parent.Controls.Add(combo);
         }
 
         private static void AddTextRow(Control parent, string label, int y, TextBox textBox)
         {
-            parent.Controls.Add(new Label { Text = label, Location = new Point(30, y + 4), Size = new Size(135, 24) });
-            textBox.Location = new Point(174, y);
+            parent.Controls.Add(new Label { Text = label, Location = new Point(30, y + 4), Size = new Size(160, 28), AutoEllipsis = false });
+            textBox.Location = new Point(194, y);
             textBox.Size = new Size(210, 28);
             parent.Controls.Add(textBox);
         }
@@ -133,7 +164,10 @@ namespace DeadSpaceBootstrap
         {
             checkBox.Text = text;
             checkBox.Location = new Point(30, y);
-            checkBox.Size = new Size(625, 28);
+            checkBox.Size = new Size(665, 32);
+            checkBox.AutoEllipsis = false;
+            checkBox.AutoSize = false;
+            checkBox.TextAlign = ContentAlignment.MiddleLeft;
             checkBox.Checked = defaultValue;
             parent.Controls.Add(checkBox);
         }
@@ -181,7 +215,8 @@ namespace DeadSpaceBootstrap
                         case "--marker": marker = args[index + 1]; break;
                         case "--ipa": ipa = args[index + 1]; break;
                         case "--install-root": root = args[index + 1]; break;
-                        case "--tier": tier = args[index + 1]; break;
+                        case "--tier":
+                        case "--tiers": tier = args[index + 1]; break;
                         case "--result": result = args[index + 1]; break;
                         default: throw new ArgumentException("unknown option");
                     }
@@ -191,8 +226,8 @@ namespace DeadSpaceBootstrap
                 if ((marker == null) == (ipa == null))
                     throw new ArgumentException("select exactly one source");
                 string installed = marker != null
-                    ? VandalMarker.Install(
-                        VandalMarker.Read(marker), root, tier)
+                    ? VandalMarker.InstallSelected(
+                        VandalMarker.Read(marker), root, VandalMarker.ParseTiers(tier))
                     : VandalMarker.InstallIpa(ipa, root);
                 string report = result ?? Path.Combine(
                     installed, "installer-result.json");
@@ -245,7 +280,7 @@ namespace DeadSpaceBootstrap
             SetCombo(scaleHack, AutomaticRenderScale);
             ResetTextureSettings();
             displayResolution.SelectedIndex = 0;
-            windowMode.SelectedIndex = 0;
+            windowMode.SelectedIndex = 1;
             fpsCap.SelectedIndex = 3;
             fsrMode.SelectedIndex = 1;
             mouseLook.SelectedIndex = 2;
@@ -257,6 +292,8 @@ namespace DeadSpaceBootstrap
             stickGain.Text = "2.0";
             installRoot.Text = DefaultInstallRoot();
             fastPresent.Checked = true;
+            safeBlackFloor.Checked = false;
+            safeBlackGray.Value = 10;
             skipFinish.Checked = false;
             gpuPresentCopy.Checked = true;
             pcCompat.Checked = true;
@@ -268,7 +305,7 @@ namespace DeadSpaceBootstrap
             pcMouse.Checked = true;
             debugLogs.Checked = false;
             frameDump.Checked = false;
-            nativeHud.Checked = false;
+            nativeHud.Checked = true;
             overlayEnabled.Checked = true;
             subtitleMode.SelectedIndex=0;
             confirmQuit.Checked = true;
@@ -303,9 +340,10 @@ namespace DeadSpaceBootstrap
             string savedResolution = Get(values, "display_resolution", AutomaticResolution);
             if (savedResolution != "跟随内部") EnsureResolutionOption(savedResolution);
             SetCombo(displayResolution, savedResolution);
-            SetCombo(windowMode, Get(values, "window_mode", "窗口"));
+            SetCombo(windowMode, Get(values, "window_mode", "无边框全屏"));
             SetCombo(saveMode, Get(values, "save_mode", "文档（当前用户）"));
-            playDiagnostics.Checked=Get(values,"play_diagnostics","1")=="1";
+            bool manualDiagnosticPolicy=Get(values,"diagnostic_defaults_policy","")=="manual-f7-20261107";
+            playDiagnostics.Checked=manualDiagnosticPolicy && Get(values,"play_diagnostics","0")=="1";
             int detail;diagnosticDetail.SelectedIndex=Int32.TryParse(Get(values,"diagnostic_detail","2"),out detail)&&detail>=0&&detail<=2?detail:2;
             SetCombo(inputMode, Get(values, "input_mode", "自动（键鼠 + 手柄）"));
             SetCombo(fpsCap, Get(values, "fps", "不限"));
@@ -329,13 +367,19 @@ namespace DeadSpaceBootstrap
             stickGain.Text = Get(values, "stick_gain", "2.0");
             installRoot.Text = Get(values, "install_root", DefaultInstallRoot());
             fastPresent.Checked = GetBool(values, "fast_present", true);
+            safeBlackFloor.Checked = GetBool(values, "safe_black_floor", false);
+            int safeGray;
+            if (!Int32.TryParse(Get(values, "safe_black_gray", "10"), out safeGray)) safeGray = 10;
+            safeBlackGray.Value = Math.Min(safeBlackGray.Maximum, Math.Max(safeBlackGray.Minimum, safeGray));
             skipFinish.Checked = GetBool(values, "skip_finish", false);
             int textureSyncIndex;
             if (!Int32.TryParse(Get(values, "texture_sync_index", "0"), out textureSyncIndex))
                 textureSyncIndex = 0;
             textureSync.SelectedIndex = Math.Min(2, Math.Max(0, textureSyncIndex));
             gpuPresentCopy.Checked = GetBool(values, "gpu_present_copy", true);
-            gpuTextOverlay.Checked = GetBool(values, "gpu_text_overlay", false);
+            // Missing legacy keys use the same GPU default as first setup.
+            // An explicit 0 still selects the CPU compatibility renderer.
+            gpuTextOverlay.Checked = GetBool(values, "gpu_text_overlay", true);
             pcCompat.Checked = GetBool(values, "pc_compat", true);
             openingMips.Checked = GetBool(values, "opening_mips", true);
             globalMips.Checked = GetBool(values, "global_mips", false);
@@ -345,11 +389,11 @@ namespace DeadSpaceBootstrap
             pcMouse.Checked = GetBool(values, "pc_mouse", true);
             debugLogs.Checked = GetBool(values, "debug_logs", false);
             frameDump.Checked = GetBool(values, "frame_dump", false);
-            nativeHud.Checked = GetBool(values, "native_hud", false);
+            nativeHud.Checked = GetBool(values, "native_hud", true);
             overlayEnabled.Checked = GetBool(values, "overlay_enabled", true);
             SetCombo(subtitleMode,Get(values,"subtitle_mode","整段三行"));
             confirmQuit.Checked = GetBool(values, "confirm_quit", true);
-            superMonitor.Checked = GetBool(values, "super_monitor", false);
+            superMonitor.Checked = manualDiagnosticPolicy && GetBool(values, "super_monitor", false);
             mouseAimMode.SelectedIndex = Get(values, "mouse_aim_mode", "hold") == "toggle" ? 1 : 0;
             padAimMode.SelectedIndex = Get(values, "pad_aim_mode", "hold") == "toggle" ? 1 : 0;
             padFireMode.SelectedIndex = Get(values, "pad_fire_mode", "toggle") == "split" ? 0 : 1;
@@ -413,6 +457,8 @@ namespace DeadSpaceBootstrap
                 "stick_gain=" + stickGain.Text.Trim(),
                 "install_root=" + installRoot.Text.Trim(),
                 "fast_present=" + (fastPresent.Checked ? "1" : "0"),
+                "safe_black_floor=" + (safeBlackFloor.Checked ? "1" : "0"),
+                "safe_black_gray=" + safeBlackGray.Value,
                 "skip_finish=" + (skipFinish.Checked ? "1" : "0"),
                 "texture_sync_index=" + textureSync.SelectedIndex,
                 "gpu_present_copy=" + (gpuPresentCopy.Checked ? "1" : "0"),
@@ -443,6 +489,7 @@ namespace DeadSpaceBootstrap
             SaveTextureSettings(allLines);
             SaveSamplingSettings(allLines);
             allLines.Add("play_diagnostics="+(playDiagnostics.Checked?"1":"0"));
+            allLines.Add("diagnostic_defaults_policy=manual-f7-20261107");
             allLines.Add("diagnostic_detail="+diagnosticDetail.SelectedIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
             DocumentsSettings.Save(iniPath, allLines.ToArray());
         }
@@ -451,6 +498,41 @@ namespace DeadSpaceBootstrap
         {
             info.EnvironmentVariables["TOUCHHLE_DS_CONTROLLER_FIRE_MODE"] = padFireMode.SelectedIndex == 0 ? "split" : "toggle";
             info.EnvironmentVariables["TOUCHHLE_DS_KEYBOARD_ALT_MODE"] = keyboardAltMode.SelectedIndex == 1 ? "toggle" : "hold";
+        }
+
+        private void PrepareDefaultOptimizationEnvironment(ProcessStartInfo info)
+        {
+            // The combined PC package ships the verified/candidate paths enabled
+            // by default. Low-hit Keyframe/Matrix4 inverse caches remain explicit
+            // script candidates because their miss-side JIT invalidation regressed
+            // sustained play. Keep trigger files outside the program directory so
+            // upgrades and rollbacks never rewrite the installed package.
+            string stateRoot = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "DeadSpaceLegacy");
+            Directory.CreateDirectory(stateRoot);
+            string skinTrigger = Path.Combine(stateRoot, "all-pending-skin.trigger");
+            string transformTrigger = Path.Combine(stateRoot, "all-pending-transform.trigger");
+            string positionTrigger = Path.Combine(stateRoot, "all-pending-animation-position.trigger");
+            foreach (string trigger in new[] { skinTrigger, transformTrigger, positionTrigger })
+                File.WriteAllText(trigger, "all-pending", Encoding.ASCII);
+
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_JIT_PREWARM"] = "1";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_COMBAT_LATENCY"] = "1";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_SKIN_SHADOW"] = "1";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_SKIN_MATH"] = "host";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_SKIN_INPUT"] = "strided";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_SKIN_TRIGGER"] = skinTrigger;
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_TRANSFORM_MATH"] = "host";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_TRANSFORM_TRIGGER"] = transformTrigger;
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_TRANSFORM_CACHE"] = "1";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_ANIMATION_POSITION_CACHE"] = "1";
+            info.EnvironmentVariables["TOUCHHLE_DS_PC_ANIMATION_POSITION_TRIGGER"] = positionTrigger;
+            // These are already the Windows Dead Space defaults, but setting them
+            // in the child process makes the combined package deterministic even
+            // when the parent shell inherited an explicit rollback value.
+            info.EnvironmentVariables["TOUCHHLE_DS_GL_STACK_DRIVER"] = "1";
+            info.EnvironmentVariables["TOUCHHLE_DS_GL_ENV_CACHE"] = "1";
         }
 
         private void LaunchGame()
@@ -476,6 +558,8 @@ namespace DeadSpaceBootstrap
             string texturePath;
             try { texturePath = SelectedTextureRoot(); }
             catch (Exception error) { status.Text = error.Message; return; }
+            using (var warning = new FlickerWarningForm())
+                if (warning.ShowDialog(this) != DialogResult.OK) return;
             try { SaveKeyBindings(); SaveGamepadBindings(); }
             catch (Exception error) { status.Text = error.Message; return; }
             try { SaveStorage.RequireStopped(); SaveStorage.EnsureWritable(SelectedDataRoot()); if(saveMode.SelectedIndex==1)DocumentsSettings.EnsureLayout(SelectedDataRoot()); }
@@ -654,6 +738,8 @@ namespace DeadSpaceBootstrap
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AUTO_OPENING_MIPS", openingMips.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AUTO_MIPS_ALL", globalMips.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_SKIP_READBACK_FINISH", skipFinish.Checked ? "1" : null);
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_SAFE_BLACK_FLOOR", safeBlackFloor.Checked ? "1" : null);
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_SAFE_BLACK_GRAY", safeBlackFloor.Checked ? safeBlackGray.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : null);
             Environment.SetEnvironmentVariable(
                 "TOUCHHLE_DS_TEX_UPLOAD_FINISH",
                 textureSync.SelectedIndex == 1 ? "flush"
@@ -755,6 +841,7 @@ namespace DeadSpaceBootstrap
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_CONFIRM_QUIT"] = confirmQuit.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_LAUNCHER_PATH"] = Application.ExecutablePath;
+                PrepareDefaultOptimizationEnvironment(info);
                 VisualCompatibility.WriteEffective(ConfigurationDirectory, info);
                 PrepareStartupReview(info);
                 PreparePlayDiagnostics(info);
@@ -772,3 +859,4 @@ namespace DeadSpaceBootstrap
         }
     }
 }
+

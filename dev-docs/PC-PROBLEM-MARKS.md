@@ -1,5 +1,26 @@
 # General F7 diagnostic dump / PNG bookmarks
 
+2026-11-07 GPU Test1 user revision: automatic diagnostics and the performance
+HUD default off. The first upgrade to policy `manual-f7-20261107` resets their
+old default-on values; later explicit saved choices are respected. F7 remains
+independent: no manual session/worker/files are created before a press. The
+separate on-demand client never populates ACTIVE or ordinary collectors. It
+saves numbered PNG, request/final JSON and minimal session/build identity;
+it does not record prior/post frames, resource events, periodic metrics or
+automatic incidents. Missing history is explicit, not manufactured as a30s
+capture. The current session's manual records are included in normal export.
+Existing automatic mode still uses the original before/after pipeline when
+explicitly enabled. Both clients share bounded admission/normal shutdown and
+the screenshot readback/PNG orientation logic; native pause is not invoked.
+
+Regression: `manual_worker_saves_only_explicit_captures_and_stays_idle` writes
+a real PNG, ignores unsolicited Frame/Event inputs, verifies no periodic frame/
+timeline/health files or idle changes, and drains normally. The real hidden
+launcher test `PcManualProblemDefaultsTest.cs` covers fresh/missing/legacy-on
+defaults, explicit on/off after migration, launch environment, no diagnostic
+directory creation while off, and save/reload. Native F7 and automatic-mode
+shutdown regressions remain required for the actual installer.
+
 Latest user clarification: use the earlier diagnostic-dump stutter, not native pause. F7 triggers a deliberate one-off dump stall, captures the current game frame, saves numbered diagnostics, automatically continues and shows the problem number. No pause-menu call, native state change, OS suspension, E interception or manual resume. This supersedes all earlier native-pause proposals. Every press gets a new issue number; the key is for all gameplay issues, not only QTE.
 
 F7 and explicit inbox `issue` share the same request. Each session allocates monotonically numbered issue-0003-before.json, issue-0003.png and issue-0003.json; session directory identifies the run. Background writer immediately saves available30s pre-history, encodes/writes one explicitly requested game output viewport PNG, and later finalizes about3s of available post-history. Capture occurs at the next completed present before swap. No automatic screenshots/desktop capture/ordinary key trace. Existing M/legacy mark remain separate explicit frame tools.

@@ -1,4 +1,5 @@
 //! Pure bounded matrix candidate for explicit original-verified host/shadow mode.
+#[derive(Clone)]
 pub(crate) struct Output {
     pub bytes: [u8; 64],
     pub flags: u32,

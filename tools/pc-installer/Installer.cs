@@ -20,8 +20,10 @@ namespace DeadSpaceInstaller
         internal string ResourcePath;
         internal string Tier = "4";
         internal bool CreateShortcut = true;
+        internal bool CreateDesktopShortcut = true;
         internal bool RegisterInstallation = true;
         internal bool LaunchAfterInstall;
+        internal bool InstallHdChinese = true;
         internal string LogPath;
     }
 
@@ -29,10 +31,11 @@ namespace DeadSpaceInstaller
     {
         private const string ProgramResource = "DeadSpaceInstaller.Program.zip";
         private const string UninstallerResource = "DeadSpaceInstaller.Uninstall.exe";
+        private static string I(string value) { return InstallerLanguage.Translate(value); }
         private const string ProductKey = @"Software\DeadSpaceLegacy\R15";
         private const string UninstallKey =
             @"Software\Microsoft\Windows\CurrentVersion\Uninstall\DeadSpaceLegacyR15";
-        private const string Version = "R15-20261106-preview";
+        private const string VersionFallback = "R15-unknown";
 
         internal static string DefaultProgramRoot()
         {
@@ -76,13 +79,12 @@ namespace DeadSpaceInstaller
                         return options;
                     string program = Convert.ToString(key.GetValue("ProgramRoot"));
                     string data = Convert.ToString(key.GetValue("GameDataRoot"));
-                    string tier = Convert.ToString(key.GetValue("TextureTier"));
+                    string tier = Convert.ToString(key.GetValue("TextureTiers", key.GetValue("TextureTier", "4")));
                     if (!String.IsNullOrWhiteSpace(program))
                         options.ProgramRoot = program;
                     if (!String.IsNullOrWhiteSpace(data))
                         options.GameDataRoot = data;
-                    if (tier == "2" || tier == "4" || tier == "6")
-                        options.Tier = tier;
+                    options.Tier = NormalizeTiers(tier);
                 }
             }
             catch (Exception)
@@ -142,25 +144,26 @@ namespace DeadSpaceInstaller
             if (!String.IsNullOrWhiteSpace(options.ResourcePath) &&
                 !File.Exists(options.ResourcePath))
                 throw new FileNotFoundException(
-                    "找不到 marker 或 IPA 安装源。", options.ResourcePath);
+                    I("找不到 marker 或 IPA 安装源。"), options.ResourcePath);
             bool resourceAlreadyInstalled =
                 HasResourceInstallation(options.GameDataRoot);
             if (String.IsNullOrWhiteSpace(options.ResourcePath) &&
                 !resourceAlreadyInstalled)
                 throw new InvalidOperationException(
-                    "首次安装必须选择 vandal.marker 或 IPA。");
+                    I("首次安装必须选择 vandal.marker 或 IPA。"));
 
-            progress("正在解包程序文件...");
+            progress(I("正在解包程序文件..."));
             ExtractProgram(options.ProgramRoot);
+            ApplyLanguageMode(options.ProgramRoot, options.InstallHdChinese);
             string launcher = Path.Combine(
                 options.ProgramRoot, "DeadSpace Launcher.exe");
             if (!File.Exists(launcher))
                 throw new InvalidDataException(
-                    "安装包缺少 DeadSpace Launcher.exe。");
+                    I("安装包缺少 DeadSpace Launcher.exe。"));
 
             if (!String.IsNullOrWhiteSpace(options.ResourcePath))
             {
-                progress("正在校验并安装游戏资源，请勿关闭安装器...");
+                progress(I("正在校验并安装游戏资源，请勿关闭安装器..."));
                 RunResourceInstaller(
                     launcher,
                     options.ProgramRoot,
@@ -170,16 +173,18 @@ namespace DeadSpaceInstaller
             }
             else
             {
-                progress("保留现有 GameData，正在更新程序...");
+                progress(I("保留现有 GameData，正在更新程序..."));
             }
 
             WriteInstallerState(options, launcher);
             ExtractUninstaller(options.ProgramRoot);
             if (options.CreateShortcut)
-                CreateStartMenuShortcut(launcher);
+                CreateShortcut(launcher, Environment.SpecialFolder.Programs);
+            if (options.CreateDesktopShortcut)
+                CreateShortcut(launcher, Environment.SpecialFolder.DesktopDirectory);
             if (options.RegisterInstallation)
                 WriteRegistry(options, launcher);
-            progress("安装完成。");
+            progress(I("安装完成。"));
             return FindInstalledResource(options.GameDataRoot);
         }
 
@@ -187,7 +192,7 @@ namespace DeadSpaceInstaller
         {
             string launcher = Path.Combine(programRoot, "DeadSpace Launcher.exe");
             if (!File.Exists(launcher))
-                throw new FileNotFoundException("启动器不存在。", launcher);
+                throw new FileNotFoundException(I("启动器不存在。"), launcher);
             Process.Start(new ProcessStartInfo
             {
                 FileName = launcher,
@@ -204,7 +209,7 @@ namespace DeadSpaceInstaller
                     .GetManifestResourceStream(ProgramResource))
                 {
                     if (stream == null)
-                        throw new InvalidDataException("程序资源不存在。");
+                        throw new InvalidDataException(I("程序资源不存在。"));
                     using (var archive = new ZipArchive(
                         stream, ZipArchiveMode.Read, false))
                     {
@@ -213,7 +218,7 @@ namespace DeadSpaceInstaller
                             if (!String.IsNullOrEmpty(entry.Name))
                                 files++;
                         if (files < 20)
-                            throw new InvalidDataException("程序资源文件过少。");
+                            throw new InvalidDataException(I("程序资源文件过少。"));
                         WriteLog(logPath,
                             "PASS embedded program ZIP entries=" + files);
                     }
@@ -229,7 +234,10 @@ namespace DeadSpaceInstaller
 
         internal static int RunSilent(string[] args)
         {
-            var options = new InstallOptions();
+            // Follow the registered roots for EXE-only upgrades/downgrades.
+            // A missing --resource is valid when GameData already has an
+            // installed IPA/marker record.
+            var options = LoadPrevious();
             bool noShortcut = false;
             bool noRegister = false;
             for (int index = 1; index < args.Length; index++)
@@ -238,8 +246,11 @@ namespace DeadSpaceInstaller
                 if (name == "--no-shortcut")
                 {
                     noShortcut = true;
+                    options.CreateDesktopShortcut = false;
                     continue;
                 }
+                if (name == "--no-desktop-shortcut") { options.CreateDesktopShortcut = false; continue; }
+                if (name == "--no-start-menu-shortcut") { noShortcut = true; continue; }
                 if (name == "--no-register")
                 {
                     noRegister = true;
@@ -250,17 +261,20 @@ namespace DeadSpaceInstaller
                     options.LaunchAfterInstall = true;
                     continue;
                 }
+                if (name == "--native-language") { options.InstallHdChinese = false; continue; }
+                if (name == "--hd-chinese") { options.InstallHdChinese = true; continue; }
                 if (index + 1 >= args.Length)
-                    throw new ArgumentException("缺少参数值：" + name);
+                    throw new ArgumentException(I("缺少参数值：") + name);
                 string value = args[++index];
                 switch (name)
                 {
                     case "--program-root": options.ProgramRoot = value; break;
                     case "--game-data-root": options.GameDataRoot = value; break;
                     case "--resource": options.ResourcePath = value; break;
-                    case "--tier": options.Tier = value; break;
+                    case "--tier":
+                    case "--tiers": options.Tier = value; break;
                     case "--log": options.LogPath = value; break;
-                    default: throw new ArgumentException("未知参数：" + name);
+                    default: throw new ArgumentException(I("未知参数：") + name);
                 }
             }
             options.CreateShortcut = !noShortcut;
@@ -307,8 +321,17 @@ namespace DeadSpaceInstaller
             options.GameDataRoot = Path.GetFullPath(options.GameDataRoot);
             if (!String.IsNullOrWhiteSpace(options.ResourcePath))
                 options.ResourcePath = Path.GetFullPath(options.ResourcePath);
-            if (options.Tier != "2" && options.Tier != "4" && options.Tier != "6")
-                throw new ArgumentException("纹理档位必须是 2、4 或 6。");
+            options.Tier = NormalizeTiers(options.Tier);
+        }
+
+        internal static string NormalizeTiers(string value)
+        {
+            if (value == "none") return value;
+            var selected = new SortedSet<string>((value ?? "").Split(','));
+            foreach (string tier in selected)
+                if (tier != "2" && tier != "4" && tier != "6")
+                    throw new ArgumentException(I("纹理档位必须是 2、4、6 的组合，或 none。"));
+            return String.Join(",", selected);
         }
 
         private static void EnsureInstallerCanWrite(InstallOptions options)
@@ -320,7 +343,7 @@ namespace DeadSpaceInstaller
             if (program.StartsWith(data, StringComparison.OrdinalIgnoreCase) ||
                 data.StartsWith(program, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException(
-                    "程序目录和 GameData 目录不能互相包含。");
+                    I("程序目录和 GameData 目录不能互相包含。"));
             string documents = Environment.GetFolderPath(
                 Environment.SpecialFolder.MyDocuments);
             if (!String.IsNullOrWhiteSpace(documents))
@@ -330,7 +353,7 @@ namespace DeadSpaceInstaller
                     Path.DirectorySeparatorChar;
                 if (data.StartsWith(documentRoot, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException(
-                        "GameData 不能放在 Documents；Documents 只保存配置和三槽存档。");
+                        I("GameData 不能放在 Documents；Documents 只保存配置和三槽存档。"));
             }
         }
 
@@ -340,7 +363,7 @@ namespace DeadSpaceInstaller
             {
                 if (Process.GetProcessesByName(name).Length > 0)
                     throw new InvalidOperationException(
-                        "检测到游戏或启动器正在运行，请先正常退出。");
+                        I("检测到游戏或启动器正在运行，请先正常退出。"));
             }
         }
 
@@ -349,7 +372,7 @@ namespace DeadSpaceInstaller
             Stream resource = typeof(InstallerEngine).Assembly
                 .GetManifestResourceStream(ProgramResource);
             if (resource == null)
-                throw new InvalidDataException("安装器内缺少程序资源。");
+                throw new InvalidDataException(I("安装器内缺少程序资源。"));
             using (resource)
             using (var archive = new ZipArchive(
                 resource, ZipArchiveMode.Read, false))
@@ -382,7 +405,7 @@ namespace DeadSpaceInstaller
                         !File.Exists(Path.Combine(
                             temporary, "Game", "touchHLE.exe")))
                         throw new InvalidDataException(
-                            "程序包缺少启动器或原生运行文件。");
+                            I("程序包缺少启动器或原生运行文件。"));
                     if (!Directory.Exists(programRoot))
                     {
                         Directory.Move(temporary, programRoot);
@@ -428,13 +451,13 @@ namespace DeadSpaceInstaller
                 normalized.Contains(":") ||
                 normalized.Split(Path.DirectorySeparatorChar)
                     .Length == 0)
-                throw new InvalidDataException("程序包包含不安全路径。");
+                throw new InvalidDataException(I("程序包包含不安全路径。"));
             string fullRoot = Path.GetFullPath(root)
                 .TrimEnd(Path.DirectorySeparatorChar) +
                 Path.DirectorySeparatorChar;
             string target = Path.GetFullPath(Path.Combine(fullRoot, normalized));
             if (!target.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("程序包路径越界。");
+                throw new InvalidDataException(I("程序包路径越界。"));
             return target;
         }
 
@@ -456,7 +479,7 @@ namespace DeadSpaceInstaller
             arguments.Append("--install-resource ")
                 .Append(sourceOption).Append(" ").Append(Quote(resourcePath))
                 .Append(" --install-root ").Append(Quote(gameDataRoot))
-                .Append(" --tier ").Append(Quote(tier))
+                .Append(" --tiers ").Append(Quote(tier))
                 .Append(" --result ").Append(Quote(resultPath));
             try
             {
@@ -484,7 +507,7 @@ namespace DeadSpaceInstaller
                         if (detail.Length == 0)
                             detail = output.Trim();
                         throw new InvalidDataException(
-                            "资源安装失败（退出码 " +
+                            I("资源安装失败（退出码 ") +
                             process.ExitCode + "）：" + detail);
                     }
                 }
@@ -505,19 +528,24 @@ namespace DeadSpaceInstaller
             InstallOptions options,
             string launcher)
         {
+            string version = VersionForProgram(options.ProgramRoot);
             var state = new Dictionary<string, object>
             {
                 { "schema", 1 },
-                { "distribution", "DeadSpace Legacy R15 PC" },
-                { "version", Version },
+                { "distribution", "DEAD SPACE MOBILE R2 PC" },
+                { "version", version },
                 { "program_root", options.ProgramRoot },
                 { "game_data_root", options.GameDataRoot },
                 { "texture_tier", options.Tier },
+                { "texture_tiers", options.Tier == "none" ? new string[0] : options.Tier.Split(',') },
+                { "start_menu_shortcut", options.CreateShortcut },
+                { "desktop_shortcut", options.CreateDesktopShortcut },
                 { "installed_utc", DateTime.UtcNow.ToString("o") },
                 { "launcher_sha256", HashFile(launcher) },
                 { "documents_policy", "configuration-and-three-slot-saves-only" },
                 { "program_update_preserves_game_data", true },
                 { "full_R15_complete", false }
+                ,{ "hd_chinese_overlay", options.InstallHdChinese }
             };
             string json = new JavaScriptSerializer().Serialize(state);
             string path = Path.Combine(options.ProgramRoot, "installer.json");
@@ -537,6 +565,47 @@ namespace DeadSpaceInstaller
             }
         }
 
+        private static string VersionForProgram(string programRoot)
+        {
+            try
+            {
+                string path = Path.Combine(programRoot, "Game", "build-info.json");
+                if (File.Exists(path))
+                {
+                    var map = new JavaScriptSerializer().DeserializeObject(
+                        File.ReadAllText(path, Encoding.UTF8)) as Dictionary<string, object>;
+                    if (map != null && map.ContainsKey("release_tag"))
+                    {
+                        string release = Convert.ToString(map["release_tag"]);
+                        if (!String.IsNullOrWhiteSpace(release)) return release;
+                    }
+                    string revision = map == null || !map.ContainsKey("revision")
+                        ? null : Convert.ToString(map["revision"]);
+                    if (!String.IsNullOrWhiteSpace(revision)) return "R15-" + revision;
+                }
+            }
+            catch (Exception) { }
+            return VersionFallback;
+        }
+
+        private static void ApplyLanguageMode(string programRoot, bool hdChinese)
+        {
+            string value = "overlay_enabled=" + (hdChinese ? "1" : "0");
+            var files = new List<string> {
+                Path.Combine(programRoot, "Defaults", "DeadSpace-Launcher.ini"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini")
+            };
+            foreach (string path in files)
+            {
+                if (!File.Exists(path)) continue;
+                string[] lines = File.ReadAllLines(path, Encoding.UTF8);
+                bool found = false;
+                for (int i = 0; i < lines.Length; i++) if (lines[i].StartsWith("overlay_enabled=", StringComparison.OrdinalIgnoreCase)) { lines[i] = value; found = true; }
+                if (!found) { var list = new List<string>(lines); list.Add(value); lines = list.ToArray(); }
+                File.WriteAllLines(path, lines, new UTF8Encoding(false));
+            }
+        }
+
         private static void ExtractUninstaller(string programRoot)
         {
             string target = Path.Combine(programRoot, "DeadSpace-Uninstall.exe");
@@ -544,7 +613,7 @@ namespace DeadSpaceInstaller
                 .GetManifestResourceStream(UninstallerResource))
             {
                 if (source == null)
-                    throw new InvalidDataException("安装器内缺少卸载程序。");
+                    throw new InvalidDataException(I("安装器内缺少卸载程序。"));
                 using (var output = new FileStream(
                     target,
                     FileMode.Create,
@@ -554,19 +623,18 @@ namespace DeadSpaceInstaller
             }
         }
 
-        private static void CreateStartMenuShortcut(string launcher)
+        internal static void CreateShortcut(string launcher, Environment.SpecialFolder folder)
         {
             try
             {
-                string directory = Path.Combine(
-                    Environment.GetFolderPath(
-                        Environment.SpecialFolder.ApplicationData),
-                    "Microsoft", "Windows", "Start Menu", "Programs");
+                string directory = Environment.GetFolderPath(folder);
+                if (String.IsNullOrWhiteSpace(directory))
+                    throw new IOException(I("Windows 未提供快捷方式目录。"));
                 Directory.CreateDirectory(directory);
-                string path = Path.Combine(directory, "Dead Space Legacy.lnk");
+                string path = Path.Combine(directory, "DEAD SPACE MOBILE.lnk");
                 Type shellType = Type.GetTypeFromProgID("WScript.Shell");
                 if (shellType == null)
-                    throw new InvalidOperationException("WScript.Shell 不可用。");
+                    throw new InvalidOperationException(I("WScript.Shell 不可用。"));
                 object shell = Activator.CreateInstance(shellType);
                 object shortcut = shellType.InvokeMember(
                     "CreateShortcut",
@@ -598,34 +666,47 @@ namespace DeadSpaceInstaller
                     BindingFlags.SetProperty,
                     null,
                     shortcut,
-                    new object[] { "Dead Space Legacy R15" });
+                    new object[] { "DEAD SPACE MOBILE R2" });
                 shortcutType.InvokeMember(
                     "Save", BindingFlags.InvokeMethod, null, shortcut, null);
+                RemoveLegacyShortcut(directory, launcher);
             }
             catch (Exception error)
             {
                 throw new InvalidOperationException(
-                    "程序已安装，但创建开始菜单快捷方式失败：" +
+                    I("程序已安装，但创建") + (folder == Environment.SpecialFolder.Programs ? I("开始菜单") : I("桌面")) + I("快捷方式失败：") +
                     error.Message, error);
             }
+        }
+
+        private static void RemoveLegacyShortcut(string directory, string launcher)
+        {
+            string legacy=Path.Combine(directory,"Dead Space Legacy.lnk");
+            if(!File.Exists(legacy)) return;
+            var shell=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
+            object link=shell.GetType().InvokeMember("CreateShortcut",BindingFlags.InvokeMethod,null,shell,new object[]{legacy});
+            string target=Convert.ToString(link.GetType().InvokeMember("TargetPath",BindingFlags.GetProperty,null,link,null));
+            if(String.Equals(Path.GetFullPath(target),Path.GetFullPath(launcher),StringComparison.OrdinalIgnoreCase)) File.Delete(legacy);
         }
 
         private static void WriteRegistry(
             InstallOptions options,
             string launcher)
         {
+            string version = VersionForProgram(options.ProgramRoot);
             using (RegistryKey key = Registry.CurrentUser.CreateSubKey(ProductKey))
             {
                 key.SetValue("ProgramRoot", options.ProgramRoot);
                 key.SetValue("GameDataRoot", options.GameDataRoot);
                 key.SetValue("TextureTier", options.Tier);
-                key.SetValue("Version", Version);
+                key.SetValue("TextureTiers", options.Tier);
+                key.SetValue("Version", version);
             }
             using (RegistryKey key = Registry.CurrentUser.CreateSubKey(UninstallKey))
             {
-                key.SetValue("DisplayName", "Dead Space Legacy R15");
-                key.SetValue("DisplayVersion", Version);
-                key.SetValue("Publisher", "DeadSpace Legacy integration");
+                key.SetValue("DisplayName", "DEAD SPACE MOBILE R2");
+                key.SetValue("DisplayVersion", version);
+                key.SetValue("Publisher", "SomJs");
                 key.SetValue("InstallLocation", options.ProgramRoot);
                 key.SetValue("DisplayIcon", launcher + ",0");
                 key.SetValue("UninstallString",
@@ -642,239 +723,6 @@ namespace DeadSpaceInstaller
             using (FileStream stream = File.OpenRead(path))
                 return BitConverter.ToString(sha.ComputeHash(stream))
                     .Replace("-", "").ToLowerInvariant();
-        }
-    }
-
-    internal sealed class InstallerForm : Form
-    {
-        private readonly TextBox programRoot = new TextBox();
-        private readonly TextBox gameDataRoot = new TextBox();
-        private readonly TextBox resourcePath = new TextBox();
-        private readonly ComboBox tier = new ComboBox();
-        private readonly CheckBox launchAfter = new CheckBox();
-        private readonly TextBox details = new TextBox();
-        private readonly Button install = new Button();
-        private readonly BackgroundWorker worker = new BackgroundWorker();
-        private bool busy;
-
-        internal InstallerForm()
-        {
-            Text = "Dead Space Legacy R15 安装器";
-            ClientSize = new Size(840, 590);
-            MinimumSize = new Size(856, 629);
-            StartPosition = FormStartPosition.CenterScreen;
-            Font = new Font("Microsoft YaHei UI", 9.5f);
-            BackColor = Color.FromArgb(13, 23, 31);
-            ForeColor = Color.FromArgb(224, 235, 239);
-
-            Controls.Add(new Label
-            {
-                Text = "DEAD SPACE LEGACY",
-                Font = new Font("Segoe UI", 21, FontStyle.Bold),
-                ForeColor = Color.FromArgb(97, 218, 232),
-                Location = new Point(30, 24),
-                AutoSize = true
-            });
-            Controls.Add(new Label
-            {
-                Text = "R15 PC 安装 / 升级",
-                Font = new Font("Microsoft YaHei UI", 12, FontStyle.Bold),
-                Location = new Point(32, 72),
-                AutoSize = true
-            });
-
-            Section("程序安装目录", 112);
-            Row(programRoot, 146, delegate { BrowseFolder(programRoot); });
-            Section("游戏数据 GameData", 194);
-            Row(gameDataRoot, 228, delegate { BrowseFolder(gameDataRoot); });
-            Controls.Add(new Label
-            {
-                Text = "程序更新不会覆盖此目录；配置和三槽存档仍在 Documents。",
-                ForeColor = Color.FromArgb(145, 166, 178),
-                Location = new Point(219, 260),
-                Size = new Size(570, 24)
-            });
-            Section("安装源（marker 或 IPA）", 286);
-            Row(resourcePath, 320, BrowseResource);
-            Controls.Add(new Label
-            {
-                Text = "升级已有安装时可留空，仅更新程序。",
-                ForeColor = Color.FromArgb(145, 166, 178),
-                Location = new Point(219, 352),
-                Size = new Size(570, 24)
-            });
-
-            Controls.Add(new Label
-            {
-                Text = "纹理档位",
-                Location = new Point(32, 390),
-                Size = new Size(170, 26)
-            });
-            tier.SetBounds(219, 386, 130, 28);
-            tier.DropDownStyle = ComboBoxStyle.DropDownList;
-            tier.Items.AddRange(new object[] { "2×", "4×（推荐）", "6×" });
-            tier.SelectedIndex = 1;
-            Controls.Add(tier);
-            launchAfter.Text = "安装完成后启动";
-            launchAfter.SetBounds(380, 386, 220, 28);
-            Controls.Add(launchAfter);
-
-            details.SetBounds(30, 430, 780, 96);
-            details.Multiline = true;
-            details.ReadOnly = true;
-            details.ScrollBars = ScrollBars.Vertical;
-            details.BackColor = Color.FromArgb(8, 15, 21);
-            details.ForeColor = Color.FromArgb(184, 203, 212);
-            details.Text = "选择安装位置和资源后点击安装。";
-            Controls.Add(details);
-
-            install.Text = "开始安装";
-            install.SetBounds(630, 540, 180, 42);
-            install.BackColor = Color.FromArgb(97, 218, 232);
-            install.ForeColor = Color.FromArgb(13, 23, 31);
-            install.FlatStyle = FlatStyle.Flat;
-            install.Click += delegate { BeginInstall(); };
-            Controls.Add(install);
-
-            worker.DoWork += delegate(object sender, DoWorkEventArgs eventArgs)
-            {
-                var options = (InstallOptions)eventArgs.Argument;
-                eventArgs.Result = InstallerEngine.Install(
-                    options, delegate(string message)
-                    {
-                        worker.ReportProgress(0, message);
-                    });
-            };
-            worker.ProgressChanged += delegate(
-                object sender, ProgressChangedEventArgs eventArgs)
-            {
-                details.AppendText(Environment.NewLine +
-                    Convert.ToString(eventArgs.UserState));
-            };
-            worker.RunWorkerCompleted += delegate(
-                object sender, RunWorkerCompletedEventArgs eventArgs)
-            {
-                busy = false;
-                install.Enabled = true;
-                Cursor = Cursors.Default;
-                if (eventArgs.Error != null)
-                {
-                    details.AppendText(Environment.NewLine +
-                        "失败：" + eventArgs.Error.Message);
-                    MessageBox.Show(this, eventArgs.Error.Message,
-                        "安装失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                details.AppendText(Environment.NewLine +
-                    "游戏资源已安装到选定 GameData。");
-                if (launchAfter.Checked)
-                    InstallerEngine.Launch(programRoot.Text.Trim());
-            };
-            worker.WorkerReportsProgress = true;
-
-            InstallOptions previous = InstallerEngine.LoadPrevious();
-            programRoot.Text = previous.ProgramRoot;
-            gameDataRoot.Text = previous.GameDataRoot;
-            resourcePath.Text = previous.ResourcePath;
-            tier.SelectedIndex = previous.Tier == "2" ? 0 :
-                previous.Tier == "6" ? 2 : 1;
-            bool existing = InstallerEngine.HasProgramInstallation(
-                previous.ProgramRoot);
-            if (existing)
-            {
-                install.Text = "更新 / 更改安装";
-                details.Text =
-                    "检测到现有安装。可直接更新程序并保留 GameData；" +
-                    "如需更换资源，请重新选择 marker 或 IPA。";
-            }
-            FormClosing += delegate(object sender, FormClosingEventArgs eventArgs)
-            {
-                if (!busy)
-                    return;
-                eventArgs.Cancel = true;
-                MessageBox.Show(this, "资源安装正在进行，请等待完成。",
-                    "正在安装", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            };
-        }
-
-        private void Row(TextBox textBox, int y, EventHandler browse)
-        {
-            textBox.SetBounds(219, y, 460, 28);
-            textBox.BackColor = Color.FromArgb(8, 15, 21);
-            textBox.ForeColor = Color.FromArgb(224, 235, 239);
-            Controls.Add(textBox);
-            var button = new Button
-            {
-                Text = "选择",
-                Location = new Point(690, y - 2),
-                Size = new Size(120, 32),
-                FlatStyle = FlatStyle.Flat
-            };
-            button.Click += browse;
-            Controls.Add(button);
-        }
-
-        private void Section(string text, int y)
-        {
-            Controls.Add(new Label
-            {
-                Text = text,
-                Location = new Point(32, y),
-                Size = new Size(180, 26)
-            });
-        }
-
-        private void BrowseFolder(TextBox target)
-        {
-            using (var dialog = new FolderBrowserDialog())
-            {
-                dialog.Description = "选择安装目录";
-                if (Directory.Exists(target.Text))
-                    dialog.SelectedPath = target.Text;
-                if (dialog.ShowDialog(this) == DialogResult.OK)
-                    target.Text = dialog.SelectedPath;
-            }
-        }
-
-        private void BrowseResource(object sender, EventArgs eventArgs)
-        {
-            using (var dialog = new OpenFileDialog())
-            {
-                dialog.Title = "选择 vandal.marker 或 IPA";
-                dialog.Filter =
-                    "游戏资源 (*.marker;*.ipa)|*.marker;*.ipa|所有文件 (*.*)|*.*";
-                string current = resourcePath.Text.Trim();
-                if (current.Length > 0)
-                {
-                    string directory = Path.GetDirectoryName(current);
-                    if (Directory.Exists(directory))
-                        dialog.InitialDirectory = directory;
-                }
-                if (dialog.ShowDialog(this) == DialogResult.OK)
-                    resourcePath.Text = dialog.FileName;
-            }
-        }
-
-        private void BeginInstall()
-        {
-            if (busy)
-                return;
-            var options = new InstallOptions
-            {
-                ProgramRoot = programRoot.Text.Trim(),
-                GameDataRoot = gameDataRoot.Text.Trim(),
-                ResourcePath = resourcePath.Text.Trim(),
-                Tier = tier.SelectedIndex == 0 ? "2" :
-                    tier.SelectedIndex == 2 ? "6" : "4",
-                CreateShortcut = true,
-                RegisterInstallation = true,
-                LaunchAfterInstall = launchAfter.Checked
-            };
-            busy = true;
-            install.Enabled = false;
-            Cursor = Cursors.WaitCursor;
-            details.AppendText(Environment.NewLine + "开始安装...");
-            worker.RunWorkerAsync(options);
         }
     }
 
@@ -900,7 +748,7 @@ namespace DeadSpaceInstaller
             }
             catch (Exception error)
             {
-                MessageBox.Show(error.Message, "Dead Space Legacy",
+                MessageBox.Show(error.Message, "DEAD SPACE MOBILE",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return 1;
             }

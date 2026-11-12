@@ -14,7 +14,7 @@ namespace DeadSpaceBootstrap
         private readonly RadioButton texture4x = new RadioButton();
         private readonly RadioButton texture6x = new RadioButton();
         private readonly Panel textureChoices = new Panel();
-        private readonly Label textureMemory = new Label();
+        private readonly Label textureMemory = new DeadSpaceUi.UiLanguage.LocalizedLabel();
         private readonly Dictionary<string, string> textureRoots = new Dictionary<string, string>();
 
         private string TextureScale()
@@ -55,11 +55,11 @@ namespace DeadSpaceBootstrap
                 buttons[i].Text = scales[i] + "× · " + (installed ? "已安装" : "未安装");
             }
             string estimate = TextureScale() == "6"
-                ? "由实际 marker 资源和驱动统计，本启动器不预填峰值"
+                ? "暂无全量显存估算"
                 : TextureScale() == "4" ? "2.96 GiB" : "0.82 GiB";
-            textureMemory.Text = "全量 mip 显存估算：2× 约 0.82 GiB · 4× 约 2.96 GiB · 8× 约 9.42 GiB。\r\n"
-                + (hdTextures.Checked ? "当前 " + TextureScale() + "×：约 " + estimate + "。" : "未启用：使用原版纹理。")
-                + "另需 CPU 解码和驱动空间；不是实测关卡峰值。\r\n6× marker 资源由独立安装记录管理。";
+            textureMemory.Text = "全量 mip 显存估算：2× 约 0.82 GiB · 4× 约 2.96 GiB。\r\n"
+                + (hdTextures.Checked ? "当前 " + TextureScale() + "×：" + estimate + "。" : "未启用：使用原版纹理。")
+                + "另需 CPU 解码和驱动空间；估算不是实测峰值。\r\n可在「游戏与存档位置」多选安装纹理，在本页选择使用的档位。";
         }
 
         private string ResolveTexturePath(string path)

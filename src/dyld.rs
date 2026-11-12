@@ -395,6 +395,9 @@ pub struct Dyld {
     /// The `&'static str` part here is purely for debugging and could be
     /// removed in release builds if it's ever necessary.
     linked_host_functions: Vec<(&'static str, HostFunction)>,
+    /// Hot SVC dispatch table. Keep this parallel to `linked_host_functions`,
+    /// but avoid touching the debug symbol tuple on every guest→HLE callback.
+    linked_host_dispatch: Vec<HostFunction>,
     return_to_host_routine: Option<GuestFunction>,
     thread_exit_routine: Option<GuestFunction>,
     constants_to_link_later: Vec<(MutPtr<ConstVoidPtr>, &'static HostConstant)>,
@@ -425,6 +428,7 @@ impl Dyld {
     pub fn new() -> Dyld {
         Dyld {
             linked_host_functions: Vec::new(),
+            linked_host_dispatch: Vec::new(),
             return_to_host_routine: None,
             thread_exit_routine: None,
             constants_to_link_later: Vec::new(),
@@ -438,6 +442,14 @@ impl Dyld {
 
     pub fn thread_exit_routine(&self) -> GuestFunction {
         self.thread_exit_routine.unwrap()
+    }
+
+    fn link_host_function(&mut self, symbol: &'static str, function: HostFunction) -> u32 {
+        let index = self.linked_host_functions.len();
+        debug_assert_eq!(index, self.linked_host_dispatch.len());
+        self.linked_host_functions.push((symbol, function));
+        self.linked_host_dispatch.push(function);
+        index.try_into().expect("linked host function table overflow")
     }
 
     /// Do linking-related tasks that need doing right after loading the
@@ -1438,21 +1450,35 @@ impl Dyld {
                 None
             }
             Self::SVC_LINKED_FUNCTIONS_BASE.. => {
-                let f = self.linked_host_functions.get(
-                    ((svc & !Self::SVC_LAZY_LINK_RET_FLAG) - Self::SVC_LINKED_FUNCTIONS_BASE)
-                        as usize,
-                );
-                let Some(&(symbol, f)) = f else {
+                let index = ((svc & !Self::SVC_LAZY_LINK_RET_FLAG)
+                    - Self::SVC_LINKED_FUNCTIONS_BASE) as usize;
+                let Some(&f) = self.linked_host_dispatch.get(index) else {
                     log!(
                         "Warning: Unexpected SVC #{} at {:#x}; treating as no-op (returning to caller).",
                         svc, svc_pc
                     );
                     return None;
                 };
-                log_dbg!("Call to host function, already linked: {}", symbol);
                 Some(f)
             }
         }
+    }
+
+    #[inline(always)]
+    fn linked_handler_index(svc: u32) -> Option<usize> {
+        let raw = svc & !Self::SVC_LAZY_LINK_RET_FLAG;
+        raw.checked_sub(Self::SVC_LINKED_FUNCTIONS_BASE)
+            .map(|index| index as usize)
+    }
+
+    /// Resolve an already-linked host SVC without touching the lazy-link
+    /// arguments or the debug symbol table. The caller keeps the general
+    /// resolver as a fallback for malformed IDs so its warning behavior and
+    /// resume semantics remain unchanged.
+    #[inline(always)]
+    pub fn get_linked_svc_handler(&self, svc: u32) -> Option<HostFunction> {
+        let index = Self::linked_handler_index(svc)?;
+        self.linked_host_dispatch.get(index).copied()
     }
 
     fn do_lazy_link(
@@ -1573,13 +1599,12 @@ impl Dyld {
             if let Some(&(host_symbol, f)) =
                 search_host_dylibs(|dylib| dylib.function_exports, symbol)
             {
-                let idx: u32 = self.linked_host_functions.len().try_into().unwrap();
+                let idx = self.link_host_function(host_symbol, f);
                 let mut svc = idx + Self::SVC_LINKED_FUNCTIONS_BASE;
                 if info.entry_size == 4 {
                     assert!(svc < Self::SVC_LAZY_LINK_RET_FLAG);
                     svc |= Self::SVC_LAZY_LINK_RET_FLAG;
                 }
-                self.linked_host_functions.push((host_symbol, f));
                 crate::ds_scene_diagnostics::hle_binding(svc_pc,svc,host_symbol);
                 let stub_function_ptr: MutPtr<u32> = Ptr::from_bits(svc_pc);
                 mem.write(stub_function_ptr, encode_a32_svc(svc));
@@ -1623,14 +1648,13 @@ impl Dyld {
 
         if let Some(&(symbol, f)) = search_host_dylibs(|dylib| dylib.function_exports, symbol) {
             // Allocate an SVC ID for this host function
-            let idx: u32 = self.linked_host_functions.len().try_into().unwrap();
+            let idx = self.link_host_function(symbol, f);
             let mut svc = idx + Self::SVC_LINKED_FUNCTIONS_BASE;
             // Indicate to the handler to return manually after call
             if info.entry_size == 4 {
                 assert!(svc < Self::SVC_LAZY_LINK_RET_FLAG);
                 svc |= Self::SVC_LAZY_LINK_RET_FLAG;
             }
-            self.linked_host_functions.push((symbol, f));
             crate::ds_scene_diagnostics::hle_binding(svc_pc,svc,symbol);
             // Rewrite stub function to call this host function
             let stub_function_ptr: MutPtr<u32> = Ptr::from_bits(svc_pc);
@@ -1665,13 +1689,12 @@ impl Dyld {
         let f: HostFunction = &(unimplemented_function_stub as fn(&mut Environment) -> i32);
         // Allocate an SVC ID for this stub (same pattern as the host-dylib
         // branch above).
-        let idx: u32 = self.linked_host_functions.len().try_into().unwrap();
+        let idx = self.link_host_function(leaked_symbol, f);
         let mut svc = idx + Self::SVC_LINKED_FUNCTIONS_BASE;
         if info.entry_size == 4 {
             assert!(svc < Self::SVC_LAZY_LINK_RET_FLAG);
             svc |= Self::SVC_LAZY_LINK_RET_FLAG;
         }
-        self.linked_host_functions.push((leaked_symbol, f));
         crate::ds_scene_diagnostics::hle_binding(svc_pc,svc,leaked_symbol);
         // Rewrite the stub function to trap into our SVC handler.
         let stub_function_ptr: MutPtr<u32> = Ptr::from_bits(svc_pc);
@@ -1742,9 +1765,8 @@ impl Dyld {
         f: HostFunction,
     ) -> GuestFunction {
         // Allocate an SVC ID for this host function
-        let idx: u32 = self.linked_host_functions.len().try_into().unwrap();
+        let idx = self.link_host_function(symbol, f);
         let svc = idx + Self::SVC_LINKED_FUNCTIONS_BASE;
-        self.linked_host_functions.push((symbol, f));
 
         // Create guest function to call this host function
         let function_ptr = mem.alloc(8);
@@ -1775,4 +1797,28 @@ fn dyld_stub_binder(_env: &mut Environment, _arg: u32) {
 /// `int`/`uid_t`/`pid_t`/pointer return types.
 fn unimplemented_function_stub(_env: &mut Environment) -> i32 {
     0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Dyld;
+
+    #[test]
+    fn linked_svc_index_handles_return_flag_without_general_dispatch() {
+        assert_eq!(
+            Dyld::linked_handler_index(Dyld::SVC_LINKED_FUNCTIONS_BASE),
+            Some(0)
+        );
+        assert_eq!(
+            Dyld::linked_handler_index(
+                Dyld::SVC_LINKED_FUNCTIONS_BASE + 7 | Dyld::SVC_LAZY_LINK_RET_FLAG
+            ),
+            Some(7)
+        );
+        assert_eq!(Dyld::linked_handler_index(Dyld::SVC_LAZY_LINK), None);
+        assert_eq!(
+            Dyld::linked_handler_index(Dyld::SVC_RETURN_TO_HOST),
+            None
+        );
+    }
 }

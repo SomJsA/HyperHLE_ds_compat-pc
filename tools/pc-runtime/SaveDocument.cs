@@ -71,6 +71,132 @@ namespace DeadSpaceBootstrap
         private string Name(uint index) { Require(index > 0 && index <= Strings.Count, "名称索引越界"); return Strings[(int)index - 1]; }
         private static int Width(int type) { return type == 9 || type == 13 ? 2 : type == 5 || type == 6 || type == 10 || type == 15 ? 4 : 0; }
 
+        private sealed class RawField
+        {
+            internal string Name;
+            internal int Type;
+            internal byte[] Bytes;
+            internal uint Reference;
+        }
+
+        private static int Align4(int value) { return (value + 3) & ~3; }
+        private static void PutU16(List<byte> bytes, ushort value) { bytes.AddRange(BitConverter.GetBytes(value)); }
+        private static void PutU32(List<byte> bytes, uint value) { bytes.AddRange(BitConverter.GetBytes(value)); }
+        private static void PutU32(byte[] bytes, int offset, uint value) { Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, offset, 4); }
+        private static uint ReadU32(byte[] bytes, int offset) { return BitConverter.ToUInt32(bytes, offset); }
+
+        private List<RawField> ReadObjectFields(byte[] bytes, int start, List<string> strings)
+        {
+            uint header = ReadU32(bytes, start); int count = (int)(header & 65535); int cursor = start + 4;
+            var fields = new List<RawField>();
+            for (int i = 0; i < count; i++)
+            {
+                Require(cursor + 8 <= bytes.Length, "对象字段头越界");
+                ushort nameId = BitConverter.ToUInt16(bytes, cursor); int type = BitConverter.ToUInt16(bytes, cursor + 2);
+                uint relative = ReadU32(bytes, cursor + 4); int value = checked(start + (int)relative); int width = Width(type);
+                Require(width != 0 && value >= cursor + 8 && value + width <= bytes.Length, "对象字段值越界");
+                var field = new RawField { Name = strings[nameId - 1], Type = type, Bytes = new byte[width] };
+                Buffer.BlockCopy(bytes, value, field.Bytes, 0, width);
+                if (type == 15) field.Reference = ReadU32(bytes, value);
+                fields.Add(field); cursor = value + width;
+            }
+            return fields;
+        }
+
+        private static int StringId(List<string> strings, string value)
+        {
+            int index = strings.IndexOf(value); if (index >= 0) return index + 1;
+            Require(strings.Count < 65535, "字符串表已满"); strings.Add(value); return strings.Count;
+        }
+
+        private byte[] PackObject(List<RawField> fields, List<string> strings)
+        {
+            var body = new List<byte>();
+            foreach (RawField field in fields)
+            {
+                PutU16(body, checked((ushort)StringId(strings, field.Name)));
+                PutU16(body, checked((ushort)field.Type));
+                PutU32(body, checked((uint)(body.Count + 8)));
+                if (field.Type == 15) PutU32(body, field.Reference); else body.AddRange(field.Bytes);
+            }
+            var output = new List<byte>(); PutU32(output, checked((uint)(fields.Count | ((4 + body.Count) << 16)))); output.AddRange(body);
+            return output.ToArray();
+        }
+
+        private static byte[] BoolObject(int nameId, bool value)
+        {
+            // The game's boolean object owns one byte and declares size 13;
+            // the three following bytes are alignment padding outside it.
+            var bytes = new List<byte>(); PutU32(bytes, 13u << 16 | 1u); PutU16(bytes, checked((ushort)nameId)); PutU16(bytes, 9); PutU32(bytes, 12); bytes.Add((byte)(value ? 1 : 0)); return bytes.ToArray();
+        }
+
+        private byte[] RebuildSections(Dictionary<string, byte[]> replacements)
+        {
+            using (var stream = new MemoryStream())
+            {
+                stream.Write(original, 0, 8); int cursor = 8;
+                while (cursor < original.Length)
+                {
+                    string tag = Encoding.ASCII.GetString(original, cursor, 4); int count = checked((int)ReadU32(original, cursor + 4));
+                    byte[] payload; if (!replacements.TryGetValue(tag, out payload)) { payload = new byte[count]; Buffer.BlockCopy(original, cursor + 12, payload, 0, count); }
+                    stream.Write(Encoding.ASCII.GetBytes(tag), 0, 4); byte[] length = BitConverter.GetBytes(payload.Length); stream.Write(length, 0, 4); byte[] hash = BitConverter.GetBytes(Hash(payload, 0, payload.Length)); stream.Write(hash, 0, 4); stream.Write(payload, 0, payload.Length);
+                    while ((stream.Length & 3) != 0) stream.WriteByte(0); cursor = (cursor + 12 + count + 3) & ~3;
+                }
+                return stream.ToArray();
+            }
+        }
+
+        // Add the three paid-plugin objects without replacing the user's
+        // settings or profile data. Existing DLC objects are cloned with the
+        // missing fields appended; unreachable old nodes remain byte-valid.
+        internal byte[] EnsureDlcModules(bool attack, bool defense, bool loot)
+        {
+            if (Values.ContainsKey("dlc_modules/attack/unlocked") && Values.ContainsKey("dlc_modules/defense/unlocked") && Values.ContainsKey("dlc_modules/loot/unlocked")) return original;
+            var dataBytes = new byte[dataLength]; Buffer.BlockCopy(original, data, dataBytes, 0, dataLength);
+            var strings = new List<string>(Strings);
+            int dlcName = StringId(strings, "dlc_modules"); StringId(strings, "nodes_2"); StringId(strings, "nodes_1_registration"); StringId(strings, "attack"); StringId(strings, "defense"); StringId(strings, "loot"); int unlockedName = StringId(strings, "unlocked");
+            var entries = new List<uint>(); for (int i = 0; i < ohdrLength / 4; i++) entries.Add(ReadU32(original, ohdr + i * 4));
+            int rootStart = checked((int)(entries[0] >> 3)); var rootFields = ReadObjectFields(dataBytes, rootStart, strings);
+            RawField rootDlc = rootFields.Find(f => f.Name == "dlc_modules");
+            int oldDlcStart = -1; List<RawField> parentFields = new List<RawField>();
+            if (rootDlc != null)
+            {
+                Require(rootDlc.Type == 15 && rootDlc.Reference < entries.Count, "dlc_modules 引用无效");
+                oldDlcStart = checked((int)(entries[(int)rootDlc.Reference] >> 3)); parentFields = ReadObjectFields(dataBytes, oldDlcStart, strings);
+            }
+            string[] names = { "nodes_2", "nodes_1_registration", "attack", "defense", "loot" };
+            bool[] values = { false, false, attack, defense, loot };
+            var existing = new HashSet<string>(StringComparer.Ordinal); foreach (RawField field in parentFields) existing.Add(field.Name);
+            var missing = new List<string>(); foreach (string name in names) if (!existing.Contains(name)) missing.Add(name);
+            if (missing.Count == 0 && rootDlc != null) return original;
+            int parentIndex = entries.Count; var childIndices = new Dictionary<string, uint>(StringComparer.Ordinal); int nextIndex = parentIndex + 1;
+            foreach (string name in missing) childIndices[name] = checked((uint)nextIndex++);
+            var merged = new List<RawField>(parentFields);
+            foreach (string name in missing) merged.Add(new RawField { Name = name, Type = 15, Reference = childIndices[name] });
+            var dataOut = new List<byte>(dataBytes); while ((dataOut.Count & 3) != 0) dataOut.Add(0);
+            int parentOffset = dataOut.Count; dataOut.AddRange(PackObject(merged, strings)); while ((dataOut.Count & 3) != 0) dataOut.Add(0);
+            entries.Add((uint)((parentOffset << 3) | 1));
+            foreach (string name in missing)
+            {
+                int index = Array.IndexOf(names, name); int childOffset = dataOut.Count; dataOut.AddRange(BoolObject(unlockedName, values[index])); while ((dataOut.Count & 3) != 0) dataOut.Add(0); entries.Add((uint)((childOffset << 3) | 1));
+            }
+            if (rootDlc != null)
+            {
+                int rootValue = rootStart + rootFields[rootFields.IndexOf(rootDlc)].Bytes.Length; // replaced below using the field's encoded reference offset
+                int cursor = rootStart + 4; foreach (RawField field in rootFields) { int width = Width(field.Type); if (field.Name == "dlc_modules") { uint rel = ReadU32(dataBytes, cursor + 4); rootValue = rootStart + (int)rel; break; } int value = rootStart + (int)ReadU32(dataBytes, cursor + 4); cursor = value + width; }
+                var mutated = dataOut.ToArray(); PutU32(mutated, rootValue, (uint)parentIndex); dataOut = new List<byte>(mutated);
+            }
+            else
+            {
+                rootFields.Add(new RawField { Name = "dlc_modules", Type = 15, Reference = (uint)parentIndex });
+                int rootOffset = dataOut.Count; dataOut.AddRange(PackObject(rootFields, strings)); while ((dataOut.Count & 3) != 0) dataOut.Add(0); entries[0] = (uint)((rootOffset << 3) | 1);
+            }
+            var ohdrBytes = new byte[entries.Count * 4]; for (int i = 0; i < entries.Count; i++) PutU32(ohdrBytes, i * 4, entries[i]);
+            var strs = new List<byte>(); PutU32(strs, checked((uint)strings.Count)); foreach (string value in strings) { byte[] utf8 = Encoding.UTF8.GetBytes(value); PutU32(strs, checked((uint)utf8.Length)); strs.AddRange(utf8); }
+            var replacements = new Dictionary<string, byte[]> { { "DATA", dataOut.ToArray() }, { "OHDR", ohdrBytes }, { "STRS", strs.ToArray() } };
+            return RebuildSections(replacements);
+        }
+
         private void WalkObject(int start, string prefix, HashSet<int> active, int depth)
         {
             Require(depth <= 24 && active.Add(start), "对象引用循环或过深");
@@ -162,7 +288,8 @@ namespace DeadSpaceBootstrap
             else if (type == 9) value = original[offset].ToString(CultureInfo.InvariantCulture);
             else value = U32(offset).ToString(CultureInfo.InvariantCulture);
             string group = path.StartsWith("player/inventory/items/") ? "背包" : path.StartsWith("player/weapons/") ? "武器"
-                : path.StartsWith("player/") ? "资源与升级" : path.StartsWith("dlc_modules/") || path.IndexOf('/') < 0 ? "共享设置" : "进度（只读）";
+                : path.StartsWith("player/") ? "资源与升级" : path.StartsWith("dlc_modules/") && path.EndsWith("/unlocked") ? "内购插件"
+                : path.StartsWith("dlc_modules/") || path.IndexOf('/') < 0 ? "共享设置" : "进度（只读）";
             bool editable = path == "player/hp" || path == "player/inventory/credits" || path == "player/inventory/nodes"
                 || path == "player/upgrade_level_rig" || path == "player/upgrade_level_health" || path == "player/upgrade_level_o2"
                 || path == "player/telekinesis_available" || path == "player/plasmasaw_available"
@@ -248,10 +375,13 @@ namespace DeadSpaceBootstrap
 
         internal string Write(IDictionary<string, string> changes)
         {
+            return WritePrepared(EditBytes(changes), Preview(changes));
+        }
+        internal string WritePrepared(byte[] edited, string description)
+        {
             SaveStorage.RequireStopped();
             SaveStorage.RequireNoLinks(FilePath);
             Require(Digest(File.ReadAllBytes(FilePath)) == Sha256, "源存档已变化，请重新读取");
-            byte[] edited = EditBytes(changes);
             Require(Digest(edited) != Sha256, "没有实际修改");
             string directory = Path.GetDirectoryName(FilePath), token = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N");
             string backup = Path.Combine(directory, ".save-editor-backups", token);
@@ -269,7 +399,7 @@ namespace DeadSpaceBootstrap
                 manifests.Add(Digest(bytes) + "  " + name);
             }
             File.WriteAllLines(Path.Combine(backup, "original.sha256"), manifests.ToArray(), new UTF8Encoding(false));
-            File.WriteAllText(Path.Combine(backup, "changes.txt"), Preview(changes), new UTF8Encoding(false));
+            File.WriteAllText(Path.Combine(backup, "changes.txt"), description, new UTF8Encoding(false));
             string temporary = FilePath + "." + token + ".tmp";
             try
             {

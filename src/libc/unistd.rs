@@ -77,7 +77,18 @@ fn usleep(env: &mut Environment, useconds: useconds_t) -> i32 {
     // TODO: handle errno properly
     set_errno(env, 0);
 
-    env.sleep(Duration::from_micros(useconds.into()));
+    // Dead Space's combat/audio workers poll at 10 ms. On Windows PC the
+    // cooperative scheduler previously serialized four or more of those polls
+    // inside the same weapon/impact frame, turning a guest sleep into a visible
+    // 40–100 ms hitch. Keep the guest-visible wait bounded while gameplay owns
+    // the frame; all other apps/platforms and explicit opt-outs retain exact
+    // timing. Semaphore waits remain real blocking waits.
+    let combat_latency = cfg!(all(windows, target_arch = "x86_64"))
+        && crate::window::DS_GAMEPLAY_ACTIVE.load(std::sync::atomic::Ordering::Relaxed)
+        && std::env::var("TOUCHHLE_DS_PC_COMBAT_LATENCY").as_deref() != Ok("0")
+        && useconds == 10_000;
+    let duration_us = if combat_latency { 2_500 } else { useconds };
+    env.sleep(Duration::from_micros(duration_us.into()));
     0 // success
 }
 

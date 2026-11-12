@@ -44,6 +44,16 @@ for name, xy in [('up',(64,0)),('left',(0,64)),('down',(64,64)),('right',(128,64
 put('Arrows', arrows, 120, 120)
 put('Dpad', pad('dpad_none'), 320, 120)
 font = ImageFont.truetype(str(args.font), 42)
+def text_key(text, size):
+    image = Image.new('RGBA', size)
+    draw = ImageDraw.Draw(image)
+    bounds = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    x = (size[0] - (bounds[2] - bounds[0])) // 2 - bounds[0]
+    y = (size[1] - (bounds[3] - bounds[1])) // 2 - bounds[1]
+    draw.text((x, y), text, font=font, fill=(183,237,243,255), stroke_width=1, stroke_fill=(3,15,20,230))
+    return image
+put('Escape', text_key('Esc', (64, 96)), 448, 8)
+put('Alt', text_key('Alt', (64, 60)), 448, 264)
 label = Image.new('RGBA',(88,60))
 draw = ImageDraw.Draw(label)
 draw.text((2,0),'选择',font=font,fill=(183,237,243,255),stroke_width=1,stroke_fill=(3,15,20,230))

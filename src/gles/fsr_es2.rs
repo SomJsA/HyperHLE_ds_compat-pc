@@ -828,6 +828,7 @@ unsafe fn draw_present_current(
         0.0,
         0.0,
         0.0,
+        None,
     );
     let skip_present_finish = !crate::ds_perf_control::readback_finish_enabled();
     if skip_present_finish {

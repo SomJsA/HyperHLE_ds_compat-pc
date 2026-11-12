@@ -28,6 +28,9 @@ impl Snapshot {
     fn var_os(&self, name: &str) -> Option<OsString> {
         self.values.get(OsStr::new(name)).cloned()
     }
+    fn contains(&self, name: &str) -> bool {
+        self.values.contains_key(OsStr::new(name))
+    }
     fn var(&self, name: &str) -> Result<String, std::env::VarError> {
         self.var_os(name)
             .ok_or(std::env::VarError::NotPresent)?
@@ -72,6 +75,17 @@ pub(crate) fn var_os(name: &str) -> Option<OsString> {
     }
     std::env::var_os(name)
 }
+/// Presence-only lookup for hot draw paths. The snapshot variant avoids
+/// cloning an `OsString` on every probe; the live fallback preserves the
+/// previous environment semantics when the opt-in cache is disabled.
+pub(crate) fn contains(name: &str) -> bool {
+    if enabled() && name.starts_with("TOUCHHLE_DS_") {
+        if let Some(values) = VALUES.get() {
+            return values.contains(name);
+        }
+    }
+    std::env::var_os(name).is_some()
+}
 
 #[cfg(test)]
 mod draw_env_tests {
@@ -96,6 +110,8 @@ mod draw_env_tests {
         assert!(s.var_os("TOUCHHLE_DS_ZERO").is_some());
         assert_eq!(s.var("TOUCHHLE_DS_UNICODE").unwrap(), "路径/纹理:2");
         assert!(s.var_os("UNRELATED_SECRET").is_none());
+        assert!(s.contains("TOUCHHLE_DS_ZERO"));
+        assert!(!s.contains("TOUCHHLE_DS_MISSING"));
     }
     #[cfg(windows)]
     #[test]

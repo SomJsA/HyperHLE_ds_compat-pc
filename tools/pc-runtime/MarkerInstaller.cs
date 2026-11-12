@@ -125,9 +125,26 @@ namespace DeadSpaceBootstrap
             string dataRoot,
             string tier)
         {
-            if (!marker.TextureTiers.Contains(tier))
-                throw new InvalidDataException(
-                    "marker 不包含 " + tier + "× 纹理。");
+            return InstallSelected(marker, dataRoot, new[] { tier });
+        }
+
+        internal static string[] ParseTiers(string value)
+        {
+            if (value == "none") return new string[0];
+            var tiers = value.Split(',').Select(t => t.Trim()).Distinct().OrderBy(t => t).ToArray();
+            if (tiers.Length == 0 || tiers.Any(t => t != "2" && t != "4" && t != "6"))
+                throw new ArgumentException("纹理档位必须是 2、4、6 的组合，或 none（仅原版）。");
+            return tiers;
+        }
+
+        internal static string InstallSelected(
+            VandalMarkerPackage marker, string dataRoot, IEnumerable<string> selectedTiers)
+        {
+            var tiers = selectedTiers.Distinct().OrderBy(t => t).ToArray();
+            // Validate the complete selection before writing any content.
+            foreach (string tier in tiers)
+                if (!marker.TextureTiers.Contains(tier))
+                    throw new InvalidDataException("marker 不包含 " + tier + "× 纹理。");
             string contentRoot = System.IO.Path.Combine(dataRoot, "marker-content");
             Directory.CreateDirectory(contentRoot);
             string destination = System.IO.Path.Combine(
@@ -142,17 +159,19 @@ namespace DeadSpaceBootstrap
                 if (!File.Exists(installationPath) || !File.Exists(baseFile))
                     throw new InvalidDataException(
                         "已存在的 marker 内容不完整或缺少安装记录。");
-                string tierPack = System.IO.Path.Combine(
-                    destination, "payload", "texture-packs", tier);
-                if (File.Exists(System.IO.Path.Combine(tierPack, "PACK.json")))
-                    return destination;
-                return AddTextureTier(marker, destination, tier);
+                foreach (string tier in tiers)
+                {
+                    string tierPack = System.IO.Path.Combine(destination, "payload", "texture-packs", tier);
+                    if (!File.Exists(System.IO.Path.Combine(tierPack, "PACK.json")))
+                        AddTextureTier(marker, destination, tier);
+                }
+                return destination;
             }
 
-            string prefix = "payload/texture-packs/" + tier + "/";
             var selected = marker.Entries.Where(
                 entry => entry.Path == marker.BasePath ||
-                entry.Path.StartsWith(prefix, StringComparison.Ordinal)).ToList();
+                tiers.Any(tier => entry.Path.StartsWith(
+                    "payload/texture-packs/" + tier + "/", StringComparison.Ordinal))).ToList();
             string temporary = System.IO.Path.Combine(
                 contentRoot,
                 ".i-" + marker.MarkerId.Substring(0, 12) + "-"
@@ -415,8 +434,8 @@ namespace DeadSpaceBootstrap
                     sha256 = HashFile(path)
                 });
             }
-            var tiers = Directory.GetDirectories(
-                System.IO.Path.Combine(destination, "payload", "texture-packs"))
+            string packs = System.IO.Path.Combine(destination, "payload", "texture-packs");
+            var tiers = (Directory.Exists(packs) ? Directory.GetDirectories(packs) : new string[0])
                 .Where(path => File.Exists(
                     System.IO.Path.Combine(path, "PACK.json")))
                 .Select(path => System.IO.Path.GetFileName(path))
@@ -532,11 +551,13 @@ namespace DeadSpaceBootstrap
 
     internal sealed partial class LauncherForm
     {
-        private readonly Label markerStatus = new Label();
+        private readonly Label markerStatus = new DeadSpaceUi.UiLanguage.LocalizedLabel();
         private readonly Button importMarker = new Button();
         private readonly TextBox installRoot = new TextBox();
         private readonly Button chooseInstallRoot = new Button();
         private readonly Button installAction = new Button();
+        private readonly CheckBox[] installTiers = { new CheckBox(), new CheckBox(), new CheckBox() };
+        private bool resourceInstalling;
         private string installedMarkerRoot;
         private string markerSourcePath;
         private string directIpaSource;
@@ -545,9 +566,9 @@ namespace DeadSpaceBootstrap
         {
             importMarker.Text = "选择 vandal.marker";
             importMarker.SetBounds(200, 182, 190, 38);
-            importMarker.Click += delegate { InstallOrChangeMarker(); };
+            importMarker.Click += delegate { ChooseMarker(); };
             page.Controls.Add(importMarker);
-            markerStatus.SetBounds(30, 222, 680, 42);
+            markerStatus.SetBounds(30, 222, 680, 34);
             markerStatus.ForeColor = Muted;
             page.Controls.Add(markerStatus);
             LabelText(page, "安装位置", 30, 270, 135, 24);
@@ -562,6 +583,16 @@ namespace DeadSpaceBootstrap
             installAction.SetBounds(30, 306, 230, 38);
             installAction.Click += delegate { InstallOrChangeMarker(); };
             page.Controls.Add(installAction);
+            var selection = new Panel { Location = new Point(280, 306), Size = new Size(400, 38) };
+            LabelText(selection, "安装纹理", 0, 9, 100, 24);
+            for (int i = 0; i < installTiers.Length; i++) {
+                installTiers[i].Text = (2 + i * 2) + "×";
+                installTiers[i].SetBounds(105 + i * 95, 3, 85, 30);
+                installTiers[i].Checked = i == 1;
+                selection.Controls.Add(installTiers[i]);
+            }
+            page.Controls.Add(selection);
+            FormClosing += delegate(object sender, FormClosingEventArgs e) { if (resourceInstalling) { e.Cancel = true; status.Text = "资源正在安装，请等待校验完成。"; } };
             UpdateMarkerStatus();
         }
 
@@ -598,6 +629,9 @@ namespace DeadSpaceBootstrap
 
         private void InstallOrChangeMarker()
         {
+            if (resourceInstalling) return;
+            if (!String.IsNullOrEmpty(markerSourcePath) && File.Exists(markerSourcePath)) { ImportMarker(markerSourcePath, false); return; }
+            if (!String.IsNullOrEmpty(directIpaSource) && File.Exists(directIpaSource)) { InstallDirectIpa(); return; }
             if (!String.IsNullOrEmpty(installedMarkerRoot))
             {
                 string tier = TextureScale();
@@ -694,35 +728,29 @@ namespace DeadSpaceBootstrap
 
         private void ImportMarker(string markerPath, bool automatic)
         {
+            if (resourceInstalling) return;
             try
             {
-                Cursor previous = Cursor;
-                Cursor = Cursors.WaitCursor;
-                importMarker.Enabled = false;
-                try
-                {
-                    string tier = TextureScale();
-                    var marker = VandalMarker.Read(markerPath);
-                    if (!marker.TextureTiers.Contains(tier))
-                        tier = marker.TextureTiers.Contains("4")
-                            ? "4"
-                            : marker.TextureTiers.OrderBy(value => value).First();
-                    status.Text = "正在校验并安装 marker（" + tier + "× 纹理），请稍候…";
-                    Application.DoEvents();
-                    string root = VandalMarker.Install(
-                        marker,
-                        InstallRoot(),
-                        tier);
-                    ApplyInstalledMarker(root);
-                    markerSourcePath = String.Empty;
-                    SaveSettings();
-                    status.Text = "游戏资源安装完成；后续运行不依赖 marker 文件。";
-                }
-                finally
-                {
-                    importMarker.Enabled = true;
-                    Cursor = previous;
-                }
+                var selected = installTiers.Select((box, i) => box.Checked ? (2 + i * 2).ToString() : null).Where(t => t != null).ToArray();
+                var marker = VandalMarker.Read(markerPath);
+                foreach (string tier in selected) if (!marker.TextureTiers.Contains(tier)) throw new InvalidDataException("marker 不包含 " + tier + "×，请调整安装选择。");
+                string destination = InstallRoot();
+                resourceInstalling = true;
+                Enabled = false; Cursor = Cursors.WaitCursor;
+                status.Text = "正在校验并安装所选资源，请稍候…";
+                var worker = new System.ComponentModel.BackgroundWorker();
+                worker.DoWork += delegate(object sender, System.ComponentModel.DoWorkEventArgs e) { e.Result = VandalMarker.InstallSelected(marker, destination, selected); };
+                worker.RunWorkerCompleted += delegate(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e) {
+                    try {
+                        if (e.Error != null) throw e.Error;
+                        ApplyInstalledMarker((string)e.Result);
+                        markerSourcePath = String.Empty;
+                        SaveSettings();
+                        status.Text = "所选资源安装完成，可在画质页切换已安装的纹理档位。";
+                    } catch (Exception error) { status.Text = "marker 安装失败：" + error.Message; }
+                    finally { resourceInstalling = false; Enabled = true; Cursor = Cursors.Default; worker.Dispose(); }
+                };
+                worker.RunWorkerAsync();
             }
             catch (Exception error)
             {
@@ -758,7 +786,11 @@ namespace DeadSpaceBootstrap
                 if (File.Exists(System.IO.Path.Combine(path, "PACK.json")))
                     textureRoots[tier] = path;
             }
-            hdTextures.Checked = textureRoots.ContainsKey(TextureScale());
+            if (!textureRoots.ContainsKey(TextureScale()) && textureRoots.Count > 0) {
+                string available = textureRoots.ContainsKey("4") ? "4" : textureRoots.Keys.OrderBy(t => t).First();
+                texture2x.Checked = available == "2"; texture4x.Checked = available == "4"; texture6x.Checked = available == "6";
+            }
+            hdTextures.Checked = hdTextures.Checked && textureRoots.ContainsKey(TextureScale());
             UpdateTextureDescription();
             DirectoryInfo content = Directory.GetParent(installedMarkerRoot);
             if (content != null && content.Name.Equals(

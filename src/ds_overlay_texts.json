@@ -795,7 +795,7 @@
     },
     {
       "id": "Vill_37",
-      "text": "抱歉，破坏者，这事还不能告诉你。你的工程技术确实最执行这项任务的不二人选，可你毕竟才刚加入教会不久。别紧张，相信教会。我只能说，过了今天，政府就再也不能妨碍教会了。",
+      "text": "抱歉，破坏者，这事还不能告诉你。你的工程技术确实最适合执行这项任务的不二人选，可你毕竟才刚加入教会不久。别紧张，相信教会。我只能说，过了今天，政府就再也不能妨碍教会了。",
       "english": "Sorry, Vandal, you're not authorised to know that. Your engineering skills make you perfect for this task, but you're still a new convert to Unitology. Relax, and have faith. All I can tell you is that after today, the Government will no longer stand in the way of the Church."
     },
     {
@@ -4705,8 +4705,8 @@
     },
     {
       "id": "TUTORIAL_ZERO_G_JUMP_TEXT",
-      "text": "瞄准能落脚的表面，再晃动设备，进行零重力跳跃。",
-      "english": "Aim at a walkable surface and shake the device to perform a Zero-G jump."
+      "text": "瞄准能落脚的表面，按 Shift + Space、V 或 Ctrl／手柄 LT + L3 进行零重力跳跃。",
+      "english": "Aim at a walkable surface, then press Shift+Space, V or Ctrl; on a gamepad hold LT and press L3 for a Zero-G jump."
     },
     {
       "id": "TUTORIAL_ZERO_G_JUMP_TITLE",

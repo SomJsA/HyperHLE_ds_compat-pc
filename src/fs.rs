@@ -27,6 +27,8 @@
 
 mod bundle;
 mod ds_resource_overlay;
+#[cfg(target_os = "windows")]
+mod ds_pc_weapon_layout;
 
 pub use bundle::BundleData;
 
@@ -795,6 +797,8 @@ impl Fs {
         let mut bundle_node = app_bundle.into_fs_node();
         if !read_only_mode {
             ds_resource_overlay::mount(&mut bundle_node, bundle_id);
+            #[cfg(target_os = "windows")]
+            ds_pc_weapon_layout::mount(&mut bundle_node, bundle_id);
         }
         app_dir_children.insert(bundle_dir_name, bundle_node);
         for (dir, host_path) in directories.iter().zip(host_path_directories.iter()) {

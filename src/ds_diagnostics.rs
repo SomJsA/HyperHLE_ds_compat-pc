@@ -25,6 +25,8 @@ const PHASES: usize = 11;
 const BINS: usize = 1002; // 0.5ms bins through 500ms, plus overflow.
 const PHASE_NAMES: [&str; PHASES] = ["unknown", "menu", "loading", "loading_ready", "gameplay_hud_clear", "cutscene", "native_hud_menu", "dead", "station_or_rig_transition", "paused", "world_unclassified"];
 static ACTIVE: OnceLock<Option<Client>> = OnceLock::new();
+static MANUAL: OnceLock<Option<Client>> = OnceLock::new();
+static RUNTIME_VERSION: OnceLock<String> = OnceLock::new();
 static FATAL: AtomicBool = AtomicBool::new(false);
 static BAD_END: AtomicBool = AtomicBool::new(false);
 static LEVEL: AtomicU32 = AtomicU32::new(0);
@@ -134,11 +136,12 @@ pub(crate) fn gl_error(code:u32){
 }
 pub(crate) fn fault() {if enabled(){BAD_END.store(true,Relaxed);FATAL.store(true,Relaxed);event("native_fatal",[0;4]);}}
 pub(crate) fn finish(normal:bool) {
-    let Some(Some(c))=ACTIVE.get() else{return;};
     if !normal{BAD_END.store(true,Relaxed);fault();}
-    c.delivery.close();
-    // Teardown only, never a game-frame wait. A failed/slow disk cannot hang exit.
-    wait_for_writer(&c.delivery);
+    for c in [ACTIVE.get().and_then(Option::as_ref), MANUAL.get().and_then(Option::as_ref)].into_iter().flatten() {
+        c.delivery.close();
+        // Teardown only, never a game-frame wait. A failed/slow disk cannot hang exit.
+        wait_for_writer(&c.delivery);
+    }
 }
 fn wait_for_writer(delivery:&Delivery)->bool {
     let limit=Instant::now()+Duration::from_millis(200);
@@ -146,6 +149,7 @@ fn wait_for_writer(delivery:&Delivery)->bool {
     delivery.ended.load(std::sync::atomic::Ordering::Acquire)
 }
 pub(crate) fn init(version:&str) {
+    RUNTIME_VERSION.get_or_init(||version.chars().take(160).collect());
     if !requested(){return;}
     ACTIVE.get_or_init(||{
         CORE_THREAD.store(thread_tag(),Relaxed);
@@ -162,6 +166,29 @@ pub(crate) fn init(version:&str) {
         }).is_err(){return None;}
         Some(Client{tx,start,delivery})
     });
+}
+
+// Starting an F7 writer must not activate ordinary collectors using ACTIVE.
+fn problem_client() -> Option<&'static Client> {
+    if requested() {
+        return ACTIVE.get().and_then(Option::as_ref).filter(|_| enabled());
+    }
+    MANUAL.get_or_init(|| {
+        let base=PathBuf::from(std::env::var_os("TOUCHHLE_DS_MANUAL_DIAGNOSTICS_ROOT")?);
+        let wall=SystemTime::now().duration_since(UNIX_EPOCH).ok()?.as_millis();
+        let root=base.join(format!("session-manual-{wall}-{}",std::process::id()));
+        let start=Instant::now();let (tx,rx)=mpsc::sync_channel(16);
+        let delivery=Arc::new(Delivery::default());let writer_delivery=delivery.clone();
+        let version=RUNTIME_VERSION.get().cloned().unwrap_or_else(||"unknown".into());
+        std::thread::Builder::new().name("ds-problem-captures".into()).spawn(move|| {
+            if let Err(error)=problem_marks::manual_worker(root,rx,start,wall,version,&writer_delivery) {
+                LEVEL.store(3,Relaxed);problem_marks::backend_failed();
+                eprintln!("[DSissue] manual writer failed: {:?}",error.kind());
+            }
+            writer_delivery.ended.store(true,std::sync::atomic::Ordering::Release);
+        }).ok()?;
+        Some(Client{tx,start,delivery})
+    }).as_ref().filter(|c|!c.delivery.closed() && !c.delivery.ended.load(std::sync::atomic::Ordering::Acquire))
 }
 
 fn collector_budget(scene:bool,super_trace:bool)->(u64,u64) {

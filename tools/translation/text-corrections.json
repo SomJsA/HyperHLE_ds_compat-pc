@@ -3,9 +3,21 @@
   "corrections": [
     {
       "id": "CREDITS",
-      "expected": ["制作团队", "信用点"],
+      "expected": [
+        "制作团队",
+        "信用点"
+      ],
       "text": "信用点",
       "reason": "The original 1.3.34 Chinese bank and Android R15 native Store UI identify CREDITS as currency. The staff list uses the separate credits_list key."
+    },
+    {
+      "id": "Vill_37",
+      "expected": [
+        "抱歉，破坏者，这事还不能告诉你。你的工程技术确实最执行这项任务的不二人选，可你毕竟才刚加入教会不久。别紧张，相信教会。我只能说，过了今天，政府就再也不能妨碍教会了。",
+        "抱歉，破坏者，这事还不能告诉你。你的工程技术确实最适合执行这项任务的不二人选，可你毕竟才刚加入教会不久。别紧张，相信教会。我只能说，过了今天，政府就再也不能妨碍教会了。"
+      ],
+      "text": "抱歉，破坏者，这事还不能告诉你。你的工程技术确实最适合执行这项任务的不二人选，可你毕竟才刚加入教会不久。别紧张，相信教会。我只能说，过了今天，政府就再也不能妨碍教会了。",
+      "reason": "User correction: 最执行 -> 最适合执行. Apply to both the native SBIN and HD text; preserve on ledger reimport."
     }
   ]
 }

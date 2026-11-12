@@ -12,6 +12,8 @@ use std::sync::Mutex;
 mod modal;
 
 pub(super) fn modal_active()->bool {modal::active()}
+pub(super) fn is_pause()->bool {modal::is_pause()}
+pub(super) fn pause_resume_selected()->bool {modal::pause_resume_selected()}
 pub(super) fn modal_verified(env:&Environment)->bool {modal::verified(env)}
 pub(super) fn observe_handler(env:&Environment,handler:u32){modal::observe_handler(env,handler);}
 
@@ -20,6 +22,7 @@ const CARD_PAGE_SETTLE_TICKS: u8 = 6;
 const CARD_PAGE_STALE_TICKS: u8 = 24;
 const GET_ACTIVE_RECT: u32 = 0x001e_0488;
 const SET_SELECTED: u32 = 0x001c_da9c;
+const SELECT_DIFFICULTY: u32 = 0x002f_c298;
 const SURVIVAL_ITEM_SEND_ACTION: u32 = 0x001d_66e4;
 const CHAPTER_ITEM_SEND_ACTION: u32 = 0x001d_7200;
 
@@ -787,6 +790,25 @@ fn selector_value(page:u32,id:&str)->Option<(u32,u32,Option<u32>)> {
     None
 }
 
+fn difficulty_value(id: &str) -> Option<u32> {
+    match id {
+        // Original SetDifficulty/BTN_* callbacks use Normal=0, Hard=1, Easy=2.
+        "BTN_EASY" => Some(2),
+        "BTN_NORMAL" => Some(0),
+        "BTN_HARD" => Some(1),
+        "BTN_NIGHTMARE" => Some(3),
+        _ => None,
+    }
+}
+
+pub(super) fn difficulty_verified(env: &Environment) -> bool {
+    use sha2::{Digest, Sha256};
+    let Some(code) = env.mem.get_bytes_fallible(ConstVoidPtr::from_bits(SELECT_DIFFICULTY), 0xfb8) else {
+        return false;
+    };
+    format!("{:x}", Sha256::digest(code)) == "1b998a890655d4e7242b19692b852b8aa2fe6bb07e2a7e659aff2369b3058ccd"
+}
+
 fn confirm_button(buttons:&[Button],focus:usize)->Option<Button> {
     // Mouse hover may focus the delete widget even though directions skip it.
     // E/Enter/A must still mean confirm; only Delete/Start owns deletion.
@@ -847,7 +869,8 @@ fn take_selection_work(live: &mut Live) -> Option<SelectionWork> {
     Some(SelectionWork {
         previous: previous_widget,
         selected: selected_widget,
-        mode: live.buttons.get(live.focus).filter(|b|selector_value(live.page,&b.id).is_some())
+        mode: live.buttons.get(live.focus).filter(|b|selector_value(live.page,&b.id).is_some()
+            || (live.difficulty && difficulty_value(&b.id).is_some()))
             .map(|b|MenuWork{owner:live.owner,difficulty:live.difficulty,page:live.page,activation:Activation::Button(b.clone())}),
     })
 }
@@ -859,7 +882,21 @@ fn apply_selection(env: &mut Environment, selection: &SelectionWork) {
     // sending it again for an already-selected mode would act like a double click.
     if let Some(work)=&selection.mode {
         if let Activation::Button(button)=&work.activation {
-            if let Some((offset,mode,submode))=selector_value(work.page,&button.id) {
+            if work.difficulty {
+                if let Some(value) = difficulty_value(&button.id) {
+                    if menu_ready(env, work.owner, work.page, true)
+                        && word(env, button.widget) == Some(button.vtable)
+                        && byte(env, button.widget + 0x24) == Some(1)
+                    {
+                        // The touch event treats a second tap on the current
+                        // difficulty as confirmation. Its selection helper only
+                        // updates difficulty, highlights and description text.
+                        let _: () = GuestFunction::from_addr_and_thumb_flag(SELECT_DIFFICULTY, false)
+                            .call_from_host(env, (work.owner, value));
+                        echo!("[DSfrontendInput] difficulty selected {} value={}", button.id, value);
+                    }
+                }
+            } else if let Some((offset,mode,submode))=selector_value(work.page,&button.id) {
                 if word(env,work.owner+offset)!=Some(mode)
                     || submode.is_some_and(|sub|word(env,work.owner+0x354)!=Some(sub)) {
                     activate(env,work);
@@ -1237,6 +1274,29 @@ pub(super) fn tick(env: &mut Environment) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn difficulty_navigation_schedules_native_selection_without_confirmation() {
+        let buttons = ["BTN_EASY", "BTN_NORMAL", "BTN_HARD", "BTN_NIGHTMARE"].iter().enumerate()
+            .map(|(i,id)| Button { id: (*id).into(), widget: 0x1000+i as u32*0x100,
+                vtable: 0x2000, rect: [100.,50.+i as f32*50.,100.,40.] }).collect();
+        let mut live = Live { owner:0x3000, owner_type:0x4000, difficulty:true, page:7, frame:0,
+            buttons, card_window:None, focus:1, cursor:true, logged:false, geometry_logged:false,
+            requests:Vec::new(), pending:None, selection_dirty:false, synced_widget:Some((0x1100,0x2000)) };
+        for action in [Action::Down, Action::Down, Action::Up, Action::Up, Action::Up] {
+            live.focus = nearest(&live.buttons,live.focus,action);
+            live.selection_dirty = true;
+            let selection = take_selection_work(&mut live).unwrap();
+            let work = selection.mode.unwrap();
+            assert!(work.difficulty);
+            let Activation::Button(button) = work.activation else { panic!("difficulty selector"); };
+            assert_eq!(difficulty_value(&button.id),Some([2,0,1,3][live.focus]));
+            assert_eq!(selection.selected,Some((button.widget,button.vtable)));
+            assert!(take_selection_work(&mut live).is_none());
+        }
+        assert_eq!(difficulty_value("BTN_OK"),None);
+        assert_eq!(confirm_button(&live.buttons,live.focus).unwrap().id,"BTN_EASY");
+    }
 
     #[test]
     fn spatial_navigation_uses_live_bounds_without_activating_buttons() {

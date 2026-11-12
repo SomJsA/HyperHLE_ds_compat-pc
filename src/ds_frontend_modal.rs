@@ -108,6 +108,13 @@ fn recent(stamp: u64) -> bool {
 pub(super) fn active() -> bool {
     ACTIVE.load(Ordering::Relaxed)
 }
+pub(super) fn is_pause() -> bool {
+    STATE
+        .lock()
+        .ok()
+        .and_then(|state| state.context)
+        .is_some_and(|context| context.kind == Kind::Pause)
+}
 pub(super) fn verified(env: &Environment) -> bool {
     [
         (0x0003_0474, 0xe92d_4080),
@@ -141,6 +148,7 @@ pub(super) fn reset() {
     state.dirty = false;
     state.return_focus=None;
 }
+
 
 /// Called only at the checked WidgetHandler::OnDraw breakpoint. Never call
 /// guest code here: store the actual drawing owner for the host-call boundary.
@@ -209,12 +217,12 @@ fn detect(env: &mut Environment) -> Option<Context> {
         let handler=hud+0x1294;
         if ROOT_A.swap(handler,Ordering::Relaxed)!=handler {ROOT_A_FRAME.store(u64::MAX,Ordering::Relaxed);}
         ROOT_B.store(0,Ordering::Relaxed);
-        let animator=word(env,hud+0x127c).unwrap_or(0);
-        let animating=if animator>=0x1000 {
-            let active:bool=GuestFunction::from_addr_and_thumb_flag(0x002f_196c,false).call_from_host(env,(animator,));active
-        } else {true};
         return Some(Context{kind:Kind::Pause,object:hud,handler,window:0,world,mode:0,
-            ready:pause_ready(word(env,hud+0x234).unwrap_or(0),recent(ROOT_A_FRAME.load(Ordering::Relaxed)),animating)});
+            // The pause animator leaves IsAnimating set after it reaches its
+            // finished phase. The native HUD state plus an observed draw are
+            // the readiness gate; waiting for IsAnimating=false strands the
+            // controller on the synthetic resume-button fallback.
+            ready:pause_ready(word(env,hud+0x234).unwrap_or(0),recent(ROOT_A_FRAME.load(Ordering::Relaxed)))});
     }
     let player = word(env, world + 0xe0).filter(|p| *p >= 0x1000)?;
     if word(env, player) != Some(0x00a7_a4f8) {
@@ -385,8 +393,13 @@ fn collect(env: &mut Environment, context: Context) -> Vec<Control> {
         .iter()
         .filter(|w| {
             w.active
-                && (context.kind!=Kind::Pause || matches!(w.id.as_str(),"BTN_PLAY_PAUSE"|"BTN_RESTART"|"BTN_OPTIONS"|"BTN_HELP"|"BTN_QUIT"))
-                && ((context.kind==Kind::HudMenu && hud_slider_type(w.vtable))
+                // Resume is a real focus target as well as a Start/Back
+                // shortcut. Keep it in the native control list so the focus
+                // bracket can land on the visible Continue button.
+                && (context.kind!=Kind::Pause || pause_widget(&w.id))
+                && ((context.kind==Kind::Pause && pause_widget(&w.id))
+                    || (context.kind==Kind::Popup && matches!(w.id.as_str(), "BTN_RESTART_CHECKPOINT" | "BTN_RESTART_LEVEL" | "BTN_RESTART"))
+                    || (context.kind==Kind::HudMenu && hud_slider_type(w.vtable))
                     || (w.id.starts_with("BTN_") && word(env,w.vtable+0x2c)
                         .is_some_and(|f|(0x1000..0x8c0000).contains(&(f&!1)))))
         })
@@ -520,8 +533,12 @@ fn collect(env: &mut Environment, context: Context) -> Vec<Control> {
     controls
 }
 
-fn pause_ready(hud_state:u32,drawn:bool,animating:bool)->bool {
-    matches!(hud_state,2|3) && drawn && !animating
+fn pause_widget(id:&str)->bool {
+    matches!(id,"BTN_PLAY_PAUSE"|"BTN_RESTART"|"BTN_OPTIONS"|"BTN_HELP"|"BTN_QUIT")
+}
+
+fn pause_ready(hud_state:u32,drawn:bool)->bool {
+    matches!(hud_state,2|3) && drawn
 }
 fn layout_ready(layout_state:u32,drawn:bool)->bool {
     // IsAnimating=false also means "not started yet". Hud::UpdateLayout
@@ -671,17 +688,20 @@ pub(super) fn cursor() -> Option<Point> {
     let state = STATE.lock().unwrap();
     state.context.filter(|c| c.ready)?;
     selected(&state)
-        .filter(|c| !super::fixed_action(&c.button.id))
+        .filter(|c| state.context.is_some_and(|context| context.kind == Kind::Pause) || !super::fixed_action(&c.button.id))
         .filter(|c| visible(c.button.rect))
         .map(|c| c.button.center())
 }
 pub(super) fn focus_rect() -> Option<[f32; 4]> {
     let state = STATE.lock().unwrap();
+    // During entry there is no stable native control list yet. Once ready,
+    // Continue is a normal pause focus target and receives the bracket.
+    if state.context.is_some_and(|c| c.kind == Kind::Pause && !c.ready) { return None; }
     state.context.filter(|c| c.ready)?;
     selected(&state)
         // Fixed E/Q/A/X actions retain their adjacent key sprites, but never
         // acquire the directional content selector (including popup defaults).
-        .filter(|c| !super::fixed_action(&c.button.id))
+        .filter(|c| state.context.is_some_and(|context| context.kind == Kind::Pause) || !super::fixed_action(&c.button.id))
         .filter(|c| visible(c.button.rect))
         .map(|c| clipped(c))
 }
@@ -698,12 +718,23 @@ fn clipped(c: &Control) -> [f32; 4] {
     ]
 }
 pub(super) fn can_cancel() -> bool {
+    if is_pause() {
+        // The native pause handler exposes its five buttons only after the
+        // entry animation has settled. Keep the cancel legend available while
+        // that verified pause context is active.
+        return true;
+    }
     STATE
         .lock()
         .unwrap()
         .controls
         .iter()
         .any(|c| matches!(c.button.id.as_str(), "BTN_BACK" | "BTN_NO" | "BTN_PLAY_PAUSE"))
+}
+pub(super) fn pause_resume_selected() -> bool {
+    let state = STATE.lock().unwrap();
+    state.context.is_some_and(|context| context.kind == Kind::Pause && context.ready)
+        && selected(&state).is_some_and(|control| control.button.id == "BTN_PLAY_PAUSE")
 }
 pub(super) fn action_rects() -> Vec<([f32; 4], bool)> {
     let state = STATE.lock().unwrap();
@@ -721,7 +752,7 @@ pub(super) fn action_rects() -> Vec<([f32; 4], bool)> {
     if let Some(c) = state
         .controls
         .iter()
-        .find(|c| matches!(c.button.id.as_str(), "BTN_BACK" | "BTN_NO" | "BTN_PLAY_PAUSE"))
+        .find(|c| matches!(c.button.id.as_str(), "BTN_BACK" | "BTN_NO"))
     {
         out.push((c.button.rect, true));
     }
@@ -1056,7 +1087,7 @@ pub(super) fn tick(env: &mut Environment) {
                     activation = state
                         .controls
                         .iter()
-                        .find(|c| matches!(c.button.id.as_str(), "BTN_NO" | "BTN_BACK" | "BTN_PLAY_PAUSE"))
+                        .find(|c| matches!(c.button.id.as_str(), "BTN_NO" | "BTN_BACK"))
                         .cloned();
                 }
                 Action::Delete => {}, // Delete/Start is owned only by a native profile-delete control.
@@ -1167,9 +1198,17 @@ mod tests {
 
     #[test]
     fn native_pause_two_is_ready_after_animation_without_waiting_for_three() {
-        assert!(pause_ready(2,true,false));assert!(pause_ready(3,true,false));
-        assert!(!pause_ready(2,true,true));assert!(!pause_ready(2,false,false));
-        assert!(!pause_ready(0,true,false));
+        assert!(pause_ready(2,true));assert!(pause_ready(3,true));
+        assert!(!pause_ready(2,false));
+        assert!(!pause_ready(0,true));
+    }
+    #[test]
+    fn pause_overlay_includes_native_resume_button_as_focus_target() {
+        assert!(pause_widget("BTN_PLAY_PAUSE"));
+        assert!(pause_widget("BTN_RESTART"));
+        assert!(pause_widget("BTN_OPTIONS"));
+        assert!(pause_widget("BTN_HELP"));
+        assert!(pause_widget("BTN_QUIT"));
     }
     fn context(kind: Kind, ready: bool) -> Context {
         Context {

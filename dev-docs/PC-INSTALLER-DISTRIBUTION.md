@@ -56,3 +56,36 @@ path or install resources into the new GameData location deliberately.
   remove GameData or the Documents save/config root.
 - The install test uses a synthetic marker plus one scoped actual-marker install;
   neither substitutes for full-game or human acceptance.
+
+## Installer UX revision (2026-11-06)
+
+The installer and launcher's resource page support selecting any combination of
+2x/4x/6x textures. No selection installs only the original base IPA. Existing
+tiers are preserved. The texture radio buttons on the graphics page still
+select one active tier; installing several does not use them simultaneously.
+The resource CLI accepts `--tiers 2,4,6` or `--tiers none`; legacy `--tier 4`
+remains supported. Complete selections are validated before resource writes.
+
+Desktop and Start Menu shortcuts are independently selectable, both checked
+by default. Windows Known Folder paths support redirected desktops. Both links
+target the launcher, share its embedded game icon, and set its working directory.
+Uninstall removes links only when their target belongs to this installation.
+`--no-shortcut` skips both; `--no-desktop-shortcut` and
+`--no-start-menu-shortcut` skip either individually. All registration stays in HKCU.
+
+The installer uses a scrolling automatic layout, resource-size/free-space hints,
+and a progress indicator. Editing options is disabled while installation runs.
+The launcher and installer declare system DPI awareness and run asInvoker.
+The launcher keeps its action buttons outside the scrolling settings pages.
+
+`tools/pc-installer/Test-Ui.cs` checks all eight launcher pages and expanded
+sections at 100/125/150/200 percent scale, including labels and compact heights.
+This is offscreen geometry/render evidence, not physical monitor/DPI acceptance.
+`Test-Installer.ps1` exercises multi-selection, eight combinations, upgrades,
+direct IPA, and invalid selections. `Test-Shortcuts.cs` verifies real Windows
+links and registry registration with HKCU redirected to a disposable test key;
+existing user links are backed up and restored in finally.
+
+Windows no longer inherits the macOS-only SDL HIDAPI disable workaround.
+Virtual-controller enumeration is regression evidence only; physical Xbox,
+PlayStation and Switch controller acceptance remains open.

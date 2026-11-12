@@ -378,17 +378,72 @@ fn problem_notice_card(raw_w:u32,raw_h:u32)->Option<Card>{
     let image=Arc::clone(&h.problem_notice.as_ref()?.3);
     Some(Card{image,left:fw.saturating_sub(width)/2,top:(12.0*unit) as u32,scale:1.0,opacity:1.0})
 }
+fn pause_hint_card(raw_w:u32,raw_h:u32)->Option<Card>{
+    if !crate::ds_frontend_controller::pause_menu(){return None;}
+    let (fw,fh)=(raw_h,raw_w);let unit=fh as f32/320.0;
+    // The guest pause HUD still contains its short legacy footer. Use an
+    // opaque two-line card to own that area completely, so the old clipped
+    // `Esc ... Alt` row cannot remain visible underneath the repaired hint.
+    let width=(260.0*unit).ceil().min(fw as f32).max(1.0) as u32;
+    let height=(42.0*unit).ceil().min(fh as f32).max(1.0) as u32;
+    let key=format!("frontend-pause-alt:{width}:{height}");
+    let mut h=host().lock().ok()?;
+    if !h.cache.contains_key(&key){
+        let font=h.font.as_ref()?;let mut pixels=vec![0u8;width as usize*height as usize*4];
+        for p in pixels.chunks_exact_mut(4){p.copy_from_slice(&[5,17,23,255]);}
+        draw_text_centered(&mut pixels,width,height,font,8.5*unit,"按住 Alt：临时释放鼠标",5.0*unit,[220,248,255]);
+        draw_text_centered(&mut pixels,width,height,font,7.8*unit,"ESC / START / BACK / B：继续游戏",23.0*unit,[220,248,255]);
+        h.cache.insert(key.clone(),Arc::new(CachedCard::new(width,height,0.0,&pixels)));
+    }
+    let image=Arc::clone(h.cache.get(&key)?);
+    let top=fh.saturating_sub((52.0*unit).ceil() as u32);
+    Some(Card{image,left:fw.saturating_sub(width)/2,top,scale:1.0,opacity:1.0})
+}
+fn contribution_card(raw_w:u32,raw_h:u32)->Option<Card>{
+    if !crate::ds_frontend_controller::pause_menu(){return None;}
+    let (fw,fh)=(raw_h,raw_w);let unit=fh as f32/320.0;
+    let width=(360.0*unit).ceil().min(fw as f32).max(1.0) as u32;
+    let height=(178.0*unit).ceil().min(fh as f32).max(1.0) as u32;
+    let key=format!("frontend-credits:{width}:{height}");
+    let mut h=host().lock().ok()?;
+    if !h.cache.contains_key(&key){
+        let font=h.font.as_ref()?;let mut pixels=vec![0u8;width as usize*height as usize*4];
+        for p in pixels.chunks_exact_mut(4){p.copy_from_slice(&[5,17,23,245]);}
+        let lines=[
+            "死亡空间移动版（IOS端高清移植）",
+            "基于 touchHLE 与 HyperHLE",
+            "项目链接可能暂时处于私有状态",
+            "项目开发：SomJs",
+            "特别感谢：lxyun_2（腹黑小喵） · MisakaCharlotte（是的呀啊）",
+            "特洛克·洛克莱斯 · 天雷本雷 · 豆沙包里有磁",
+            "贴吧汉化组：https://tieba.baidu.com/wxf/341915?kw=死亡空间&fr=sharewise",
+            "Bilibili：https://space.bilibili.com/34237026",
+            "反馈：https://github.com/SomJsA/DeadSpaceMobile-Community/issues",
+        ];
+        for (index,line) in lines.iter().enumerate(){
+            draw_text_centered(&mut pixels,width,height,font,(if index==0{6.4}else{5.2})*unit,line,(7.0+index as f32*18.0)*unit,[220,248,255]);
+        }
+        h.cache.insert(key.clone(),Arc::new(CachedCard::new(width,height,0.0,&pixels)));
+    }
+    let image=Arc::clone(h.cache.get(&key)?);
+    let margin=(12.0*unit).ceil() as u32;
+    Some(Card{image,left:fw.saturating_sub(width).saturating_sub(margin),top:fh.saturating_sub(height).saturating_sub(margin),scale:1.0,opacity:1.0})
+}
 fn cards(raw_w: u32, raw_h: u32) -> Vec<Card> {
     let _stutter_span=crate::ds_stutter_probe::Span::new(8,((raw_w as u64)<<32)|raw_h as u64);
     if raw_w==0 || raw_h==0{return Vec::new();}
     let notice=problem_notice_card(raw_w,raw_h);
-    if !visible(){return notice.into_iter().collect();}
+    let pause_hint=pause_hint_card(raw_w,raw_h);
+    let contribution=contribution_card(raw_w,raw_h);
+    if !visible(){return notice.into_iter().chain(pause_hint).chain(contribution).collect();}
     let Ok(mut h) = host().lock() else { return Vec::new() };
     if h.font.is_none() {
         return Vec::new();
     }
-    let mut cards = Vec::with_capacity(4);
+    let mut cards = Vec::with_capacity(5);
     if let Some(card)=notice{cards.push(card);}
+    if let Some(card)=pause_hint{cards.push(card);}
+    if let Some(card)=contribution{cards.push(card);}
     let mut requests: Vec<(&str, String, String, Option<String>, f32)> = Vec::new();
     let chapter = crate::ds_chapter_overlay::host_snapshot();
     if chapter & (1 << 16) != 0 {

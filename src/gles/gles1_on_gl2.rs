@@ -22,6 +22,10 @@
 mod ds_blood_size;
 #[path = "ds_opening_fog.rs"]
 mod ds_opening_fog;
+#[path = "gpu_profile.rs"]
+mod gpu_profile;
+#[path = "ds_gl_state_cache.rs"]
+mod ds_gl_state_cache;
 
 #[path = "trace_file.rs"]
 mod trace_file;
@@ -112,6 +116,49 @@ pub const CAPABILITIES: &[GLenum] = &[
     // Same as POINT_SPRITE_OES from the GLES extension
     gl21::POINT_SPRITE,
 ];
+
+#[inline(always)]
+fn capability_supported(cap: GLenum) -> bool {
+    matches!(
+        cap,
+        gl21::ALPHA_TEST
+            | gl21::BLEND
+            | gl21::COLOR_LOGIC_OP
+            | gl21::CLIP_PLANE0
+            | gl21::CLIP_PLANE1
+            | gl21::CLIP_PLANE2
+            | gl21::CLIP_PLANE3
+            | gl21::CLIP_PLANE4
+            | gl21::CLIP_PLANE5
+            | gl21::LIGHT0
+            | gl21::LIGHT1
+            | gl21::LIGHT2
+            | gl21::LIGHT3
+            | gl21::LIGHT4
+            | gl21::LIGHT5
+            | gl21::LIGHT6
+            | gl21::LIGHT7
+            | gl21::COLOR_MATERIAL
+            | gl21::CULL_FACE
+            | gl21::DEPTH_TEST
+            | gl21::DITHER
+            | gl21::FOG
+            | gl21::LIGHTING
+            | gl21::LINE_SMOOTH
+            | gl21::MULTISAMPLE
+            | gl21::NORMALIZE
+            | gl21::POINT_SMOOTH
+            | gl21::POLYGON_OFFSET_FILL
+            | gl21::RESCALE_NORMAL
+            | gl21::SAMPLE_ALPHA_TO_COVERAGE
+            | gl21::SAMPLE_ALPHA_TO_ONE
+            | gl21::SAMPLE_COVERAGE
+            | gl21::SCISSOR_TEST
+            | gl21::STENCIL_TEST
+            | gl21::TEXTURE_2D
+            | gl21::POINT_SPRITE
+    )
+}
 
 pub const UNSUPPORTED_CAPABILITIES: &[GLenum] = &[
     0x8620, // GL_VERTEX_PROGRAM_NV
@@ -516,6 +563,8 @@ impl Default for MatrixArrayPointerState {
 }
 
 pub struct GLES1OnGL2State {
+    gpu_profile: gpu_profile::State,
+    state_cache: ds_gl_state_cache::Cache,
     scene:crate::ds_scene_diagnostics::RenderState,
     input_prompt_atlas: Option<GLuint>,
     opening_fog: ds_opening_fog::OpeningFog,
@@ -721,14 +770,20 @@ unsafe fn ds_draw_ndc_span(count: GLsizei) -> Option<(f32, f32)> {
 /// The ring is a 3D-projected object whose screen size changes with distance,
 /// so a fixed pixel-area test is unreliable (user, 2026-10-08). This probe
 /// identifies the ring by *texture id* instead, independent of screen size.
-pub fn ds_ring_textures() -> Vec<GLint> {
-    match crate::ds_draw_env::var("TOUCHHLE_DS_RING_TEX") {
-        Ok(spec) => spec
-            .split(',')
-            .filter_map(|p| p.trim().parse().ok())
-            .collect(),
-        Err(_) => Vec::new(),
-    }
+pub fn ds_ring_textures() -> &'static [GLint] {
+    use std::sync::OnceLock;
+    static TEXTURES: OnceLock<Vec<GLint>> = OnceLock::new();
+    TEXTURES
+        .get_or_init(|| {
+            crate::ds_draw_env::var("TOUCHHLE_DS_RING_TEX")
+                .map(|spec| {
+                    spec.split(',')
+                        .filter_map(|p| p.trim().parse().ok())
+                        .collect()
+                })
+                .unwrap_or_default()
+        })
+        .as_slice()
 }
 
 /// Log (and remember) a draw that uses one of the configured ring textures.
@@ -953,7 +1008,7 @@ pub fn ds_z_mode_name(m: u8) -> &'static str {
 /// Apply the prologue far-plane correction where the projection is defined,
 /// independent of menu/loading frame timing.
 fn ds_adjust_opening_frustum_far(near: f32, far: f32) -> f32 {
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_NO_PROJ_Z_FIX").is_some() {
+    if crate::ds_draw_env::contains("TOUCHHLE_DS_NO_PROJ_Z_FIX") {
         return far;
     }
     let setting = crate::ds_draw_env::var("TOUCHHLE_DS_PROJ_Z_INFINITE")
@@ -991,8 +1046,8 @@ unsafe fn proj_z_zero_begin(count: GLsizei) -> bool {
         2 | 3 => Some(0.85),
         _ => None,
     };
-    let zero = crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_Z_ZERO").is_some();
-    if !zero && crate::ds_draw_env::var_os("TOUCHHLE_DS_NO_PROJ_Z_FIX").is_some() {
+    let zero = crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_Z_ZERO");
+    if !zero && crate::ds_draw_env::contains("TOUCHHLE_DS_NO_PROJ_Z_FIX") {
         return false;
     }
     // Optional: only touch draws that use one of the listed textures.
@@ -1011,7 +1066,7 @@ unsafe fn proj_z_zero_begin(count: GLsizei) -> bool {
         }
     }
     // Clip-only mode: leave already-inside geometry completely alone.
-    if force_clip_only || crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_Z_SCALE_CLIP_ONLY").is_some() {
+    if force_clip_only || crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_Z_SCALE_CLIP_ONLY") {
         match ds_draw_z_ndc_range(count) {
             // Whole draw is inside [-1,1] in z: there is no clipping to fix.
             Some((zmin, zmax)) if zmin >= -1.0 && zmax <= 1.0 => return false,
@@ -1024,7 +1079,7 @@ unsafe fn proj_z_zero_begin(count: GLsizei) -> bool {
     // vertex is only 0.3% past the far plane gets a 0.997 scale, not 0.85, so
     // layers that are only slightly clipped are not pushed around.
     let mut sc_override: Option<f32> = None;
-    if force_minimal || crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_Z_SCALE_MINIMAL").is_some() {
+    if force_minimal || crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_Z_SCALE_MINIMAL") {
         let floor = crate::ds_draw_env::var("TOUCHHLE_DS_PROJ_Z_SCALE")
             .ok()
             .and_then(|v| v.parse::<f32>().ok())
@@ -1315,7 +1370,7 @@ fn pixel_trace_trigger_spec() -> Option<(f32, f32, f32)> {
 }
 
 fn pixel_trace_trigger_is_bright() -> bool {
-    crate::ds_draw_env::var_os("TOUCHHLE_DS_PIXEL_TRACE_TRIGGER_BRIGHT").is_some()
+    crate::ds_draw_env::contains("TOUCHHLE_DS_PIXEL_TRACE_TRIGGER_BRIGHT")
 }
 
 fn frame_trace_trigger_threshold() -> Option<f32> {
@@ -1524,7 +1579,7 @@ unsafe fn pixel_trace_trigger_tick() {
             ),
         )
     };
-    let require_bright = crate::ds_draw_env::var_os("TOUCHHLE_DS_PIXEL_TRACE_TRIGGER_AFTER_BRIGHT").is_some();
+    let require_bright = crate::ds_draw_env::contains("TOUCHHLE_DS_PIXEL_TRACE_TRIGGER_AFTER_BRIGHT");
     if require_bright && bright {
         PIXEL_DARK_TRACE_SAW_BRIGHT.store(true, std::sync::atomic::Ordering::Relaxed);
     }
@@ -2530,7 +2585,7 @@ unsafe fn texnodepth_begin(count: GLsizei) -> Option<DepthLequalBackup> {
     let lequal_mode = crate::ds_draw_env::var("TOUCHHLE_DS_DEPTH_LEQUAL").ok();
     let global_lequal = lequal_mode.as_deref() == Some("1");
     let hash_spec = crate::ds_draw_env::var("TOUCHHLE_DS_DEPTH_LEQUAL_HASH").ok();
-    let z_spec = crate::ds_draw_env::var_os("TOUCHHLE_DS_DEPTH_LEQUAL_Z").is_some();
+    let z_spec = crate::ds_draw_env::contains("TOUCHHLE_DS_DEPTH_LEQUAL_Z");
     let legacy_requested = lequal_mode.is_some() || hash_spec.is_some() || z_spec;
     let depth_repair_enabled = lequal_mode.as_deref() != Some("0") && legacy_requested;
     let min_stack_span = crate::ds_draw_env::var("TOUCHHLE_DS_DEPTH_LEQUAL_MIN_SPAN")
@@ -2541,7 +2596,7 @@ unsafe fn texnodepth_begin(count: GLsizei) -> Option<DepthLequalBackup> {
     let screen_sized_draw = ds_draw_ndc_span(count)
         .map(|(width, height)| width >= min_stack_span && height >= min_stack_span)
         .unwrap_or(false);
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_DEPTH_TRACE").is_some()
+    if crate::ds_draw_env::contains("TOUCHHLE_DS_DEPTH_TRACE")
         && tex_selected(None, DEFAULT_DEPTH_LEQUAL_KEYS)
     {
         let key = bound_texture_key().unwrap_or(0);
@@ -2582,7 +2637,7 @@ unsafe fn texnodepth_begin(count: GLsizei) -> Option<DepthLequalBackup> {
             gl21::GetFloatv(gl21::POLYGON_OFFSET_UNITS, &mut old_offset_units);
             gl21::DepthFunc(gl21::LEQUAL);
             if !global_lequal {
-                if crate::ds_draw_env::var_os("TOUCHHLE_DS_DEPTH_LEQUAL_NOWRITE").is_some() {
+                if crate::ds_draw_env::contains("TOUCHHLE_DS_DEPTH_LEQUAL_NOWRITE") {
                     gl21::DepthMask(0);
                 } else {
                     let factor = crate::ds_draw_env::var("TOUCHHLE_DS_DEPTH_LEQUAL_OFFSET_FACTOR")
@@ -2803,7 +2858,7 @@ unsafe fn split_triangle_depth_draw_elements(
     type_: GLenum,
     indices: *const GLvoid,
 ) -> bool {
-    let trace = crate::ds_draw_env::var_os("TOUCHHLE_DS_TRI_DEPTH_TRACE").is_some();
+    let trace = crate::ds_draw_env::contains("TOUCHHLE_DS_TRI_DEPTH_TRACE");
     let trace_skip = |bit: u32, reason: &str| {
         if trace {
             use std::sync::atomic::{AtomicU32, Ordering};
@@ -3001,7 +3056,7 @@ unsafe fn split_triangle_depth_draw_elements(
     } else {
         gl21::Disable(gl21::POLYGON_OFFSET_FILL);
     }
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_TRI_DEPTH_TRACE").is_some() {
+    if crate::ds_draw_env::contains("TOUCHHLE_DS_TRI_DEPTH_TRACE") {
         static TRACE_SUCCESS: std::sync::atomic::AtomicBool =
             std::sync::atomic::AtomicBool::new(false);
         if !TRACE_SUCCESS.swap(true, std::sync::atomic::Ordering::Relaxed) {
@@ -3126,7 +3181,7 @@ unsafe fn redtex_end(old: Option<[f32; 4]>) {
 /// which texture is responsible for each screen region. Red channel encodes the
 /// id: red = (id * 97) mod 251, so the id can be recovered from a screenshot.
 unsafe fn texid_color_begin() -> Option<[f32; 4]> {
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_TEXID_COLOR").is_none() {
+    if !crate::ds_draw_env::contains("TOUCHHLE_DS_TEXID_COLOR") {
         return None;
     }
     let mut cur: GLint = 0;
@@ -3143,7 +3198,7 @@ unsafe fn texid_color_begin() -> Option<[f32; 4]> {
     // Two variants: "flat" replaces the texture with a solid id colour, while
     // "tint" keeps the texture and only hue-shifts it. Both preserve the
     // original alpha so blending behaviour is unchanged.
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_TEXID_TINT").is_none() {
+    if !crate::ds_draw_env::contains("TOUCHHLE_DS_TEXID_TINT") {
         gl21::Disable(gl21::TEXTURE_2D);
     }
     gl21::Color4f(r, g, b, old[3]);
@@ -3162,7 +3217,7 @@ unsafe fn texid_color_end(old: Option<[f32; 4]>) {
 /// bright red around each draw, so a black region can be attributed to the fog
 /// colour itself rather than to something else that fog-disable happens to fix.
 unsafe fn fog_red_begin() -> Option<[f32; 4]> {
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_FOG_RED").is_none() {
+    if !crate::ds_draw_env::contains("TOUCHHLE_DS_FOG_RED") {
         return None;
     }
     let mut en: GLboolean = 0;
@@ -3246,7 +3301,7 @@ unsafe fn fog_scale_end(old: Option<f32>) {
 /// Dead Space debug aid: `TOUCHHLE_DS_LOG_FOG=1` logs the fog state at draw time
 /// whenever it changes, so the parameters the app actually uses are visible.
 unsafe fn log_fog_state() {
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_LOG_FOG").is_none() {
+    if !crate::ds_draw_env::contains("TOUCHHLE_DS_LOG_FOG") {
         return;
     }
     use std::sync::{Mutex, OnceLock};
@@ -3735,7 +3790,7 @@ unsafe fn draw_elements_skipping_triangles(
 /// colours (not from its texture) renders with the current colour instead. If a
 /// suspected region lights up, its blackness came from vertex colours.
 unsafe fn vcolor_off_begin() -> bool {
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_IGNORE_VERTEX_COLOR").is_none() {
+    if !crate::ds_draw_env::contains("TOUCHHLE_DS_IGNORE_VERTEX_COLOR") {
         return false;
     }
     let on = gl21::IsEnabled(gl21::COLOR_ARRAY) != 0;
@@ -3763,7 +3818,7 @@ fn ds_texmat_trace_log<'a>(message: impl Into<trace_file::Message<'a>>) {
 /// matrix to identity around a draw so we can A/B test whether the guest's
 /// texture matrix is collapsing the sampled texel.
 unsafe fn force_texmat_identity_begin() -> Option<GLint> {
-    if crate::ds_draw_env::var_os("TOUCHHLE_DS_TEXMAT_IDENTITY").is_none() {
+    if !crate::ds_draw_env::contains("TOUCHHLE_DS_TEXMAT_IDENTITY") {
         return None;
     }
     let mut old_mode: GLint = 0;
@@ -3884,7 +3939,7 @@ unsafe fn pretransform_texcoords_begin(
         &mut raw,
         false,
     );
-    let clamp_output = crate::ds_draw_env::var_os("TOUCHHLE_DS_PRETRANSFORM_TEX_CLAMP").is_some();
+    let clamp_output = crate::ds_draw_env::contains("TOUCHHLE_DS_PRETRANSFORM_TEX_CLAMP");
     let mut transformed = Vec::with_capacity(vertex_count * 2);
     for i in 0..vertex_count {
         let u = raw[i * 4];
@@ -4036,6 +4091,8 @@ pub struct GLES1OnGL2Context {
 /// stay in sync as fields are added.
 fn new_gles1_on_gl2_state() -> GLES1OnGL2State {
     GLES1OnGL2State {
+        gpu_profile: gpu_profile::State::default(),
+        state_cache: ds_gl_state_cache::Cache::new(),
         scene:crate::ds_scene_diagnostics::RenderState::default(),
         input_prompt_atlas: None,
         opening_fog: ds_opening_fog::OpeningFog::default(),
@@ -4165,6 +4222,18 @@ impl GLES1OnGL2<'_> {
     /// One-shot diagnostic: log the first N draw calls together with the
     /// state that decides which texture sub-rect they sample.
     unsafe fn log_draw_probe(&mut self, mode: GLenum, count: GLsizei) {
+        // This probe used to run on every process by default, even when all
+        // diagnostics were disabled. The first 48 draws perform several
+        // synchronous glGet* queries; later draws still paid an atomic bump.
+        // Keep the probe available for explicit investigation without adding
+        // steady-state GL or logging work to normal gameplay.
+        use std::sync::OnceLock;
+        static ENABLED: OnceLock<bool> = OnceLock::new();
+        if !*ENABLED.get_or_init(|| {
+            crate::ds_draw_env::contains("TOUCHHLE_DS_DRAW_PROBE")
+        }) {
+            return;
+        }
         use std::sync::atomic::{AtomicUsize, Ordering};
         static COUNT: AtomicUsize = AtomicUsize::new(0);
         let n = COUNT.fetch_add(1, Ordering::Relaxed);
@@ -4326,12 +4395,16 @@ impl GLES1OnGL2<'_> {
         // [DSpromptAT] lines, so the E key fell back to the colour scan and the
         // data-coordinate path was never exercised at all. PROMPT_UV/PROMPT_AT/
         // UV_PROBE/UV_WATCH/DRAW_LOG must each work on their own.
-        let probe_wanted = crate::ds_draw_env::var_os("TOUCHHLE_DS_TEXTURE_TRACE").is_some()
-            || crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_PROBE").is_some()
-            || crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_WATCH").is_some()
-            || crate::ds_draw_env::var_os("TOUCHHLE_DS_PROMPT_UV").is_some()
-            || crate::ds_draw_env::var_os("TOUCHHLE_DS_PROMPT_AT").is_some()
-            || crate::ds_draw_env::var_os("TOUCHHLE_DS_DRAW_LOG").is_some();
+        use std::sync::OnceLock;
+        static PROBE_WANTED: OnceLock<bool> = OnceLock::new();
+        let probe_wanted = *PROBE_WANTED.get_or_init(|| {
+            crate::ds_draw_env::contains("TOUCHHLE_DS_TEXTURE_TRACE")
+                || crate::ds_draw_env::contains("TOUCHHLE_DS_UV_PROBE")
+                || crate::ds_draw_env::contains("TOUCHHLE_DS_UV_WATCH")
+                || crate::ds_draw_env::contains("TOUCHHLE_DS_PROMPT_UV")
+                || crate::ds_draw_env::contains("TOUCHHLE_DS_PROMPT_AT")
+                || crate::ds_draw_env::contains("TOUCHHLE_DS_DRAW_LOG")
+        });
         if !probe_wanted {
             return;
         }
@@ -4357,7 +4430,7 @@ impl GLES1OnGL2<'_> {
 
         use std::collections::HashSet;
         use std::hash::{Hash, Hasher};
-        use std::sync::{Mutex, OnceLock};
+        use std::sync::Mutex;
 
         static KEYS: OnceLock<Mutex<HashSet<u64>>> = OnceLock::new();
         static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -4466,7 +4539,7 @@ impl GLES1OnGL2<'_> {
         let uv_to = crate::ds_draw_env::var("TOUCHHLE_DS_UV_PROBE_TO_FRAME")
             .ok()
             .and_then(|value| value.parse::<u64>().ok());
-        let uv_probe_frame = crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_PROBE").is_some()
+        let uv_probe_frame = crate::ds_draw_env::contains("TOUCHHLE_DS_UV_PROBE")
             && uv_from.map_or(true, |from| trace_frame >= from)
             && uv_to.map_or(true, |to| trace_frame <= to);
         // Size the vertex window from the largest index the draw references.
@@ -4621,21 +4694,21 @@ impl GLES1OnGL2<'_> {
         // stop the probe from ever running. Measured 2026-10-10: 23 883 traced
         // draws but 0 probe hits - even the full-screen UI quad, which certainly
         // covers the probe point, produced nothing.
-        let probe_active = crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_PROBE").is_some()
-        || crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_WATCH").is_some()
+        let probe_active = crate::ds_draw_env::contains("TOUCHHLE_DS_UV_PROBE")
+        || crate::ds_draw_env::contains("TOUCHHLE_DS_UV_WATCH")
         // The prompt recorders need the same treatment: with the dedup gate
         // active they would only ever see the *first* occurrence of each draw
         // signature, and the `keys.len() > limit` early return stops the whole
         // block once the budget is spent. Both happen long before the door
         // prompt is drawn, so `PROMPT_AT` recorded nothing at all in the first
         // run (2026-10-10 06:0x: E fell back to the colour scan with 0 hits).
-        || crate::ds_draw_env::var_os("TOUCHHLE_DS_PROMPT_UV").is_some()
-        || crate::ds_draw_env::var_os("TOUCHHLE_DS_PROMPT_AT").is_some()
+        || crate::ds_draw_env::contains("TOUCHHLE_DS_PROMPT_UV")
+        || crate::ds_draw_env::contains("TOUCHHLE_DS_PROMPT_AT")
         // `TOUCHHLE_DS_DRAW_LOG` needs every draw too: with the dedup gate on it
         // would only see the first occurrence of each signature and then stop
         // entirely once DRAW_LIMIT signatures are registered (measured
         // 2026-10-10: a whole chapter-12 run produced 0 `[DSdraw]` lines).
-        || crate::ds_draw_env::var_os("TOUCHHLE_DS_DRAW_LOG").is_some();
+        || crate::ds_draw_env::contains("TOUCHHLE_DS_DRAW_LOG");
         // `dedup_ok` still gates the one-shot `[DSTEX draw]` dump and the terse
         // trace, so those keep their "first time we see this signature" meaning.
         let dedup_ok = {
@@ -4673,8 +4746,8 @@ impl GLES1OnGL2<'_> {
                 .ok()
                 .and_then(|v| v.parse::<u64>().ok());
             let frame = crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed);
-            let wait_for_dark = (crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_PROBE_ON_DARK").is_some()
-                || crate::ds_draw_env::var_os("TOUCHHLE_DS_UV_PROBE_ON_BRIGHT").is_some())
+            let wait_for_dark = (crate::ds_draw_env::contains("TOUCHHLE_DS_UV_PROBE_ON_DARK")
+                || crate::ds_draw_env::contains("TOUCHHLE_DS_UV_PROBE_ON_BRIGHT"))
                 && !PIXEL_DARK_TRACE_ARMED.load(std::sync::atomic::Ordering::Relaxed);
             if !wait_for_dark
                 && from.map_or(true, |f| frame >= f)
@@ -5336,7 +5409,7 @@ impl GLES1OnGL2<'_> {
         // Terse mode (TOUCHHLE_DS_TRACE_TERSE): one small line per draw with
         // the draw state plus the NDC bounding box of the submitted vertices,
         // so a long capture stays small and each draw maps to a screen region.
-        if dedup_ok && crate::ds_draw_env::var_os("TOUCHHLE_DS_TRACE_TERSE").is_some() {
+        if dedup_ok && crate::ds_draw_env::contains("TOUCHHLE_DS_TRACE_TERSE") {
             let mut nmin = [f32::MAX; 3];
             let mut nmax = [f32::MIN; 3];
             let mv = modelview_matrix;
@@ -5900,7 +5973,7 @@ impl GLES1OnGL2<'_> {
             // Dead Space debug aid: `TOUCHHLE_DS_LOG_SKIN=1` reports the first
             // skinned vertex of each draw, including the blended W component,
             // which is what makes the fog coordinate degenerate if it is zero.
-            if v == first && crate::ds_draw_env::var_os("TOUCHHLE_DS_LOG_SKIN").is_some() {
+            if v == first && crate::ds_draw_env::contains("TOUCHHLE_DS_LOG_SKIN") {
                 use std::sync::atomic::{AtomicUsize, Ordering as AOrd2};
                 static SKN: AtomicUsize = AtomicUsize::new(0);
                 if SKN.fetch_add(1, AOrd2::Relaxed) < 40 {
@@ -6010,7 +6083,7 @@ impl GLES1OnGL2<'_> {
         &mut self,
         skinned: &[GLfloat],
         vertex_size: usize,
-        body: impl FnOnce(),
+        body: impl FnOnce(&mut gpu_profile::State),
     ) {
         let _gl_profile = crate::ds_gl_profile::begin(crate::ds_gl_profile::Kind::SkinSubmit);
         // Back up the vertex array pointer/format so we can restore it.
@@ -6043,7 +6116,7 @@ impl GLES1OnGL2<'_> {
         gl21::PushMatrix();
         gl21::LoadIdentity();
 
-        body();
+        body(&mut self.state.gpu_profile);
 
         gl21::PopMatrix();
         gl21::MatrixMode(old_matrix_mode as GLenum);
@@ -6208,7 +6281,9 @@ impl GLES1OnGL2<'_> {
         }
         gl21::BindBuffer(gl21::ARRAY_BUFFER, 0);
         gl21::VertexPointer(4, gl21::FLOAT, 0, vertices.as_ptr().cast());
+        self.state.gpu_profile.begin(0);
         gl21::DrawElements(gl21::TRIANGLES, count, type_, indices);
+        self.state.gpu_profile.end(0);
         gl21::BindBuffer(gl21::ARRAY_BUFFER, vertex_buffer as GLuint);
         gl21::VertexPointer(size, vertex_type as GLenum, stride, pointer);
         gl21::BindBuffer(gl21::ARRAY_BUFFER, array_buffer as GLuint);
@@ -6226,8 +6301,10 @@ impl GLES1OnGL2<'_> {
         let mut vertex_size: GLint = 0;
         gl21::GetIntegerv(gl21::VERTEX_ARRAY_SIZE, &mut vertex_size);
         let vertex_size = vertex_size.clamp(2, 4) as usize;
-        self.with_skinned_vertex_array(skinned, vertex_size, || {
+        self.with_skinned_vertex_array(skinned, vertex_size, |profile| {
+            profile.begin(0);
             gl21::DrawArrays(mode, first, count);
+            profile.end(0);
         });
     }
 
@@ -6242,8 +6319,10 @@ impl GLES1OnGL2<'_> {
         let mut vertex_size: GLint = 0;
         gl21::GetIntegerv(gl21::VERTEX_ARRAY_SIZE, &mut vertex_size);
         let vertex_size = vertex_size.clamp(2, 4) as usize;
-        self.with_skinned_vertex_array(skinned, vertex_size, || {
+        self.with_skinned_vertex_array(skinned, vertex_size, |profile| {
+            profile.begin(0);
             gl21::DrawElements(mode, count, type_, indices);
+            profile.end(0);
         });
     }
 }
@@ -6255,6 +6334,10 @@ fn weight_stride_or(stride: GLint) -> usize {
 }
 
 impl GLES for GLES1OnGL2<'_> {
+    unsafe fn gpu_profile_begin(&mut self, stage: usize) {self.state.gpu_profile.begin(stage);}
+    unsafe fn gpu_profile_end(&mut self, stage: usize) {self.state.gpu_profile.end(stage);}
+    unsafe fn gpu_profile_poll(&mut self) {self.state.gpu_profile.poll();}
+    unsafe fn gpu_profile_release(&mut self) {self.state.gpu_profile.release();}
     fn input_prompt_atlas(&mut self) -> Option<&mut Option<GLuint>> {
         Some(&mut self.state.input_prompt_atlas)
     }
@@ -6276,7 +6359,7 @@ impl GLES for GLES1OnGL2<'_> {
     }
     unsafe fn Enable(&mut self, cap: GLenum) {
         self.state.scene.cap(cap,true);
-        if cap == gl21::CULL_FACE && crate::ds_draw_env::var_os("TOUCHHLE_DS_FORCE_NO_CULL").is_some() {
+        if cap == gl21::CULL_FACE && crate::ds_draw_env::contains("TOUCHHLE_DS_FORCE_NO_CULL") {
             gl21::Disable(cap);
             return;
         }
@@ -6301,7 +6384,7 @@ impl GLES for GLES1OnGL2<'_> {
             // Don't forward shading-model / hint enums to gl21::Enable —
             // they're not valid capabilities and would set GL_INVALID_ENUM.
             return;
-        } else if !CAPABILITIES.contains(&cap) {
+        } else if !capability_supported(cap) {
             // Per the GLES 1.1 spec, invalid caps set GL_INVALID_ENUM but
             // must not crash. Apple's driver silently ignores unknown caps,
             // and at least Farm Frenzy passes GL_FLAT (0x1D00) here.
@@ -6311,7 +6394,9 @@ impl GLES for GLES1OnGL2<'_> {
             );
             return;
         }
-        gl21::Enable(cap);
+        if !self.state.state_cache.suppress(cap, true) {
+            gl21::Enable(cap);
+        }
     }
     unsafe fn IsEnabled(&mut self, cap: GLenum) -> GLboolean {
         if cap == gles11::MATRIX_PALETTE_OES {
@@ -6335,7 +6420,7 @@ impl GLES for GLES1OnGL2<'_> {
                 gl21::FALSE
             };
         }
-        if !(CAPABILITIES.contains(&cap)
+        if !(capability_supported(cap)
             || ARRAYS.iter().any(|&ArrayInfo { name, .. }| name == cap))
         {
             log!(
@@ -6352,7 +6437,7 @@ impl GLES for GLES1OnGL2<'_> {
             // See Enable: emulated, never forwarded to the desktop driver.
             self.state.matrix_palette_enabled = false;
             return;
-        } else if CAPABILITIES.contains(&cap) {
+        } else if capability_supported(cap) {
             log_dbg!("glDisable{:#x}", cap);
         } else if ARRAYS.iter().any(|&ArrayInfo { name, .. }| name == cap) {
             log_dbg!("Tolerating glDisable({:#x}) of client state", cap);
@@ -6367,7 +6452,9 @@ impl GLES for GLES1OnGL2<'_> {
             );
             return;
         }
-        gl21::Disable(cap);
+        if !self.state.state_cache.suppress(cap, false) {
+            gl21::Disable(cap);
+        }
     }
     unsafe fn ClientActiveTexture(&mut self, texture: GLenum) {
         gl21::ClientActiveTexture(texture);
@@ -6382,7 +6469,7 @@ impl GLES for GLES1OnGL2<'_> {
             self.state.palette_weight_state.enabled = true;
             return;
         }
-        if CAPABILITIES.contains(&array) {
+        if capability_supported(array) {
             log_dbg!(
                 "Tolerating glEnableClientState({:#x}) of a capability",
                 array
@@ -6402,7 +6489,7 @@ impl GLES for GLES1OnGL2<'_> {
             self.state.palette_weight_state.enabled = false;
             return;
         }
-        if CAPABILITIES.contains(&array) {
+        if capability_supported(array) {
             log_dbg!(
                 "Tolerating glDisableClientState({:#x}) of a capability",
                 array
@@ -6924,7 +7011,7 @@ impl GLES for GLES1OnGL2<'_> {
         gl21::FrontFace(mode);
     }
     unsafe fn DepthRangef(&mut self, near: GLclampf, far: GLclampf) {
-        if crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_TRACE").is_some() {
+        if crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_TRACE") {
             log!("[PROJTRACE] DepthRangef {} {}", near, far);
         }
         gl21::DepthRange(near.into(), far.into())
@@ -7394,7 +7481,9 @@ impl GLES for GLES1OnGL2<'_> {
         let alpha_hash_count = alpha_hash_count_begin(count);
         let blood_depth = blood_depth_begin(mode, count);
         let pixel_trace = pixel_trace_begin();
+        self.state.gpu_profile.begin(0);
         gl21::DrawArrays(mode, first, count);
+        self.state.gpu_profile.end(0);
         pixel_trace_end(pixel_trace, "arrays", mode, count);
         blood_depth_end(blood_depth);
         alpha_hash_count_end(alpha_hash_count);
@@ -7586,7 +7675,9 @@ impl GLES for GLES1OnGL2<'_> {
             && !draw_elements_with_depth_always_triangles(mode, count, type_, indices)
             && !split_triangle_depth_draw_elements(mode, count, type_, indices)
         {
+            self.state.gpu_profile.begin(0);
             gl21::DrawElements(mode, count, type_, indices);
+            self.state.gpu_profile.end(0);
         }
         pixel_trace_end(pixel_trace, "elements", mode, count);
         blood_depth_end(blood_depth);
@@ -7634,7 +7725,9 @@ impl GLES for GLES1OnGL2<'_> {
             mask & !(gl21::COLOR_BUFFER_BIT | gl21::DEPTH_BUFFER_BIT | gl21::STENCIL_BUFFER_BIT)
                 == 0
         );
-        gl21::Clear(mask)
+        self.state.gpu_profile.begin(9);
+        gl21::Clear(mask);
+        self.state.gpu_profile.end(9);
     }
     unsafe fn ClearColor(
         &mut self,
@@ -8072,7 +8165,7 @@ impl GLES for GLES1OnGL2<'_> {
         // pass-through for A/B.
         let alpha_as_white = crate::ds_draw_env::var("TOUCHHLE_DS_ALPHA_AS_WHITE")
             .map_or(false, |v| v == "1" || v == "true")
-            || crate::ds_draw_env::var_os("TOUCHHLE_DS_ALPHA_TINT").is_some();
+            || crate::ds_draw_env::contains("TOUCHHLE_DS_ALPHA_TINT");
         // Diagnostic: expand ALPHA uploads with an arbitrary tint instead of
         // white, so "is this drawn from an ALPHA texture at all?" can be
         // answered by looking for a colour that cannot occur naturally. Set
@@ -8614,7 +8707,7 @@ impl GLES for GLES1OnGL2<'_> {
     }
     unsafe fn LoadIdentity(&mut self) {
         if self.state.matrix_mode == MatrixModeState::Projection
-            && crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_TRACE").is_some()
+            && crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_TRACE")
         {
             log!("[PROJTRACE] LoadIdentity");
         }
@@ -8635,7 +8728,7 @@ impl GLES for GLES1OnGL2<'_> {
     }
     unsafe fn LoadMatrixf(&mut self, m: *const GLfloat) {
         if self.state.matrix_mode == MatrixModeState::Projection
-            && crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_TRACE").is_some()
+            && crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_TRACE")
         {
             let vals = std::slice::from_raw_parts(m, 16);
             log!("[PROJTRACE] LoadMatrixf {:?}", vals);
@@ -8665,7 +8758,7 @@ impl GLES for GLES1OnGL2<'_> {
     }
     unsafe fn MultMatrixf(&mut self, m: *const GLfloat) {
         if self.state.matrix_mode == MatrixModeState::Projection
-            && crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_TRACE").is_some()
+            && crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_TRACE")
         {
             let vals = std::slice::from_raw_parts(m, 16);
             log!("[PROJTRACE] MultMatrixf {:?}", vals);
@@ -8721,7 +8814,7 @@ impl GLES for GLES1OnGL2<'_> {
         near: GLfloat,
         far: GLfloat,
     ) {
-        if crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_TRACE").is_some() {
+        if crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_TRACE") {
             log!(
                 "[PROJTRACE] Orthof {} {} {} {} {} {}",
                 left,
@@ -8768,7 +8861,7 @@ impl GLES for GLES1OnGL2<'_> {
         near: GLfloat,
         far: GLfloat,
     ) {
-        if crate::ds_draw_env::var_os("TOUCHHLE_DS_PROJ_TRACE").is_some() {
+        if crate::ds_draw_env::contains("TOUCHHLE_DS_PROJ_TRACE") {
             log!(
                 "[PROJTRACE] Frustumf {} {} {} {} {} {}",
                 left,
@@ -9579,5 +9672,19 @@ mod matrix_palette_tests {
             blended[c] = 0.5 * ta[c] + 0.5 * tb[c];
         }
         assert_eq!(blended, [5.0, 0.0, 0.0, 1.0]);
+    }
+}
+
+#[cfg(test)]
+mod capability_tests {
+    use super::{capability_supported, CAPABILITIES};
+
+    #[test]
+    fn fast_capability_dispatch_matches_declared_table() {
+        for &cap in CAPABILITIES {
+            assert!(capability_supported(cap), "missing capability {cap:#x}");
+        }
+        assert!(!capability_supported(0));
+        assert!(!capability_supported(0xffff_ffff));
     }
 }

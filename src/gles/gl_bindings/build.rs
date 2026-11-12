@@ -29,6 +29,7 @@ fn main() {
             // Required so the underlying GL accepts multisample renderbuffer
             // storage if/when we choose to honour the requested sample count.
             "GL_EXT_framebuffer_multisample",
+            "GL_ARB_timer_query",
             "GL_EXT_texture_filter_anisotropic",
             "GL_EXT_texture_lod_bias",
             "GL_ARB_matrix_palette",

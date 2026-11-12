@@ -70,6 +70,11 @@ extern "C" {
         start: VAddr,
         size: u32,
     );
+    pub fn touchHLE_DynarmicWrapper_precompile(
+        cpu: *mut touchHLE_DynarmicWrapper, mem: *mut touchHLE_Mem,
+        addresses: *const u32, thumb: *const bool, count: usize,
+        cpsr: u32, fpscr: u32,
+    );
     pub fn touchHLE_DynarmicWrapper_run_or_step(
         cpu: *mut touchHLE_DynarmicWrapper,
         mem: *mut touchHLE_Mem,

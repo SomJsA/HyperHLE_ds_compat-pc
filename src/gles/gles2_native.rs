@@ -20,6 +20,7 @@ use std::ffi::CStr;
 use std::marker::PhantomData;
 
 pub struct GLES2NativeContext {
+    core_msaa:Option<CoreMsaa>,
     gl_ctx: GLContext,
     is_loaded: bool,
     /// Whether the underlying OpenGL ES 2.0 driver advertises
@@ -51,6 +52,7 @@ impl GLESContext for GLES2NativeContext {
             pvrtc_native: false,
             pvrtc_native_checked: false,
             texture_lod_ext_supported: false,
+            core_msaa:None,
         })
     }
 
@@ -63,6 +65,7 @@ impl GLESContext for GLES2NativeContext {
                 _gl_lifetime: PhantomData,
                 pvrtc_native: self.pvrtc_native,
                 texture_lod_ext_supported: self.texture_lod_ext_supported,
+                core_msaa:self.core_msaa,
             });
         }
         unsafe {
@@ -77,12 +80,14 @@ impl GLESContext for GLES2NativeContext {
         if !self.pvrtc_native_checked {
             self.pvrtc_native = unsafe { detect_pvrtc_support() };
             self.texture_lod_ext_supported = unsafe { detect_texture_lod_ext_support() };
+            self.core_msaa=unsafe {detect_core_msaa(&mut |s|window.gl_get_proc_address(s))};
             self.pvrtc_native_checked = true;
         }
         Box::new(GLES2Native {
             _gl_lifetime: PhantomData,
             pvrtc_native: self.pvrtc_native,
             texture_lod_ext_supported: self.texture_lod_ext_supported,
+                core_msaa:self.core_msaa,
         })
     }
 
@@ -96,6 +101,7 @@ impl GLESContext for GLES2NativeContext {
                 _gl_lifetime: PhantomData,
                 pvrtc_native: self.pvrtc_native,
                 texture_lod_ext_supported: self.texture_lod_ext_supported,
+                core_msaa:self.core_msaa,
             });
         }
         make_current_fn(&self.gl_ctx);
@@ -105,14 +111,32 @@ impl GLESContext for GLES2NativeContext {
         if !self.pvrtc_native_checked {
             self.pvrtc_native = detect_pvrtc_support();
             self.texture_lod_ext_supported = detect_texture_lod_ext_support();
+            self.core_msaa=detect_core_msaa(loader_fn);
             self.pvrtc_native_checked = true;
         }
         Box::new(GLES2Native {
             _gl_lifetime: PhantomData,
             pvrtc_native: self.pvrtc_native,
             texture_lod_ext_supported: self.texture_lod_ext_supported,
+                core_msaa:self.core_msaa,
         })
     }
+}
+
+
+type MultisampleStorage=unsafe extern "system" fn(GLenum,GLsizei,GLenum,GLsizei,GLsizei);
+type MultisampleBlit=unsafe extern "system" fn(GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLbitfield,GLenum);
+#[derive(Clone,Copy)]
+struct CoreMsaa {storage:MultisampleStorage,blit:MultisampleBlit}
+unsafe fn detect_core_msaa(loader:&mut dyn FnMut(&'static str)->*const std::ffi::c_void)->Option<CoreMsaa> {
+    let version=gles2::GetString(gles2::VERSION);
+    if version.is_null() {return None;}
+    let version=CStr::from_ptr(version.cast()).to_string_lossy();
+    if !version.starts_with("OpenGL ES 3.") && !version.starts_with("OpenGL ES 4.") {return None;}
+    let storage=loader("glRenderbufferStorageMultisample");let blit=loader("glBlitFramebuffer");
+    if storage.is_null() || blit.is_null() {return None;}
+    Some(CoreMsaa {storage:std::mem::transmute::<*const std::ffi::c_void,MultisampleStorage>(storage),
+        blit:std::mem::transmute::<*const std::ffi::c_void,MultisampleBlit>(blit)})
 }
 
 /// Query `GL_EXTENSIONS` and return whether the current OpenGL ES 2.0 driver
@@ -399,6 +423,7 @@ mod tests {
 }
 
 pub struct GLES2Native<'gl_ctx> {
+    core_msaa:Option<CoreMsaa>,
     _gl_lifetime: PhantomData<&'gl_ctx ()>,
     pvrtc_native: bool,
     /// Whether `GL_EXT_shader_texture_lod` is advertised by the host driver.
@@ -417,6 +442,7 @@ impl<'gl_ctx> GLES2Native<'gl_ctx> {
             _gl_lifetime: PhantomData,
             pvrtc_native: false,
             texture_lod_ext_supported: false,
+            core_msaa:None,
         }
     }
 }
@@ -969,7 +995,9 @@ impl GLES for GLES2Native<'_> {
         width: GLsizei,
         height: GLsizei,
     ) {
-        if gles2::RenderbufferStorageMultisampleAPPLE::is_loaded() {
+        if let Some(core)=self.core_msaa {
+            (core.storage)(target,samples,internalformat,width,height);
+        } else if gles2::RenderbufferStorageMultisampleAPPLE::is_loaded() {
             gles2::RenderbufferStorageMultisampleAPPLE(
                 target,
                 samples,
@@ -986,7 +1014,16 @@ impl GLES for GLES2Native<'_> {
         }
     }
     unsafe fn ResolveMultisampleFramebufferAPPLE(&mut self) {
-        if gles2::ResolveMultisampleFramebufferAPPLE::is_loaded() {
+        if let Some(core)=self.core_msaa {
+            let mut rb=0;let mut old_rb=0;let mut width=0;let mut height=0;
+            gles2::GetFramebufferAttachmentParameteriv(0x8ca8,gles2::COLOR_ATTACHMENT0,gles2::FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,&mut rb);
+            gles2::GetIntegerv(gles2::RENDERBUFFER_BINDING,&mut old_rb);
+            gles2::BindRenderbuffer(gles2::RENDERBUFFER,rb as u32);
+            gles2::GetRenderbufferParameteriv(gles2::RENDERBUFFER,gles2::RENDERBUFFER_WIDTH,&mut width);
+            gles2::GetRenderbufferParameteriv(gles2::RENDERBUFFER,gles2::RENDERBUFFER_HEIGHT,&mut height);
+            gles2::BindRenderbuffer(gles2::RENDERBUFFER,old_rb as u32);
+            (core.blit)(0,0,width,height,0,0,width,height,gles2::COLOR_BUFFER_BIT,gles2::NEAREST);
+        } else if gles2::ResolveMultisampleFramebufferAPPLE::is_loaded() {
             // The app has already bound the sample framebuffer to
             // GL_READ_FRAMEBUFFER_APPLE and the resolve framebuffer to
             // GL_DRAW_FRAMEBUFFER_APPLE; the driver does the resolve.

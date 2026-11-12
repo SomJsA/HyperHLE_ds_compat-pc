@@ -221,6 +221,20 @@ def expected_submodules(contract, platform):
     return expected
 
 
+def shared_text_contract(values, overrides):
+    normalized = {label: dict(entries) for label, entries in values.items()}
+    keys = set().union(*(set(entries) for entries in overrides.values())) if overrides else set()
+    require(set(overrides).issubset(values), 'Unknown text override platform')
+    for label, entries in normalized.items():
+        approved = overrides.get(label, {})
+        require(set(approved) == keys, 'Platform text overrides must cover both platforms')
+        for key, expected in approved.items():
+            require(entries.get(key) == expected, 'Platform text changed: ' + label + ':' + key)
+            entries[key] = '<approved platform input tutorial>'
+    require(normalized.get('pc') == normalized.get('android'), 'PC/Android shared texts differ')
+    return {'shared_entries': len(normalized['pc']) - len(keys), 'explicit_platform_entries': sorted(keys)}
+
+
 def source_checks(report, pc, android, contract):
     for label, root in [('pc', pc), ('android', android)]:
         def health(root=root, label=label):
@@ -237,6 +251,7 @@ def source_checks(report, pc, android, contract):
             return {'submodules': len(actual)}
         report.check(label + '.git-submodules', health)
         for relative, expected in contract['resource_sha256'].items():
+            expected = contract.get('platform_resource_sha256', {}).get(label, {}).get(relative, expected)
             physical = contract.get('platform_resource_paths', {}).get(label, {}).get(relative, relative)
             report.check(label + '.resource.' + relative,
                          lambda root=root, physical=physical, expected=expected: verify_hash(inside(root, physical), expected))
@@ -259,8 +274,12 @@ def source_checks(report, pc, android, contract):
         (pc/'src/frameworks/opengles/eagl.rs').read_text(encoding='utf-8')))
     report.check('pc.qte-memory-publisher', lambda: qte_memory_contract(
         (pc/'src/frameworks/opengles/gles_guest.rs').read_text(encoding='utf-8')))
-    report.check('shared.overlay-texts', lambda: require(
-        (pc/'src/ds_overlay_texts.json').read_bytes() == (android/'src/ds_overlay_texts.json').read_bytes(), 'PC/Android overlay JSON differ'))
+    def shared_texts():
+        values = {}
+        for label, root in [('pc', pc), ('android', android)]:
+            values[label] = {e['id']: e['text'] for e in read_json(root/'src/ds_overlay_texts.json')['entries']}
+        return shared_text_contract(values, contract.get('platform_text_overrides', {}))
+    report.check('shared.overlay-texts', shared_texts)
     for name in ['ChapterChinese.ttf', 'ChapterEnglish.ttf']:
         report.check('android.asset.' + name, lambda name=name: verify_hash(
             inside(android, 'android/app/src/main/assets/overlay/' + name), contract['resource_sha256']['res/overlay/' + name]))

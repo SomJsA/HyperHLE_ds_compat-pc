@@ -48,7 +48,7 @@ pub(super) fn text() -> Option<String> {
         return None;
     }
     let text = match n.status {
-        1 => format!("问题 #{:03}：正在保存前后诊断", n.id),
+        1 => format!("问题 #{:03}：正在保存问题记录", n.id),
         2 => format!("问题 #{:03}：已保存", n.id),
         3 => format!("问题 #{:03}：记录失败，请查看诊断状态", n.id),
         5 => format!("问题 #{:03}：截图与前段已记录", n.id),
@@ -91,9 +91,8 @@ impl Problem {
 }
 pub(super) fn request() {
     let id = SERIAL.fetch_add(1, Relaxed);
-    let Some(Some(c)) = ACTIVE
-        .get()
-        .filter(|_| enabled() && LEVEL.load(Relaxed) < 3)
+    let Some(c) = problem_client()
+        .filter(|_| LEVEL.load(Relaxed) < 3)
     else {
         notice(id, 4);
         echo!("[DSissue] #{:03} failed: diagnostics unavailable", id);
@@ -168,7 +167,7 @@ pub(super) unsafe fn capture(gles: &mut dyn crate::gles::GLES, viewport: (u32, u
     }) else {
         return;
     };
-    let Some(Some(c)) = ACTIVE.get() else {
+    let Some(c) = problem_client() else {
         notice(id, 3);
         return;
     };
@@ -284,6 +283,105 @@ fn save_picture(root: &Path, mut p: Picture) -> io::Result<Value> {
 fn filename(id: u64, before: bool) -> String {
     format!("issue-{id:04}{}.json", if before { "-before" } else { "" })
 }
+
+// No ACTIVE client, frame ring, periodic metrics or automatic incidents. This
+// worker is created only by the first explicit F7 with automatic diagnostics off.
+pub(super) fn manual_worker(
+    root: PathBuf, rx: mpsc::Receiver<Message>, start: Instant, wall: u128,
+    version: String, delivery: &Delivery,
+) -> io::Result<()> {
+    fs::create_dir_all(root.parent().ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput,"manual root"))?)?;
+    fs::create_dir(&root)?; // A session must be new; never overwrite a prior dump.
+    let mut identity=json!({"available":false});
+    if let Ok(exe)=std::env::current_exe() {
+        if let Some(game)=exe.parent() {
+            let info=game.join("build-info.json");
+            if fs::metadata(&info).is_ok_and(|m|m.is_file() && m.len()<=1024*1024) {
+                if let Ok(bytes)=fs::read(&info) {
+                    if let Ok(value)=serde_json::from_slice::<Value>(&bytes) {
+                        identity=json!({"available":true,"implementation_commit":value["implementation_commit"],
+                            "distribution_id":value["distribution_id"],"native_sha256":value["native_sha256"],
+                            "release_label":value["release_label"],"diagnostic_map_sha256":value["diagnostic_map_sha256"]});
+                        let map=game.join("diagnostic-map.json");
+                        if fs::metadata(&map).is_ok_and(|m|m.is_file() && m.len()<=4*1024*1024) {
+                            if let Ok(bytes)=fs::read(&map) {
+                                use sha2::{Digest,Sha256};
+                                let actual=format!("{:x}",Sha256::digest(&bytes));
+                                if value["diagnostic_map_sha256"].as_str()==Some(actual.as_str()) {
+                                    let mut out=OpenOptions::new().create_new(true).write(true).open(root.join("diagnostic-map.json"))?;
+                                    out.write_all(&bytes)?;identity["diagnostic_map_copied"]=json!(true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let mut settings=serde_json::Map::new();
+    for key in ["TOUCHHLE_DS_GPU_PRESENT_COPY","TOUCHHLE_DS_GPU_TEXT_OVERLAY","TOUCHHLE_DS_MSAA",
+        "TOUCHHLE_DS_ANISO","TOUCHHLE_DS_OUTPUT_WIDTH","TOUCHHLE_DS_OUTPUT_HEIGHT","TOUCHHLE_DS_VSYNC"] {
+        settings.insert(key.into(),json!(std::env::var(key).ok()));
+    }
+    let scale=std::env::args().find_map(|s|s.strip_prefix("--scale-hack=").map(str::to_owned));
+    write_new(&root.join("host.json"),&json!({"schema":1,"kind":"deadspace-play-diagnostics",
+        "mode":"manual_f7_only","wall_unix_ms":wall,"automatic_diagnostics":false,"build":identity,
+        "requested_settings":settings,"internal_scale_requested":scale,
+        "history_available":false,"history_missing_reason":"automatic diagnostics disabled; no prior frames/events were collected",
+        "privacy":{"automatic_screenshots":false,"explicit_F7_game_frame":true,"keystrokes":false,"saves":false,"automatic_upload":false}}))?;
+    write_new(&root.join("session-start.json"),&json!({"schema":1,"pid":std::process::id(),"wall_unix_ms":wall,
+        "runtime_version":version,"monotonic_origin_us":0,"mode":"manual_f7_only","automatic_history_enabled":false}))?;
+    let mut pending=std::collections::BTreeMap::<u64,Problem>::new();
+    loop {
+        match rx.recv_timeout(Duration::from_millis(25)) {
+            Ok(message)=>{
+                delivery.queued.fetch_sub(1,Relaxed);
+                match message {
+                    Message::Problem(p)=>{
+                        if pending.len()>=MAX_PENDING {notice(p.id,3);continue;}
+                        write_new(&root.join(filename(p.id,true)),&json!({"schema":1,"issue_number":p.id,
+                            "mode":"manual_f7_only","request_mono_us":p.at,"native_present_at_request":p.frame,
+                            "history_available":false,"history_missing_reason":"automatic diagnostics disabled; no before/after frame history",
+                            "status":"waiting_explicit_screenshot","explicit_user_note":p.extra()}))?;
+                        pending.insert(p.id,p);
+                    }
+                    Message::Picture(picture)=>{
+                        let id=picture.id;
+                        let Some(p)=pending.remove(&id) else {notice(id,3);DUMP_DONE.fetch_max(id,Relaxed);continue;};
+                        let saved=save_picture(&root,picture).unwrap_or_else(|e|json!({"status":"failed","reason":format!("{:?}",e.kind())}));
+                        let ok=saved["status"]=="saved";let at=start.elapsed().as_micros() as u64;
+                        let value=json!({"schema":1,"issue_number":id,"mode":"manual_f7_only",
+                            "request_mono_us":p.at,"dumped_at_us":at,"native_present_at_request":p.frame,
+                            "history_available":false,"history_missing_reason":"automatic diagnostics disabled; no before/after frame history",
+                            "status":if ok{"saved_manual_capture"}else{"manual_capture_failed"},"picture":saved,
+                            "explicit_user_note":p.extra()});
+                        write_new(&root.join(filename(id,false)),&value)?;
+                        replace_json(&root.join("issue-status.json"),&json!({"schema":1,"issue_number":id,
+                            "status":value["status"],"file":filename(id,false),"picture":value["picture"]}))?;
+                        notice(id,if ok{2}else{3});DUMP_DONE.fetch_max(id,Relaxed);
+                        echo!("[DSissue] #{id:03} saved manual capture picture_ok={ok}; automatic diagnostics remain off");
+                    }
+                    _=>{} // Manual clients never record unsolicited frame/events.
+                }
+            }
+            Err(mpsc::RecvTimeoutError::Timeout)=>{}
+            Err(mpsc::RecvTimeoutError::Disconnected)=>delivery.close(),
+        }
+        if delivery.closed() && (delivery.drained() || delivery.timed_out()) {
+            for (id,p) in pending {
+                write_new(&root.join(filename(id,false)),&json!({"schema":1,"issue_number":id,"mode":"manual_f7_only",
+                    "status":"manual_screenshot_missing_at_exit","history_available":false,"native_present_at_request":p.frame}))?;
+                notice(id,3);DUMP_DONE.fetch_max(id,Relaxed);
+            }
+            write_new(&root.join("session-end.json"),&json!({"schema":1,"mode":"manual_f7_only",
+                "normal_exit_observed":!BAD_END.load(Relaxed),"shutdown_queue_drained":delivery.drained(),
+                "shutdown_drain_timed_out":!delivery.drained(),"shutdown_senders_inflight":delivery.inflight(),
+                "queued_tail_not_persisted":delivery.queued.load(Relaxed),"writer_error":null,
+                "shutdown_rejected_after_close":delivery.rejected()}))?;
+            return Ok(());
+        }
+    }
+}
 #[derive(Default)]
 pub(super) struct Jobs {
     pending: VecDeque<Problem>,
@@ -393,6 +491,37 @@ impl Jobs {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn manual_worker_saves_only_explicit_captures_and_stays_idle() {
+        let root=temp().join("session-manual-test");
+        let start=Instant::now();let (tx,rx)=mpsc::sync_channel(16);
+        let delivery=Arc::new(Delivery::default());let writer_delivery=delivery.clone();let writer_root=root.clone();
+        let writer=std::thread::spawn(move||manual_worker(writer_root,rx,start,0,"manual-test".into(),&writer_delivery));
+        let c=Client{tx,start,delivery};
+        let p=Problem::new(now(&c),"F7_or_explicit_issue_command",String::new());let id=p.id;
+        assert!(send(&c,Message::Problem(p)));
+        assert!(send(&c,Message::Frame(Frame{t:1,n:1,dt:100_000,phase:4,state:0,hud:0})));
+        assert!(send(&c,Message::Event(1,"unsolicited_event",[0;4],1)));
+        assert!(send(&c,Message::Picture(Picture{id,width:2,height:2,frame:7,at:now(&c),readback_us:2,
+            rgba:vec![255u8;16],failure:None})));
+        let deadline=Instant::now()+Duration::from_secs(5);
+        while !root.join(filename(id,false)).exists() && Instant::now()<deadline {std::thread::sleep(Duration::from_millis(10));}
+        let value:Value=serde_json::from_slice(&fs::read(root.join(filename(id,false))).unwrap()).unwrap();
+        assert_eq!(value["status"],"saved_manual_capture");assert_eq!(value["history_available"],false);
+        assert_eq!(value["picture"]["status"],"saved");
+        assert!(fs::read(root.join(format!("issue-{id:04}.png"))).unwrap().starts_with(b"\x89PNG\r\n\x1a\n"));
+        let inventory=||{
+            let mut files:Vec<_>=fs::read_dir(&root).unwrap().map(|p|{let p=p.unwrap().path();(p.file_name().unwrap().to_os_string(),fs::read(&p).unwrap())}).collect();
+            files.sort_by(|a,b|a.0.cmp(&b.0));files
+        };
+        let before=inventory();std::thread::sleep(Duration::from_millis(150));assert_eq!(inventory(),before,"idle manual writer changed files");
+        assert!(!root.join("health.json").exists());
+        assert!(before.iter().all(|(n,_)|!n.to_string_lossy().starts_with("frames-") && !n.to_string_lossy().starts_with("timeline-")));
+        c.delivery.close();writer.join().unwrap().unwrap();
+        let end:Value=serde_json::from_slice(&fs::read(root.join("session-end.json")).unwrap()).unwrap();
+        assert_eq!(end["shutdown_queue_drained"],true);assert_eq!(end["queued_tail_not_persisted"],0);
+        assert!(ACTIVE.get().and_then(Option::as_ref).is_none(),"manual writer enabled ordinary collectors");
+    }
     fn temp() -> PathBuf {
         let n = SystemTime::now()
             .duration_since(UNIX_EPOCH)

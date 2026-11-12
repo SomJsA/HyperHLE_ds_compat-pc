@@ -1,5 +1,6 @@
 //! Runtime switches for paired performance A/B tests.
 use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::OnceLock;
 
 const AUTO: u8 = u8::MAX;
 static GPU_PRESENT_COPY: AtomicU8 = AtomicU8::new(AUTO);
@@ -23,9 +24,26 @@ pub(crate) fn set_fps_limit(fps: u8) {
 
 pub(crate) fn gpu_text_overlay() -> bool {
     match GPU_TEXT_OVERLAY.load(Ordering::Relaxed) {
-        AUTO => std::env::var("TOUCHHLE_DS_GPU_TEXT_OVERLAY").as_deref() == Ok("1"),
+        // AUTO is a process-start configuration. Explicit runtime commands
+        // still replace the atomic below and remain live for A/B control.
+        AUTO => {
+            static DEFAULT: OnceLock<bool> = OnceLock::new();
+            *DEFAULT.get_or_init(|| {
+                gpu_text_overlay_default(
+                    std::env::var("TOUCHHLE_DS_GPU_TEXT_OVERLAY").ok().as_deref(),
+                    cfg!(target_os = "windows"),
+                )
+            })
+        }
         state => state == 1,
     }
+}
+
+/// Windows has a fixed-function card path for the host text layers, so an
+/// absent legacy setting should use it by default. An explicit `0` remains a
+/// supported compatibility escape hatch for drivers that need CPU compose.
+fn gpu_text_overlay_default(value: Option<&str>, windows: bool) -> bool {
+    value.map(|text| text == "1").unwrap_or(windows)
 }
 
 pub(crate) fn set_gpu_text_overlay(enabled: bool) {
@@ -35,7 +53,12 @@ pub(crate) fn set_gpu_text_overlay(enabled: bool) {
 
 pub(crate) fn readback_finish_enabled() -> bool {
     match READBACK_FINISH.load(Ordering::Relaxed) {
-        AUTO => std::env::var("TOUCHHLE_DS_SKIP_READBACK_FINISH").as_deref() != Ok("1"),
+        AUTO => {
+            static DEFAULT: OnceLock<bool> = OnceLock::new();
+            *DEFAULT.get_or_init(|| {
+                std::env::var("TOUCHHLE_DS_SKIP_READBACK_FINISH").as_deref() != Ok("1")
+            })
+        }
         state => state == 1,
     }
 }
@@ -86,7 +109,10 @@ pub(crate) fn gpu_present_copy() -> bool {
     if state != AUTO {
         return state == 1;
     }
-    std::env::var("TOUCHHLE_DS_GPU_PRESENT_COPY").as_deref() == Ok("1")
+    static DEFAULT: OnceLock<bool> = OnceLock::new();
+    *DEFAULT.get_or_init(|| {
+        std::env::var("TOUCHHLE_DS_GPU_PRESENT_COPY").as_deref() == Ok("1")
+    })
 }
 
 pub(crate) fn set_gpu_present_copy(enabled: bool) {
@@ -99,11 +125,14 @@ pub(crate) fn texture_upload_sync() -> TextureSyncMode {
     if let Some(mode) = TextureSyncMode::from_code(state) {
         return mode;
     }
-    parse_texture_sync(
-        std::env::var("TOUCHHLE_DS_TEX_UPLOAD_FINISH")
-            .ok()
-            .as_deref(),
-    )
+    static DEFAULT: OnceLock<TextureSyncMode> = OnceLock::new();
+    *DEFAULT.get_or_init(|| {
+        parse_texture_sync(
+            std::env::var("TOUCHHLE_DS_TEX_UPLOAD_FINISH")
+                .ok()
+                .as_deref(),
+        )
+    })
 }
 
 pub(crate) fn set_texture_upload_sync(mode: TextureSyncMode) {
@@ -114,6 +143,15 @@ pub(crate) fn set_texture_upload_sync(mode: TextureSyncMode) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn gpu_text_defaults_to_windows_gpu_path_but_honours_explicit_override() {
+        assert!(gpu_text_overlay_default(None, true));
+        assert!(!gpu_text_overlay_default(None, false));
+        assert!(gpu_text_overlay_default(Some("1"), false));
+        assert!(!gpu_text_overlay_default(Some("0"), true));
+        assert!(!gpu_text_overlay_default(Some("unexpected"), true));
+    }
 
     #[test]
     fn texture_sync_modes_are_explicit_and_fail_safe() {

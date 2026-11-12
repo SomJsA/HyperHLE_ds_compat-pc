@@ -1,5 +1,5 @@
 //! Bounded borrowed inputs for the synchronous CPU skin kernel. No guest writes.
-use super::Output;
+use super::{Output, OutputView};
 
 pub(crate) struct Inputs<'a> {
     pub positions: &'a [u8],
@@ -91,6 +91,15 @@ pub(crate) fn calculate(input: &Inputs<'_>) -> Result<Output, &'static str> {
     if matrices > input.matrices.len() / 64 {
         return Err("strided-palette-index");
     }
+    validate_floats(input)?;
+    calculate_validated(input)
+}
+
+/// Validate only the borrowed floating-point views. Palette/index shape is
+/// checked separately by `palette_matrices` because capture needs its result
+/// to locate the exact matrix span once.
+pub(crate) fn validate_floats(input: &Inputs<'_>) -> Result<(), &'static str> {
+    let n = input.count as usize;
     for i in 0..n {
         for c in 0..3 {
             if !ordinary(word(input.positions, i * input.position_stride + c * 4)) {
@@ -105,7 +114,36 @@ pub(crate) fn calculate(input: &Inputs<'_>) -> Result<Output, &'static str> {
     {
         return Err("strided-fp-input");
     }
-    let mut output = vec![0.0f32; n * 3];
+    Ok(())
+}
+
+/// Run the borrowed-input kernel after capture has validated all views.
+pub(crate) fn calculate_validated(input: &Inputs<'_>) -> Result<Output, &'static str> {
+    let mut output = Vec::new();
+    calculate_validated_into(input, &mut output)
+}
+
+/// Run the validated strided kernel with caller-owned output storage.
+pub(crate) fn calculate_validated_into(
+    input: &Inputs<'_>,
+    output: &mut Vec<f32>,
+) -> Result<Output, &'static str> {
+    let mut bytes = Vec::new();
+    let view = calculate_validated_into_reuse(input, output, &mut bytes)?;
+    Ok(Output {
+        bytes: view.bytes.to_vec(),
+        flags: view.flags,
+    })
+}
+
+pub(crate) fn calculate_validated_into_reuse<'a>(
+    input: &Inputs<'_>,
+    output: &mut Vec<f32>,
+    bytes: &'a mut Vec<u8>,
+) -> Result<OutputView<'a>, &'static str> {
+    let n = input.count as usize;
+    output.clear();
+    output.resize(n * 3, 0.0);
     // Exact spans, bounded strides, all active indices and float bit patterns
     // validated above. Borrowed inputs remain immutable for this synchronous call.
     let flags = unsafe {
@@ -124,10 +162,7 @@ pub(crate) fn calculate(input: &Inputs<'_>) -> Result<Output, &'static str> {
     if flags & 0x8000_0000 != 0 {
         return Err("fp-exception-native-required");
     }
-    Ok(Output {
-        bytes: output.into_iter().flat_map(f32::to_le_bytes).collect(),
-        flags,
-    })
+    Ok(super::pack_bytes(output, bytes, flags))
 }
 
 #[cfg(test)]

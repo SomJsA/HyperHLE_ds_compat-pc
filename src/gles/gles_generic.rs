@@ -90,6 +90,14 @@ pub trait GLES {
     /// Optional diagnostics on a completed resolved guest framebuffer.
     unsafe fn diagnostic_frame_ready(&mut self) {}
 
+    /// Opt-in, nonblocking desktop GPU timestamps. Stage 0 is a draw, 1 MSAA
+    /// resolve, 2 framebuffer copy, 3 final presentation. Stages4..8 are CPU-only
+    /// preparation/restoration/swap spans. Backends own queries and counters.
+    unsafe fn gpu_profile_begin(&mut self, _stage: usize) {}
+    unsafe fn gpu_profile_end(&mut self, _stage: usize) {}
+    unsafe fn gpu_profile_poll(&mut self) {}
+    unsafe fn gpu_profile_release(&mut self) {}
+
     /// Get some string describing the underlying driver. For OpenGL this is
     /// `GL_VENDOR`, `GL_RENDERER` and `GL_VERSION`.
     unsafe fn driver_description(&self) -> String {

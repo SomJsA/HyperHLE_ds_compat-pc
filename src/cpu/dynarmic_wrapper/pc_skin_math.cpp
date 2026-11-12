@@ -15,15 +15,18 @@ extern "C" uint32_t touchHLE_pc_skin_positions(float *dst, const float *pos,
   _mm_setcsr(0x9fc0);
   for (uint32_t i = 0; i < count; ++i) {
     __m128 result = _mm_setzero_ps();
+    const __m128 px = _mm_set1_ps(pos[3*i]);
+    const __m128 py = _mm_set1_ps(pos[3*i+1]);
+    const __m128 pz = _mm_set1_ps(pos[3*i+2]);
     for (unsigned b = 0; b < 4; ++b) {
       const float w = wgt[4*i+b];
       uint32_t bits;
       std::memcpy(&bits, &w, 4);
       if (b && !(bits & 0x70000000)) break;
       const float *m = mat + unsigned(idx[4*i+b])*16;
-      __m128 v = _mm_mul_ps(_mm_loadu_ps(m), _mm_set1_ps(pos[3*i]));
-      v = _mm_add_ps(v, _mm_mul_ps(_mm_loadu_ps(m+4), _mm_set1_ps(pos[3*i+1])));
-      v = _mm_add_ps(v, _mm_mul_ps(_mm_loadu_ps(m+8), _mm_set1_ps(pos[3*i+2])));
+      __m128 v = _mm_mul_ps(_mm_loadu_ps(m), px);
+      v = _mm_add_ps(v, _mm_mul_ps(_mm_loadu_ps(m+4), py));
+      v = _mm_add_ps(v, _mm_mul_ps(_mm_loadu_ps(m+8), pz));
       v = _mm_add_ps(v, _mm_loadu_ps(m+12));
       const __m128 weighted = _mm_mul_ps(v, _mm_set1_ps(w));
       result = b ? _mm_add_ps(result, weighted) : weighted;
@@ -78,6 +81,9 @@ extern "C" uint32_t touchHLE_pc_skin_positions_strided(float *dst,
   for (uint32_t i = 0; i < count; ++i) {
     float p[3];
     std::memcpy(p, pos + std::size_t(i)*pos_stride, sizeof(p));
+    const __m128 px = _mm_set1_ps(p[0]);
+    const __m128 py = _mm_set1_ps(p[1]);
+    const __m128 pz = _mm_set1_ps(p[2]);
     __m128 result = _mm_setzero_ps();
     for (unsigned b = 0; b < 4; ++b) {
       float w;
@@ -90,9 +96,9 @@ extern "C" uint32_t touchHLE_pc_skin_positions_strided(float *dst,
       // Byte input alignment need not satisfy float/SIMD alignment.
       std::memcpy(&m0, m, 16); std::memcpy(&m1, m+16, 16);
       std::memcpy(&m2, m+32, 16); std::memcpy(&m3, m+48, 16);
-      __m128 v = _mm_mul_ps(m0, _mm_set1_ps(p[0]));
-      v = _mm_add_ps(v, _mm_mul_ps(m1, _mm_set1_ps(p[1])));
-      v = _mm_add_ps(v, _mm_mul_ps(m2, _mm_set1_ps(p[2])));
+      __m128 v = _mm_mul_ps(m0, px);
+      v = _mm_add_ps(v, _mm_mul_ps(m1, py));
+      v = _mm_add_ps(v, _mm_mul_ps(m2, pz));
       v = _mm_add_ps(v, m3);
       const __m128 weighted = _mm_mul_ps(v, _mm_set1_ps(w));
       result = b ? _mm_add_ps(result, weighted) : weighted;

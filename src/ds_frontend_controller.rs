@@ -202,7 +202,10 @@ fn request_pause_command() {
         .push_back(crate::window::ds_hud_commands::HudCommand::Pause);
 }
 pub(crate) fn request_native_resume() {
-    if enabled() && matches!(HUD_STATE.load(Ordering::Relaxed), 2 | 3) {
+    // The native pause widget can be ready one frame before the HUD-state
+    // observer publishes 2/3. Accept the verified pause context as the
+    // second gate so Start/Back and Continue cannot become no-ops.
+    if enabled() && (matches!(HUD_STATE.load(Ordering::Relaxed), 2 | 3) || native::is_pause()) {
         request_pause_command();
     }
 }
@@ -246,6 +249,9 @@ pub(crate) fn cancel_pending_pause() {
 pub(crate) fn observe_widgets(env: &crate::Environment, owner: u32, page: u32, difficulty: bool) {
     native::observe(env, owner, page, difficulty);
 }
+pub(crate) fn native_difficulty_verified(env: &crate::Environment) -> bool {
+    native::difficulty_verified(env)
+}
 pub(crate) fn queue_menu_action(action: Action) {
     if std::env::var("TOUCHHLE_DS_FRONTEND_TRACE").as_deref() == Ok("1") {
         echo!(
@@ -253,6 +259,17 @@ pub(crate) fn queue_menu_action(action: Action) {
             action,
             STATE.load(Ordering::Relaxed)
         );
+    }
+    if action == Action::Confirm && native::pause_resume_selected() {
+        request_native_resume();
+        return;
+    }
+    // Escape/XInput Back/B are mapped to Cancel by the input tables. During
+    // the native pause screen Cancel means resume, even while the HUD scan
+    // is one frame behind the pause-state observer.
+    if action == Action::Cancel && pause_menu() {
+        request_native_resume();
+        return;
     }
     if loading::active() {
         if action==Action::Confirm {loading::queue();}
@@ -275,6 +292,9 @@ pub(crate) fn hint_text() -> Option<&'static str> {
         || (!cfg!(target_os = "windows") && INPUT_DEVICE.load(Ordering::Relaxed) == 0)
     {
         return None;
+    }
+    if pause_menu() {
+        return Some("PAUSE  ESC / START / BACK / B  CONTINUE    HOLD ALT: TEMPORARY MOUSE");
     }
     let cancel = if capture_menu() {
         native::can_cancel()
@@ -326,6 +346,9 @@ pub(crate) fn loading_ready()->bool {loading::ready()}
 pub(crate) fn cancel_loading_input(){loading::cancel();}
 
 pub(crate) fn modal_active()->bool { native::modal_active() }
+pub(crate) fn pause_menu()->bool {
+    enabled() && (native::is_pause() || matches!(HUD_STATE.load(Ordering::Relaxed), 2 | 3))
+}
 pub(crate) fn home_page()->bool {capture_menu() && state()==5 && !native::modal_active()}
 pub(crate) fn delete_rect()->Option<[f32;4]> {native::delete_rect()}
 

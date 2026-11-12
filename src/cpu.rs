@@ -326,6 +326,18 @@ impl Cpu {
             svc => CpuState::Svc(svc as u32),
         }
     }
+
+    pub(crate) fn precompile_blocks(&mut self, mem: &mut Mem, blocks: &[(u32, bool)]) {
+        if blocks.is_empty() { return; }
+        assert!(self.direct_memory_access_ptr.is_null()
+            || self.direct_memory_access_ptr == unsafe { mem.direct_memory_access_ptr() });
+        let (addresses, thumb): (Vec<_>, Vec<_>) = blocks.iter().copied().unzip();
+        unsafe {
+            touchHLE_DynarmicWrapper_precompile(
+                self.dynarmic_wrapper, mem as *mut Mem as *mut touchHLE_Mem,
+                addresses.as_ptr(), thumb.as_ptr(), addresses.len(), self.cpsr(), self.fpscr());
+        }
+    }
 }
 
 

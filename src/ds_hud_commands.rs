@@ -12,9 +12,9 @@ impl HudCommand {
     }
     pub fn spec(self) -> (&'static str, u32) {
         match self {
-            Self::Weapon1 => ("BTN_LINEGUN", 0x8ee6e4),
-            Self::Weapon2 => ("BTN_PLASMA", 0x8ee68c),
-            Self::Weapon3 => ("BTN_RIPPER", 0x8ee6b8),
+            Self::Weapon1 => ("BTN_PLASMA", 0x8ee68c),
+            Self::Weapon2 => ("BTN_RIPPER", 0x8ee6b8),
+            Self::Weapon3 => ("BTN_LINEGUN", 0x8ee6e4),
             Self::Weapon4 => ("BTN_CORER", 0x8ee714),
             Self::Weapon5 => ("BTN_BURST", 0x8ee73c),
             Self::Pause => ("BTN_PLAY_PAUSE", 0x8ee3a0),
@@ -31,9 +31,9 @@ impl HudCommand {
     }
     pub fn weapon_index(self) -> Option<u32> {
         match self {
-            Self::Weapon1 => Some(2),
-            Self::Weapon2 => Some(0),
-            Self::Weapon3 => Some(1),
+            Self::Weapon1 => Some(0),
+            Self::Weapon2 => Some(1),
+            Self::Weapon3 => Some(2),
             Self::Weapon4 => Some(3),
             Self::Weapon5 => Some(4),
             Self::Pause | Self::Locator | Self::Rig => None,
@@ -52,9 +52,10 @@ impl HudCommand {
 mod tests {
     use super::*;
     #[test]
-    fn preserves_existing_number_key_order_and_wchar32_extent() {
-        assert_eq!(HudCommand::from_key("1").unwrap().spec().0, "BTN_LINEGUN");
-        assert_eq!(HudCommand::from_key("2").unwrap().spec().0, "BTN_PLASMA");
+    fn requested_weapon_order_and_wchar32_extent() {
+        assert_eq!(HudCommand::from_key("1").unwrap().spec().0, "BTN_PLASMA");
+        assert_eq!(HudCommand::from_key("2").unwrap().spec().0, "BTN_RIPPER");
+        assert_eq!(HudCommand::from_key("3").unwrap().spec().0, "BTN_LINEGUN");
         for key in ["1", "2", "3", "4", "5", "P", "G"] {
             let command = HudCommand::from_key(key).unwrap(); let view = command.borrowed_view();
             assert_eq!(view[3] - view[2], (command.spec().0.len() * 4) as u32);
@@ -80,8 +81,8 @@ mod tests {
         assert_eq!(HudCommand::Rig.spec(),("BTN_RIG",0x8ee380));
     }
     #[test]
-    fn weapon_commands_keep_legacy_key_to_native_index_mapping() {
-        assert_eq!((1..=5).map(|key| HudCommand::from_key(&key.to_string()).unwrap().weapon_index().unwrap()).collect::<Vec<_>>(), vec![2, 0, 1, 3, 4]);
+    fn weapon_commands_match_display_order_and_native_indices() {
+        assert_eq!((1..=5).map(|key| HudCommand::from_key(&key.to_string()).unwrap().weapon_index().unwrap()).collect::<Vec<_>>(), vec![0, 1, 2, 3, 4]);
         assert_eq!(HudCommand::Pause.weapon_index(), None);
         assert_eq!(HudCommand::Locator.weapon_index(), None);
     }

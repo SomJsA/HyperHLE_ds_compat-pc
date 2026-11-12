@@ -7,8 +7,11 @@ namespace DeadSpaceBootstrap
 {
     internal sealed partial class LauncherForm
     {
-        private readonly ComboBox saveMode = new ComboBox();
-        private readonly Label storagePath = new Label();
+        private readonly ComboBox saveMode = new NoWheelComboBox();
+        private readonly TextBox storagePath = new DeadSpaceUi.UiLanguage.LocalizedTextBox {
+            Multiline = true, ReadOnly = true, WordWrap = false,
+            ScrollBars = ScrollBars.Horizontal, BorderStyle = BorderStyle.None
+        };
 
         private string SelectedDataRoot()
         {
@@ -36,6 +39,7 @@ namespace DeadSpaceBootstrap
                 {if(dialog.ShowDialog(this)!=DialogResult.OK)return;try {string backup=SaveBundle.Import(SelectedDataRoot(),dialog.FileName);loadedSave=null;writeSave.Enabled=false;InvalidateEditor();status.Text="已恢复三槽位。"+(backup==null?"":" 导入前备份："+backup);}catch(Exception error){status.Text="未导入："+error.Message;}}};
             saveMode.SelectedIndexChanged += delegate
             {
+                if (DeadSpaceUi.UiLanguage.IsApplying) return;
                 try { storagePath.Text = "启动器配置："+ConfigurationDirectory+"\r\n原生配置与存档：" + SaveStorage.ProfilePath(SelectedDataRoot()); }
                 catch (Exception error) { storagePath.Text = error.Message; }
                 loadedSave = null; writeSave.Enabled = false;
@@ -56,3 +60,4 @@ namespace DeadSpaceBootstrap
         }
     }
 }
+

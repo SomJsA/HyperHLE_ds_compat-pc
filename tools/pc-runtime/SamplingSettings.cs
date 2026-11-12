@@ -58,8 +58,8 @@ namespace DeadSpaceBootstrap
                 requested_internal_width = actual * PcRenderResolution.BaseWidth, requested_internal_height = actual * PcRenderResolution.BaseHeight,
                 scope = "Requested landscape dimensions; backend startup/render events remain authoritative for actual allocation" };
         }
-        private readonly ComboBox msaaSamples = new ComboBox();
-        private readonly ComboBox anisotropy = new ComboBox();
+        private readonly ComboBox msaaSamples = new NoWheelComboBox();
+        private readonly ComboBox anisotropy = new NoWheelComboBox();
         private void BuildSamplingOptions(Control page)
         {
             AddComboRow(page, "多重采样抗锯齿", 278, msaaSamples, new[] { "关闭", "2× MSAA", "4× MSAA", "8× MSAA" });
@@ -100,3 +100,4 @@ namespace DeadSpaceBootstrap
         }
     }
 }
+

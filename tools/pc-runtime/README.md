@@ -14,10 +14,10 @@ are selected separately; Documents remains configuration and save storage. See
 `dev-docs/PC-INSTALLER-DISTRIBUTION.md`.
 
 These files are versioned copies of the outer DeadSpaceLegacy project's
-`run-host/pc-bootstrap/Program.cs`, `run-host/shake-dialog.ps1`, and
-`tools/install_pc_runtime.ps1` from 2026-10-25. The launcher clears opening
-render experiments and the shake dialog defaults to the user-confirmed
-`6,3,4,z` parameters.
+`run-host/pc-bootstrap/Program.cs` and `tools/install_pc_runtime.ps1` from
+2026-10-25. The launcher clears opening render experiments. Zero-G jump uses
+the fixed, user-confirmed `6,3,4,z` gesture directly from V, Ctrl,
+Shift+Space, or gamepad LT+R3; no parameter dialog is shipped.
 
 The installer retains its existing machine-local defaults. Always pass the
 newly built executable explicitly with `-GameExe`; its default executable

@@ -75,6 +75,18 @@
       264,
       168,
       60
+    ],
+    "Escape": [
+      448,
+      8,
+      64,
+      96
+    ],
+    "Alt": [
+      448,
+      264,
+      64,
+      60
     ]
   },
   "source": "https://kenney.nl/assets/input-prompts",

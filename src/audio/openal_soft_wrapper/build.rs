@@ -102,6 +102,18 @@ fn main() {
 
         build.define("CMAKE_POLICY_VERSION_MINIMUM", "3.5");
 
+        // cmake-rs replaces the MSVC Release flag variables when it injects
+        // CRT/tool flags. Preserve the native OpenAL Soft optimization and
+        // NDEBUG settings explicitly; Rust's release profile cannot optimize
+        // this separately built C/C++ library.
+        if os.eq_ignore_ascii_case("windows")
+            && env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc")
+            && !cfg!(debug_assertions)
+        {
+            build.define("CMAKE_C_FLAGS_RELEASE", "/O2 /Ob2 /DNDEBUG /MD");
+            build.define("CMAKE_CXX_FLAGS_RELEASE", "/O2 /Ob2 /DNDEBUG /MD");
+        }
+
         let openal_soft_out = build.build();
 
         link_search(&openal_soft_out.join("lib"));
