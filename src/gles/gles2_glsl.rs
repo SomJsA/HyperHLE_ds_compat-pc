@@ -21,6 +21,12 @@
 
 /// Translate a GLSL ES 1.00 shader source to GLSL 1.20.
 pub fn translate_glsl_es_to_120(source: &str) -> String {
+    // The same verified Dead Space fragment also reaches desktop core and
+    // legacy GL2.1 through this translator; preserve the native-backend fix.
+    let repaired = if std::env::var("TOUCHHLE_DS_ES2_FOG_FIX").as_deref()==Ok("1") {
+        super::ds_native_fog::patch(source)
+    } else {None};
+    let source = repaired.as_deref().unwrap_or(source);
     translate_glsl_es_with_version(source, "#version 120\n")
 }
 

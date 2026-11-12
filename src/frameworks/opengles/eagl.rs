@@ -5,6 +5,9 @@
  */
 //! EAGL.
 
+#[path="eagl_fog_probe.rs"]
+mod fog_probe;
+
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
 use crate::frameworks::core_animation::ca_eagl_layer::{
     find_fullscreen_eagl_layer, get_pixels_vec_for_presenting, invalidate_presented_pixels, present_pixels,
@@ -96,6 +99,7 @@ fn effective_eagl_api(requested: EAGLRenderingAPI, prefer_gles2_context: bool) -
 
 #[derive(Default)]
 pub(super) struct EAGLContextHostObject {
+    pub(super) shader_compat: Rc<RefCell<crate::gles::ds_fog_scope::GuestState>>,
     pub(super) gles_ctx: Option<Box<dyn GLESContext>>,
     present_state: Rc<RefCell<crate::gles::present::PresentState>>,
     transfer_state: Rc<RefCell<TransferState>>,
@@ -139,6 +143,20 @@ pub(super) struct EAGLContextHostObject {
 }
 impl HostObject for EAGLContextHostObject {}
 
+/// Resolve exactly the same effective owner as GL dispatch (including main-thread fallback).
+pub(super) fn shader_compat_state(env:&mut Environment)->Option<Rc<RefCell<crate::gles::ds_fog_scope::GuestState>>> {
+    let context=env.framework_state.opengles.effective_ctx_id(env.current_thread)?;
+    let object=env.objc.borrow::<EAGLContextHostObject>(context);
+    object.shader_compat.borrow().enabled().then(||object.shader_compat.clone())
+}
+pub(super) fn shader_no_fog_key(env:&mut Environment)->Option<u32> {
+    let context=env.framework_state.opengles.effective_ctx_id(env.current_thread)?;
+    let object=env.objc.borrow::<EAGLContextHostObject>(context);
+    if object.api<2 {return None;}
+    let result=object.shader_compat.borrow().selected_key();result
+}
+
+
 pub const CLASSES: ClassExports = objc_classes! {
 
 (env, this, _cmd);
@@ -147,6 +165,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (id)alloc {
     let host_object = Box::new(EAGLContextHostObject {
+        shader_compat: Default::default(),
         gles_ctx: None,
         present_state: Default::default(),
         transfer_state: Default::default(),
@@ -206,6 +225,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         return msg![env; this initWithAPI:api];
     }
 
+    let shared_shader_namespace=env.objc.borrow::<EAGLContextHostObject>(group).shader_compat.borrow().namespace.clone();
     let window = env.window.as_mut().expect("OpenGL ES is not supported in headless mode");
     let prev_context = env.objc.borrow_mut::<EAGLContextHostObject>(group).gles_ctx.as_mut().unwrap();
 
@@ -234,9 +254,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     env.objc.borrow_mut::<EAGLContextHostObject>(this).gles_ctx = Some(gles_ins);
     env.objc.borrow_mut::<EAGLContextHostObject>(this).api = effective_api;
+    *env.objc.borrow_mut::<EAGLContextHostObject>(this).shader_compat.borrow_mut()=Default::default();
 
     env.window.as_mut().unwrap().set_share_with_current_context(false);
 
+    env.objc.borrow_mut::<EAGLContextHostObject>(this).shader_compat.borrow_mut().namespace=shared_shader_namespace;
     env.objc.borrow_mut::<EAGLContextHostObject>(this).renderbuffer_drawable_bindings = env.objc.borrow::<EAGLContextHostObject>(group).renderbuffer_drawable_bindings.clone();
     this
 }
@@ -269,6 +291,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     env.objc.borrow_mut::<EAGLContextHostObject>(this).gles_ctx = Some(gles_ins);
     env.objc.borrow_mut::<EAGLContextHostObject>(this).api = effective_api;
+    *env.objc.borrow_mut::<EAGLContextHostObject>(this).shader_compat.borrow_mut()=Default::default();
 
     this
 }
@@ -1597,6 +1620,7 @@ unsafe fn present_renderbuffer_es2(
     // Guest error flags were already consumed at the end of this host pass.
     // Separate incoming errors before attributing uploads/uniform checks.
     while gles.GetError()!=0 {}
+    state.fog_probe.tick(gles);
     // Save state we are about to clobber
     let mut old_program: GLint = 0;
     gles.GetIntegerv(gles2::CURRENT_PROGRAM, &mut old_program);
@@ -1981,6 +2005,7 @@ thread_local! {
 // namespace does not justify sharing helper attachment/storage history.
 #[derive(Default)]
 struct TransferState {
+    fog_probe: fog_probe::State,
     program: Option<PresentProgram>,
     objects: Option<PresentObjects>,
     source_renderbuffer: GLuint,

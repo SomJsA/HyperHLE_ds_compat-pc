@@ -968,6 +968,12 @@ impl GLES for GLES3Native<'_> {
     unsafe fn GetAttribLocation(&mut self, program: GLuint, name: *const GLchar) -> GLint {
         gles30::GetAttribLocation(program, name)
     }
+    unsafe fn GetUniformfv(&mut self, program: GLuint, location: GLint, params: *mut GLfloat) {
+        gles30::GetUniformfv(program, location, params)
+    }
+    unsafe fn GetUniformiv(&mut self, program: GLuint, location: GLint, params: *mut GLint) {
+        gles30::GetUniformiv(program, location, params)
+    }
     unsafe fn GetUniformLocation(&mut self, program: GLuint, name: *const GLchar) -> GLint {
         gles30::GetUniformLocation(program, name)
     }

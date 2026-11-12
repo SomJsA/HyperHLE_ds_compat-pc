@@ -1102,6 +1102,12 @@ impl GLES for GLES3OnGL3<'_> {
     unsafe fn GetAttribLocation(&mut self, program: GLuint, name: *const GLchar) -> GLint {
         gl33::GetAttribLocation(program, name)
     }
+    unsafe fn GetUniformfv(&mut self, program: GLuint, location: GLint, params: *mut GLfloat) {
+        gl33::GetUniformfv(program, location, params)
+    }
+    unsafe fn GetUniformiv(&mut self, program: GLuint, location: GLint, params: *mut GLint) {
+        gl33::GetUniformiv(program, location, params)
+    }
     unsafe fn GetUniformLocation(&mut self, program: GLuint, name: *const GLchar) -> GLint {
         gl33::GetUniformLocation(program, name)
     }

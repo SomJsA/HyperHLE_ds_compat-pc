@@ -3407,6 +3407,8 @@ fn glCompressedTexSubImage2D(
     image_size: GLsizei,
     data: ConstVoidPtr,
 ) {
+    if let Some(state)=super::eagl::shader_compat_state(env) {state.borrow().invalidate_upload(target,level);}
+
     with_ctx_and_mem(env, |gles, mem| unsafe {
         let data = mem
             .ptr_at(data.cast::<u8>(), image_size.try_into().unwrap())
@@ -3734,6 +3736,7 @@ unsafe fn guard_client_vertex_arrays(gles: &mut dyn GLES, mem: &Mem) -> Vec<GLui
 }
 
 fn glDrawArrays(env: &mut Environment, mode: GLenum, first: GLint, count: GLsizei) {
+    let shader_fog_key=super::eagl::shader_no_fog_key(env);
     let _scene=crate::ds_scene_diagnostics::Scope::draw(crate::ds_scene_diagnostics::Kind::DrawArrays,count.max(0) as u64,mode as u64);
     {
         use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -3762,6 +3765,7 @@ fn glDrawArrays(env: &mut Environment, mode: GLenum, first: GLint, count: GLsize
     with_ctx_and_mem(env, |gles, mem| unsafe {
         let disabled_arrays = guard_client_vertex_arrays(gles, mem);
         let fog_state_backup = clamp_fog_state_values(gles);
+        let shader_fog_saved=shader_fog_key.and_then(|key|crate::gles::ds_fog_scope::begin(gles,key));
         if std::env::var_os("TOUCHHLE_POTATO_NATIVE_GLES2_PC_STATE").is_some() {
             static SEEN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
             if !SEEN.swap(true, std::sync::atomic::Ordering::Relaxed) {
@@ -3778,6 +3782,7 @@ fn glDrawArrays(env: &mut Environment, mode: GLenum, first: GLint, count: GLsize
         }
 
         gles.DrawArrays(mode, first, count);
+        crate::gles::ds_fog_scope::end(gles,shader_fog_saved);
         restore_fog_state_values(gles, fog_state_backup);
         for index in disabled_arrays {
             gles.EnableVertexAttribArray(index);
@@ -3791,6 +3796,7 @@ fn glDrawElements(
     type_: GLenum,
     indices: ConstVoidPtr,
 ) {
+    let shader_fog_key=super::eagl::shader_no_fog_key(env);
     let _scene=crate::ds_scene_diagnostics::Scope::draw(crate::ds_scene_diagnostics::Kind::DrawElements,count.max(0) as u64,mode as u64);
     {
         use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -3820,6 +3826,7 @@ fn glDrawElements(
     with_ctx_and_mem(env, |gles, mem| unsafe {
         let disabled_arrays = guard_client_vertex_arrays(gles, mem);
         let fog_state_backup = clamp_fog_state_values(gles);
+        let shader_fog_saved=shader_fog_key.and_then(|key|crate::gles::ds_fog_scope::begin(gles,key));
         if std::env::var_os("TOUCHHLE_POTATO_NATIVE_GLES2_PC_STATE").is_some() {
             static SEEN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
             if !SEEN.swap(true, std::sync::atomic::Ordering::Relaxed) {
@@ -3842,6 +3849,7 @@ fn glDrawElements(
             gles11::ELEMENT_ARRAY_BUFFER_BINDING,
         );
         gles.DrawElements(mode, count, type_, indices);
+        crate::gles::ds_fog_scope::end(gles,shader_fog_saved);
         restore_fog_state_values(gles, fog_state_backup);
         for index in disabled_arrays {
             gles.EnableVertexAttribArray(index);
@@ -6571,6 +6579,7 @@ fn glReadPixels(
     })
 }
 fn glGenTextures(env: &mut Environment, n: GLsizei, textures: MutPtr<GLuint>) {
+    let shader_state=super::eagl::shader_compat_state(env);
     if env
         .framework_state
         .opengles
@@ -6585,10 +6594,15 @@ fn glGenTextures(env: &mut Environment, n: GLsizei, textures: MutPtr<GLuint>) {
     with_ctx_and_mem(env, |gles, mem| {
         let n_usize: GuestUSize = n.try_into().unwrap();
         let textures = mem.ptr_at_mut(textures, n_usize);
-        unsafe { gles.GenTextures(n, textures) }
+        unsafe { gles.GenTextures(n, textures); }
+        if let Some(state)=&shader_state {
+            let names=unsafe{std::slice::from_raw_parts(textures,n_usize as usize)};
+            let mut state=state.borrow_mut();for &name in names {state.generated(name);}
+        }
     })
 }
 fn glDeleteTextures(env: &mut Environment, n: GLsizei, textures: ConstPtr<GLuint>) {
+    let shader_state=super::eagl::shader_compat_state(env);
     with_ctx_and_mem(env, |gles, mem| {
         let n_usize: GuestUSize = n.try_into().unwrap();
         let textures = mem.ptr_at(textures, n_usize);
@@ -6599,16 +6613,28 @@ fn glDeleteTextures(env: &mut Environment, n: GLsizei, textures: ConstPtr<GLuint
             // global residency bookkeeping indefinitely.
             ds_clear_hd_texture_replaced(texture);
         }
+        if let Some(state)=&shader_state {
+            let names=unsafe{std::slice::from_raw_parts(textures,n_usize as usize)};
+            let mut state=state.borrow_mut();for &name in names {state.delete(name);}
+        }
         unsafe { gles.DeleteTextures(n, textures) }
     })
 }
 fn glActiveTexture(env: &mut Environment, texture: GLenum) {
-    with_ctx_and_mem(env, |gles, _mem| unsafe { gles.ActiveTexture(texture) })
+    let shader_state=super::eagl::shader_compat_state(env);
+    let actual=with_ctx_and_mem(env, |gles, _mem| unsafe {
+        gles.ActiveTexture(texture);
+        if texture>=gles11::TEXTURE0 && texture<gles11::TEXTURE0+8 {texture}
+        else {let mut actual=0;gles.GetIntegerv(gles11::ACTIVE_TEXTURE,&mut actual);actual as u32}
+    });
+    if let Some(state)=shader_state {state.borrow_mut().active(actual);}
+
 }
 fn glIsTexture(env: &mut Environment, texture: GLuint) -> GLboolean {
     with_ctx_and_mem(env, |gles, _mem| unsafe { gles.IsTexture(texture) })
 }
 fn glBindTexture(env: &mut Environment, target: GLenum, texture: GLuint) {
+    let shader_state=super::eagl::shader_compat_state(env);
     if trace_potatogold_render() {
         use std::sync::atomic::{AtomicU32, Ordering};
         static COUNT: AtomicU32 = AtomicU32::new(0);
@@ -6624,7 +6650,8 @@ fn glBindTexture(env: &mut Environment, target: GLenum, texture: GLuint) {
 
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.BindTexture(target, texture)
-    })
+    });
+    if let Some(state)=shader_state {state.borrow_mut().bind(target,texture);}
 }
 /// If `pname` is `GL_TEXTURE_MIN_FILTER` and `param` is a mipmap min-filter
 /// (e.g. `GL_NEAREST_MIPMAP_LINEAR`), return the closest non-mipmap value
@@ -7291,6 +7318,9 @@ fn glTexImage2D(
     type_: GLenum,
     pixels: ConstVoidPtr,
 ) {
+    let shader_texture_state=super::eagl::shader_compat_state(env);
+    if let Some(state)=&shader_texture_state {state.borrow().invalidate_upload(target,level);}
+
     let _scene=crate::ds_scene_diagnostics::Scope::new(crate::ds_scene_diagnostics::Kind::TexImage,if pixels.is_null(){0}else{width.max(0) as u64*height.max(0) as u64},format as u64);
     {
         use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -7474,6 +7504,7 @@ fn glTexImage2D(
             // a later mip level or a storage-only (`pixels == NULL`) call must
             // not blank out the key of the level-0 upload it belongs to.
             if key != 0 {
+                if let Some(state)=&shader_texture_state {state.borrow_mut().uploaded(target,texture as u32,key);}
                 crate::ds_texid::record(
                     texture as u32,
                     crate::ds_texid::TexIdent {
@@ -7631,6 +7662,8 @@ fn glTexSubImage2D(
     type_: GLenum,
     pixels: ConstVoidPtr,
 ) {
+    if let Some(state)=super::eagl::shader_compat_state(env) {state.borrow().invalidate_upload(target,level);}
+
     let _scene=crate::ds_scene_diagnostics::Scope::new(crate::ds_scene_diagnostics::Kind::TexSubImage,if pixels.is_null(){0}else{width.max(0) as u64*height.max(0) as u64},format as u64);
     with_ctx_and_mem(env, |gles, mem| unsafe {
         let pixel_count: GuestUSize = width.checked_mul(height).unwrap().try_into().unwrap();
@@ -7676,6 +7709,9 @@ fn glCompressedTexImage2D(
     image_size: GLsizei,
     data: ConstVoidPtr,
 ) {
+    let shader_texture_state=super::eagl::shader_compat_state(env);
+    if let Some(state)=&shader_texture_state {state.borrow().invalidate_upload(target,level);}
+
     let _scene=crate::ds_scene_diagnostics::Scope::new(crate::ds_scene_diagnostics::Kind::TexCompressed,if data.is_null(){0}else{image_size.max(0) as u64},internalformat as u64);
     {
         use std::sync::atomic::{AtomicBool, Ordering};
@@ -7781,6 +7817,7 @@ fn glCompressedTexImage2D(
                     internalformat,
                     raw,
                 );
+                if let Some(state)=&shader_texture_state {state.borrow_mut().uploaded(target,texture as u32,tex_key);}
                 crate::ds_texid::record(
                     texture as u32,
                     crate::ds_texid::TexIdent {
@@ -8142,6 +8179,8 @@ fn glCopyTexImage2D(
     height: GLsizei,
     border: GLint,
 ) {
+    if let Some(state)=super::eagl::shader_compat_state(env) {state.borrow().invalidate_upload(target,level);}
+
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.CopyTexImage2D(target, level, internalformat, x, y, width, height, border);
         record_copytex_key(gles, target, x, y, level, width, height, TAG_COPYTEX_IMAGE);
@@ -8158,6 +8197,8 @@ fn glCopyTexSubImage2D(
     width: GLsizei,
     height: GLsizei,
 ) {
+    if let Some(state)=super::eagl::shader_compat_state(env) {state.borrow().invalidate_upload(target,level);}
+
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
         record_copytex_key(

@@ -33,6 +33,7 @@ pub struct State {
     pub(crate) ds_frontend_trace: crate::ds_frontend_trace::State,
     pub(crate) ds_font_roles: crate::ds_font_roles::State,
     pub(crate) ds_game_clock: crate::ds_game_clock::State,
+    pub(crate) ds_shader_projection: crate::ds_shader_projection::State,
     pub(crate) ds_guest_skin_probe: crate::ds_guest_skin_probe::State,
     pub(crate) ds_test_assist: gles_guest::ds_test_assist::State,
     #[cfg(all(windows, target_arch = "x86_64"))]

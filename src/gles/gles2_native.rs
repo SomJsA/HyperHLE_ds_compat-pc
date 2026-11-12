@@ -1232,6 +1232,14 @@ impl GLES for GLES2Native<'_> {
             joined.push_str(&s);
         }
 
+        let fog_corrected = if std::env::var("TOUCHHLE_DS_ES2_FOG_FIX").as_deref()==Ok("1") {
+            if let Some(corrected)=super::ds_native_fog::patch(&joined) {
+                joined=corrected;
+                log_once!("[DSes2-fog] verified linear shader: zero fog range disabled");
+                true
+            } else {false}
+        } else {false};
+
         // GLSL ES fragment shaders have no default precision for `float`, so
         // strict drivers (e.g. AMD's native GLES) reject any fragment shader
         // that declares a float without a `precision ... float;` line. Real
@@ -1256,7 +1264,7 @@ impl GLES for GLES2Native<'_> {
                 || joined.contains("texture2DProjLodEXT")
                 || joined.contains("textureCubeLodEXT"));
         let needs_patch =
-            joined.contains("#extension") || needs_lod_patch || needs_precision_inject;
+            joined.contains("#extension") || needs_lod_patch || needs_precision_inject || fog_corrected;
 
         if !needs_patch {
             // No patching needed — pass through directly.
@@ -1282,7 +1290,16 @@ impl GLES for GLES2Native<'_> {
     }
     unsafe fn CompileShader(&mut self, shader: GLuint) {
         let _profile = crate::ds_perf::Timer::new(crate::ds_perf::Stage::ShaderCompile);
-        gles2::CompileShader(shader)
+        gles2::CompileShader(shader);
+        if std::env::var("TOUCHHLE_DS_ES2_FOG_PROBE").as_deref()==Ok("1") {
+            let mut status=0;gles2::GetShaderiv(shader,gles2::COMPILE_STATUS,&mut status);
+            if status==0 {
+                let mut info=[0u8;4096];let mut length=0;
+                gles2::GetShaderInfoLog(shader,info.len() as i32,&mut length,info.as_mut_ptr().cast());
+                log!("[DSes2-shader-check] shader={} compile_failed info={}",shader,
+                    String::from_utf8_lossy(&info[..(length.max(0) as usize).min(info.len())]));
+            }
+        }
     }
     unsafe fn GetShaderPrecisionFormat(
         &mut self,
@@ -1376,6 +1393,12 @@ impl GLES for GLES2Native<'_> {
     }
     unsafe fn GetAttribLocation(&mut self, program: GLuint, name: *const GLchar) -> GLint {
         gles2::GetAttribLocation(program, name)
+    }
+    unsafe fn GetUniformfv(&mut self, program: GLuint, location: GLint, params: *mut GLfloat) {
+        gles2::GetUniformfv(program, location, params)
+    }
+    unsafe fn GetUniformiv(&mut self, program: GLuint, location: GLint, params: *mut GLint) {
+        gles2::GetUniformiv(program, location, params)
     }
     unsafe fn GetUniformLocation(&mut self, program: GLuint, name: *const GLchar) -> GLint {
         gles2::GetUniformLocation(program, name)

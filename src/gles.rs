@@ -70,6 +70,8 @@ pub mod ds_ahb_bridge;
 pub mod gles1_native;
 pub mod gles1_on_gl2;
 pub mod gles2_glsl;
+pub(crate) mod ds_native_fog;
+pub(crate) mod ds_fog_scope;
 pub mod gles2_native;
 pub mod gles2_on_gl3;
 pub mod gles3_native;

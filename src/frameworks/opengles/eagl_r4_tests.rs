@@ -93,3 +93,98 @@ fn r4_es2_present_rotation_quality_and_guest_state() {
     for (index,context) in contexts.iter_mut().enumerate() {let mut gl=context.make_current(&mut win);unsafe{transfers[index].release(gl.as_mut());presents[index].release(gl.as_mut());}}
     for key in ["TOUCHHLE_DS_PRESENT_SHARPEN","TOUCHHLE_DS_AA","TOUCHHLE_DS_SHADOW_LIFT","TOUCHHLE_DS_SAFE_BLACK","TOUCHHLE_DS_PRESENT_FSR"] {std::env::remove_var(key);}
 }
+
+#[test]
+#[ignore="requires owned hidden SDL window and real OpenGL; run serially"]
+fn r4_es2_zero_range_fog_pixels_preserve_valid_fog() {
+    use crate::gles::gles2_raw as gl;
+    use crate::gles::gles1_on_gl2::GLES1OnGL2Context;
+    assert_eq!(std::env::var("TOUCHHLE_DS_BACKGROUND_TEST").as_deref(),Ok("1"));
+    let previous=std::env::var_os("TOUCHHLE_DS_ES2_FOG_FIX");
+    let mut win=crate::window::Window::new("R4 fog pixels",None,None,&Default::default());
+    win.set_share_with_current_context(false);
+    let mut contexts:[Box<dyn GLESContext>;3]=[
+        Box::new(GLES2NativeContext::new(&mut win).unwrap()),
+        Box::new(GLES2OnGL3Context::new(&mut win).unwrap()),
+        Box::new(GLES1OnGL2Context::new(&mut win).unwrap()),
+    ];
+    for (backend,context) in contexts.iter_mut().enumerate() {
+        let mut driver=context.make_current(&mut win);let g=driver.as_mut();
+        unsafe {
+            while g.GetError()!=0 {}
+            let mut rb=0;let mut fb=0;let mut vbo=0;
+            let mut white=0;g.GenTextures(1,&mut white);g.ActiveTexture(gl::TEXTURE0);g.BindTexture(gl::TEXTURE_2D,white);
+            g.TexParameteri(gl::TEXTURE_2D,gl::TEXTURE_MIN_FILTER,gl::NEAREST as i32);
+            g.TexParameteri(gl::TEXTURE_2D,gl::TEXTURE_MAG_FILTER,gl::NEAREST as i32);
+            let pixel=[255u8;4];g.TexImage2D(gl::TEXTURE_2D,0,gl::RGBA as i32,1,1,0,gl::RGBA,gl::UNSIGNED_BYTE,pixel.as_ptr().cast());
+
+            g.GenRenderbuffersOES(1,&mut rb);g.BindRenderbufferOES(gl::RENDERBUFFER,rb);
+            g.RenderbufferStorageOES(gl::RENDERBUFFER,0x8058,16,16);
+            g.GenFramebuffersOES(1,&mut fb);g.BindFramebufferOES(gl::FRAMEBUFFER,fb);
+            g.FramebufferRenderbufferOES(gl::FRAMEBUFFER,gl::COLOR_ATTACHMENT0,gl::RENDERBUFFER,rb);
+            assert_eq!(g.CheckFramebufferStatusOES(gl::FRAMEBUFFER),gl::FRAMEBUFFER_COMPLETE);
+            for cap in [gl::BLEND,gl::DEPTH_TEST,gl::CULL_FACE,gl::SCISSOR_TEST,gl::STENCIL_TEST] {g.Disable(cap);}
+            g.ColorMask(1,1,1,1);g.Viewport(0,0,16,16);
+            g.GenBuffers(1,&mut vbo);g.BindBuffer(gl::ARRAY_BUFFER,vbo);
+            let vertices=[-1f32,-1.,1.,-1.,-1.,1.,1.,1.];
+            g.BufferData(gl::ARRAY_BUFFER,32,vertices.as_ptr().cast(),gl::STATIC_DRAW);
+            g.EnableVertexAttribArray(0);g.VertexAttribPointer(0,2,gl::FLOAT,0,8,std::ptr::null());
+            for enabled in [false,true] {
+                std::env::set_var("TOUCHHLE_DS_ES2_FOG_FIX",if enabled {"1"}else{"0"});
+                let vertex=format!("{}attribute highp vec2 aPos;\nuniform highp float uZ;\nvarying lowp vec4 vFog;\nvoid main(){{gl_Position=vec4(aPos,0.0,1.0);vFog=Fog(uZ);}}\n",crate::gles::ds_native_fog::ORIGINAL);
+                let fragment="precision mediump float;\nvarying lowp vec4 vFog;\nuniform sampler2D g_Texture0;\nvoid main(){vec3 material=vec3(0.8,0.4,0.2)*texture2D(g_Texture0,vec2(0.5)).rgb;gl_FragColor=vec4(vFog.rgb+material*vFog.a,1.0);}";
+                let mut shaders=[0;2];
+                for (i,(kind,text)) in [(gl::VERTEX_SHADER,vertex.as_str()),(gl::FRAGMENT_SHADER,fragment)].into_iter().enumerate() {
+                    shaders[i]=g.CreateShader(kind);let pointer=text.as_ptr().cast();let length=text.len() as i32;
+                    g.ShaderSource(shaders[i],1,&pointer,&length);g.CompileShader(shaders[i]);
+                    let mut ok=0;g.GetShaderiv(shaders[i],gl::COMPILE_STATUS,&mut ok);assert_ne!(ok,0,"shader backend={backend} enabled={enabled}");
+                }
+                let program=g.CreateProgram();for shader in shaders {g.AttachShader(program,shader);}
+                g.BindAttribLocation(program,0,b"aPos\0".as_ptr().cast());g.LinkProgram(program);
+                let mut ok=0;g.GetProgramiv(program,gl::LINK_STATUS,&mut ok);assert_ne!(ok,0,"link backend={backend}");
+                for shader in shaders {g.DeleteShader(shader);}
+                g.UseProgram(program);
+                let fog=g.GetUniformLocation(program,b"g_Fog\0".as_ptr().cast());
+                let colour=g.GetUniformLocation(program,b"g_FogColour\0".as_ptr().cast());
+                let z=g.GetUniformLocation(program,b"uZ\0".as_ptr().cast());
+                assert!(fog>=0 && colour>=0 && z>=0);
+                for (range,depth,rgb,expected) in [
+                    ([f32::INFINITY,0.],1000.,[0.,0.,0.],if enabled {[204,102,51]}else{[0,0,0]}),
+                    ([1./15.,25.],20.,[0.,0.,0.],[68,34,17]),
+                    ([1./15.,25.],30.,[0.,0.,0.],[0,0,0]),
+                    ([1./15.,25.],30.,[0.1,0.1,0.1],[26,26,26]),
+                ] {
+                    g.Uniform2f(fog,range[0],range[1]);g.Uniform3f(colour,rgb[0],rgb[1],rgb[2]);g.Uniform1f(z,depth);
+                    if backend<2 {
+                        let mut read=[0f32;2];g.GetUniformfv(program,fog,read.as_mut_ptr());
+                        assert_eq!(read[0].to_bits(),range[0].to_bits());assert_eq!(read[1].to_bits(),range[1].to_bits());
+                    }
+                    g.DrawArrays(gl::TRIANGLE_STRIP,0,4);let mut pixel=[0u8;4];
+                    g.ReadPixels(8,8,1,1,gl::RGBA,gl::UNSIGNED_BYTE,pixel.as_mut_ptr().cast());
+                    assert_eq!(g.GetError(),0,"GL backend={backend} enabled={enabled}");
+                    for c in 0..3 {assert!((pixel[c] as i32-expected[c]).abs()<=3,
+                        "fog backend={backend} enabled={enabled} range={range:?} z={depth} actual={pixel:?} expected={expected:?}");}
+                }
+                if enabled {
+                    g.Uniform2f(fog,1./15.,25.);g.Uniform3f(colour,0.,0.,0.);g.Uniform1f(z,30.);
+                    let saved=crate::gles::ds_fog_scope::begin(g,0x7027023c);assert!(saved.is_some());
+                    g.DrawArrays(gl::TRIANGLE_STRIP,0,4);
+                    crate::gles::ds_fog_scope::end(g,saved);
+                    let mut pixel=[0u8;4];g.ReadPixels(8,8,1,1,gl::RGBA,gl::UNSIGNED_BYTE,pixel.as_mut_ptr().cast());
+                    for c in 0..3 {assert!((pixel[c] as i32-[204,102,51][c]).abs()<=3,"scoped fog backend={backend}: {pixel:?}");}
+                    let marker=g.GetUniformLocation(program,b"touchHLE_DsFogDisabled\0".as_ptr().cast());
+                    let mut marker_value=-1;g.GetUniformiv(program,marker,&mut marker_value);assert_eq!(marker_value,0);
+                    g.DrawArrays(gl::TRIANGLE_STRIP,0,4);g.ReadPixels(8,8,1,1,gl::RGBA,gl::UNSIGNED_BYTE,pixel.as_mut_ptr().cast());
+                    assert!(pixel[..3].iter().all(|v|*v<=3),"valid fog leaked off after scoped draw backend={backend}");
+                    assert_eq!(g.GetError(),0,"scoped fog restore backend={backend}");
+                } else {
+                    assert!(crate::gles::ds_fog_scope::begin(g,0x7027023c).is_none(),"unknown unpatched shader must remain untouched");
+                }
+                g.UseProgram(0);g.DeleteProgram(program);
+            }
+            g.DisableVertexAttribArray(0);g.BindFramebufferOES(gl::FRAMEBUFFER,0);
+            g.DeleteFramebuffersOES(1,&fb);g.DeleteRenderbuffersOES(1,&rb);g.DeleteBuffers(1,&vbo);g.DeleteTextures(1,&white);
+        }
+    }
+    if let Some(value)=previous {std::env::set_var("TOUCHHLE_DS_ES2_FOG_FIX",value);}else{std::env::remove_var("TOUCHHLE_DS_ES2_FOG_FIX");}
+}
