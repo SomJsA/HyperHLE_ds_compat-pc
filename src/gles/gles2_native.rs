@@ -708,6 +708,12 @@ impl GLES for GLES2Native<'_> {
     unsafe fn BindTexture(&mut self, target: GLenum, texture: GLuint) {
         gles2::BindTexture(target, texture)
     }
+    unsafe fn GetTexParameteriv(&mut self, target: GLenum, pname: GLenum, params: *mut GLint) {
+        gles2::GetTexParameteriv(target, pname, params)
+    }
+    unsafe fn GetTexParameterfv(&mut self, target: GLenum, pname: GLenum, params: *mut GLfloat) {
+        gles2::GetTexParameterfv(target, pname, params)
+    }
     unsafe fn TexParameteri(&mut self, target: GLenum, pname: GLenum, param: GLint) {
         // GL_GENERATE_MIPMAP (0x8191) is a TexParameter pname only on ES 1.1.
         // On ES 2.0 the equivalent is the standalone glGenerateMipmap() call.

@@ -4,6 +4,49 @@ use crate::gles::{gles2_on_gl3::GLES2OnGL3Context,gles2_native::GLES2NativeConte
 
 #[test]
 #[ignore="requires owned hidden SDL window and real OpenGL; run serially"]
+fn r4_startup_texture_parameter_readback() {
+    assert_eq!(std::env::var("TOUCHHLE_DS_BACKGROUND_TEST").as_deref(),Ok("1"));
+    let mut win=crate::window::Window::new("R4 startup readback",None,None,&Default::default());
+    win.set_share_with_current_context(false);
+    let mut contexts:Vec<Box<dyn GLESContext>>=vec![
+        Box::new(GLES2NativeContext::new(&mut win).unwrap()),
+        Box::new(crate::gles::gles3_native::GLES3NativeContext::new(&mut win).unwrap()),
+        Box::new(GLES2OnGL3Context::new(&mut win).unwrap()),
+        Box::new(crate::gles::gles3_on_gl3::GLES3OnGL3Context::new(&mut win).unwrap()),
+    ];
+    use crate::gles::gles2_raw as gl;
+    for (index,context) in contexts.iter_mut().enumerate() {
+        let mut driver=context.make_current(&mut win);let gles=driver.as_mut();
+        unsafe {
+            while gles.GetError()!=0 {}
+            let mut texture=0;gles.GenTextures(1,&mut texture);
+            gles.ActiveTexture(gl::TEXTURE2);gles.BindTexture(gl::TEXTURE_2D,texture);
+            gles.TexParameteri(gl::TEXTURE_2D,gl::TEXTURE_MIN_FILTER,gl::LINEAR as _);
+            let mut integer=-1;let mut float=-1.;
+            gles.GetTexParameteriv(gl::TEXTURE_2D,gl::TEXTURE_MIN_FILTER,&mut integer);
+            gles.GetTexParameterfv(gl::TEXTURE_2D,gl::TEXTURE_MIN_FILTER,&mut float);
+            assert_eq!(integer,gl::LINEAR as i32,"backend {index}");
+            assert_eq!(float,gl::LINEAR as f32,"backend {index}");
+            assert_eq!(gles.GetError(),0,"standard texture readback backend {index}");
+            let mut maximum=0.;gles.GetFloatv(0x84ff,&mut maximum);
+            assert_eq!(gles.GetError(),0,"fixture requires anisotropic filtering backend {index}");
+            let requested=4f32.min(maximum);assert!(requested>1.);
+            gles.TexParameterf(gl::TEXTURE_2D,0x84fe,requested);
+            float=-1.;gles.GetTexParameterfv(gl::TEXTURE_2D,0x84fe,&mut float);
+            assert_eq!(float,requested,"startup AF actual readback backend {index}");
+            assert_eq!(gles.GetError(),0,"AF readback backend {index}");
+            let mut binding=0;let mut unit=0;
+            gles.GetIntegerv(gl::TEXTURE_BINDING_2D,&mut binding);
+            gles.GetIntegerv(gl::ACTIVE_TEXTURE,&mut unit);
+            assert_eq!(binding,texture as i32);assert_eq!(unit,gl::TEXTURE2 as i32);
+            gles.DeleteTextures(1,&texture);
+            echo!("[R4-startup-readback-test] backend={} AF={} binding/unit retained",index,float);
+        }
+    }
+}
+
+#[test]
+#[ignore="requires owned hidden SDL window and real OpenGL; run serially"]
 fn r4_es2_present_rotation_quality_and_guest_state() {
     assert_eq!(std::env::var("TOUCHHLE_DS_BACKGROUND_TEST").as_deref(),Ok("1"));
     let mut win=crate::window::Window::new("R4 ES2 pixels/state",None,None,&Default::default());
