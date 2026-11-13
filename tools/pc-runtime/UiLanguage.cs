@@ -11,7 +11,7 @@ namespace DeadSpaceUi
     {
         private static readonly Dictionary<string, string> ZhToEn = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            {"00 关于", "00 About"}, {"已启动", "Running"},
+            {"00 关于", "00 About"}, {"自动（主屏分辨率）", "Automatic"}, {"已启动", "Running"},
             {"高级光影（默认开启）", "Advanced lighting (on by default)"},
             {"高清中文文字组件（章节 / 任务 / 字幕）", "HD Chinese text (chapters / objectives / subtitles)"},
             {"快行动，破坏者！\r\n让我们把泰坦空间站烧成灰！", "Wake the fuck up, Vandal !\r\nWe Have a Titan Station to Burn !"},
@@ -255,6 +255,15 @@ namespace DeadSpaceUi
                 System.IO.File.WriteAllText(file, english ? "en" : "zh");
             } catch (System.IO.IOException) { }
               catch (UnauthorizedAccessException) { }
+        }
+        // Combobox captions may be localized; their setting identity is stable.
+        internal static bool EquivalentLabel(string left,string right)
+        {
+            if(String.Equals(left,right,StringComparison.Ordinal)) return true;
+            string a,b;
+            if(!ZhToEn.TryGetValue(left ?? String.Empty,out a))a=left;
+            if(!ZhToEn.TryGetValue(right ?? String.Empty,out b))b=right;
+            return String.Equals(a,b,StringComparison.OrdinalIgnoreCase);
         }
         internal static string Translate(string text)
         {

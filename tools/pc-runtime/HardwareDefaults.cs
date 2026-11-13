@@ -110,13 +110,13 @@ namespace DeadSpaceBootstrap
         private const string AutomaticResolution = "自动（主屏分辨率）";
 
         private void EnsureResolutionOption(string label)
-        { if (displayResolution.Items.IndexOf(label) < 0) displayResolution.Items.Add(label); }
+        { foreach(object item in displayResolution.Items) if(DeadSpaceUi.UiLanguage.EquivalentLabel(Convert.ToString(item),label))return; displayResolution.Items.Add(label); }
 
         private string SelectedOutputSize()
         {
             string selected = Convert.ToString(displayResolution.SelectedItem);
-            if (selected == "跟随内部") return null;
-            if (selected == AutomaticResolution)
+            if (DeadSpaceUi.UiLanguage.EquivalentLabel(selected,"跟随内部")) return null;
+            if (DeadSpaceUi.UiLanguage.EquivalentLabel(selected,AutomaticResolution))
                 return detectedHardware.Width > 0 ? detectedHardware.Width + "x" + detectedHardware.Height : null;
             string[] parts = selected.Split('×');
             int width, height;

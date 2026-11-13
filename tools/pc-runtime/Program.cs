@@ -339,7 +339,7 @@ namespace DeadSpaceBootstrap
             SetCombo(scaleHack, Get(values, "scale", AutomaticRenderScale));
             EnsureResolutionOption(AutomaticResolution);
             string savedResolution = Get(values, "display_resolution", AutomaticResolution);
-            if (savedResolution != "跟随内部") EnsureResolutionOption(savedResolution);
+            if (!DeadSpaceUi.UiLanguage.EquivalentLabel(savedResolution,"跟随内部") && !DeadSpaceUi.UiLanguage.EquivalentLabel(savedResolution,AutomaticResolution)) EnsureResolutionOption(savedResolution);
             SetCombo(displayResolution, savedResolution);
             SetCombo(windowMode, Get(values, "window_mode", "无边框全屏"));
             SetCombo(saveMode, Get(values, "save_mode", "文档（当前用户）"));
@@ -427,7 +427,9 @@ namespace DeadSpaceBootstrap
 
         private static void SetCombo(ComboBox combo, string value)
         {
-            int index = combo.Items.IndexOf(value);
+            int index=-1;
+            for(int i=0;i<combo.Items.Count;i++)
+                if(DeadSpaceUi.UiLanguage.EquivalentLabel(Convert.ToString(combo.Items[i]),value)){index=i;break;}
             combo.SelectedIndex = index >= 0 ? index : 0;
         }
 

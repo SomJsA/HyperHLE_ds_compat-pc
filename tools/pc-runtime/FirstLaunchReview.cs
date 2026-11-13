@@ -30,6 +30,8 @@ namespace DeadSpaceBootstrap
         internal static string T(string zh,string en) { return DeadSpaceUi.UiLanguage.English ? en : zh; }
         internal static string Summary(bool text,bool lighting,string render,string output)
         {
+            if(String.IsNullOrEmpty(output))output=T("跟随内部","Follow internal");
+            else output=output.Replace("x"," × ");
             string on=T("开启","On"),off=T("关闭","Off");
             return T("请复核本次启动的画面设置。需要修改时可返回启动器；确认后保存，今后仍可随时调整。",
                 "Review your display settings. Return to the launcher to change them, or confirm to save them. You can adjust them again later.")

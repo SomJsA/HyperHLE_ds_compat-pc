@@ -9,7 +9,7 @@ namespace DeadSpaceBootstrap
     {
         private const string AutomaticRenderScale = "屏幕匹配（启动时识别）";
         private readonly Label renderResolutionSummary = new Label();
-        private bool AutomaticRenderSelected { get { return Convert.ToString(scaleHack.SelectedItem) == AutomaticRenderScale; } }
+        private bool AutomaticRenderSelected { get { return DeadSpaceUi.UiLanguage.EquivalentLabel(Convert.ToString(scaleHack.SelectedItem),AutomaticRenderScale); } }
         private int RenderReferenceHeight()
         {
             if (detectedHardware.Height > 0) return detectedHardware.Height;
