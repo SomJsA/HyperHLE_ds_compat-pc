@@ -1,0 +1,111 @@
+name: Assemble verified R4 pc release files
+on:
+  push:
+    branches: [codex/release-upload-20261112-r4]
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: 20261112-r4
+    steps:
+      - name: Download temporary transfer parts
+        run: |
+          mkdir incoming assembled
+          python3 - <<'PY'
+          import os,json,urllib.request,concurrent.futures,time,re
+          from pathlib import Path
+          root='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          def metadata(url):
+              with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=45) as response:
+                  return json.load(response)
+          release=metadata(root+'/releases/443821546')
+          assert release['tag_name']==os.environ['RELEASE_TAG']
+          assets={}
+          def refresh():
+              page=1
+              while True:
+                  rows=metadata(root+'/releases/'+str(release['id'])+'/assets?per_page=100&page='+str(page))
+                  assets.update({row['name']:row for row in rows})
+                  if len(rows)<100:break
+                  page+=1
+          refresh()
+          class SignedStorageRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,request,*args,**kwargs):
+                  result=super().redirect_request(request,*args,**kwargs)
+                  if result:result.remove_header('Authorization')
+                  return result
+          def download(name):
+              assert re.fullmatch(r'codex-r4-transfer-(manifest\.json|(data|hd|pc)-[0-9]{5}\.part)',name)
+              item=assets[name]
+              for attempt in range(4):
+                  try:
+                      opener=urllib.request.build_opener(SignedStorageRedirect())
+                      request=urllib.request.Request(item['url'],headers={**headers,'Accept':'application/octet-stream'})
+                      with opener.open(request,timeout=90) as source,(Path('incoming')/name).open('wb') as destination:
+                          while True:
+                              chunk=source.read(1024*1024)
+                              if not chunk:break
+                              destination.write(chunk)
+                      assert (Path('incoming')/name).stat().st_size==item['size']
+                      return
+                  except Exception:
+                      if attempt==3:raise
+                      time.sleep(2+attempt)
+          download('codex-r4-transfer-manifest.json')
+          manifest=json.loads(Path('incoming/codex-r4-transfer-manifest.json').read_text())
+          names=[part['name'] for item in manifest['files'] for part in item['parts']]
+          assert len(names)==len(set(names))
+          pending=set(names);deadline=time.monotonic()+1800
+          while pending:
+              refresh()
+              available=[name for name in pending if name in assets and assets[name]['state']=='uploaded']
+              if available:
+                  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:list(pool.map(download,available))
+                  pending.difference_update(available)
+                  print(len(names)-len(pending),'/',len(names),'parts downloaded',flush=True)
+              if pending:
+                  assert time.monotonic()<deadline,'Timed out waiting for verified upload parts'
+                  time.sleep(12)
+          print('All',len(names),'parts downloaded with paginated asset discovery')
+          PY
+      - name: Restore exact APK bytes and verify every hash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib,re
+          incoming=Path('incoming');output=Path('assembled')
+          manifest=json.loads((incoming/'codex-r4-transfer-manifest.json').read_text())
+          expected={'DEAD-SPACE-MOBILE-PC-Setup-20261112-R4-FIX.exe': '6e4472e0dfe4bc4c5bdc438f5c1de39a8d763b87d63ebe52724fc64af63ba179'}
+          assert manifest['release']=='20261112-r4'
+          assert {f['name'] for f in manifest['files']}==set(expected)
+          for item in manifest['files']:
+              assert item['sha256']==expected[item['name']]
+              total=0;digest=hashlib.sha256()
+              with (output/item['name']).open('xb') as destination:
+                  for part in item['parts']:
+                      assert re.fullmatch(r'codex-r4-transfer-(data|hd|pc)-[0-9]{5}\.part',part['name'])
+                      data=(incoming/part['name']).read_bytes()
+                      assert len(data)==part['bytes'] and hashlib.sha256(data).hexdigest()==part['sha256']
+                      destination.write(data);digest.update(data);total+=len(data)
+              assert total==item['bytes'] and digest.hexdigest()==expected[item['name']]
+              print(item['name'],total,digest.hexdigest())
+          PY
+      - name: Upload full verified APKs
+        run: gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" assembled/*
+      - name: Remove only temporary transfer assets
+        run: |
+          python3 - <<'PY'
+          import json,os,subprocess,time
+          from pathlib import Path
+          manifest=json.loads(Path('incoming/codex-r4-transfer-manifest.json').read_text())
+          names=[p['name'] for f in manifest['files'] for p in f['parts']]+['codex-r4-transfer-manifest.json']
+          for name in names:
+              assert name.startswith('codex-r4-transfer-')
+              subprocess.run(['gh','release','delete-asset',os.environ['RELEASE_TAG'],'--repo',os.environ['GITHUB_REPOSITORY'],name,'--yes'],check=True)
+              time.sleep(.8)
+          PY
