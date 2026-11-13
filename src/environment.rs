@@ -263,6 +263,16 @@ impl Environment {
         let startup_time = Instant::now();
         let launched_bundle_id = bundle.bundle_identifier().to_owned();
 
+        // The 1.0.1 World build ships a fat ARMv6/ARMv7 binary whose old
+        // startup path is stable on its ARMv6 slice. Keep this preference
+        // scoped to that exact legacy build; current 1.3.34 and other apps
+        // retain the normal ARMv7 preference.
+        if launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.0.1" {
+            unsafe { std::env::set_var("TOUCHHLE_DS_PREFER_ARMV6", "1"); }
+        } else {
+            unsafe { std::env::remove_var("TOUCHHLE_DS_PREFER_ARMV6"); }
+        }
+
         if launched_bundle_id == "at.source.potato.full" {
             log!(
         "Applying PotatoGold compatibility profile: disable present rotation, remap touch location to landscape, fake network success, and use silent OpenAL fallback."
@@ -2097,6 +2107,25 @@ impl Environment {
                             log_no_panic!("[udfdbg] typename={:?}", s);
                         }
                     }
+                }
+
+                // World 1.0.1 calls an optional actor-name callback while
+                // probing the startup world. On the real binary this missing
+                // callback means "not found"; returning a null result lets
+                // the caller finish the lookup. The generic UDF fallback
+                // preserves the stale result and re-enters this lookup until
+                // the loop guard fires, so keep this exact legacy return site
+                // scoped to the 1.0.1 build.
+                if pc == 0x1000
+                    && self.bundle.bundle_identifier() == "com.ea.deadspace.bv"
+                    && self.bundle.bundle_version() == "1.0.1"
+                    && lr == 0x34b4ec
+                {
+                    self.cpu.regs_mut()[0] = 0;
+                    self.cpu.branch(GuestFunction::from_addr_with_thumb_bit(lr));
+                    self.udf_bypass_last = None;
+                    self.udf_bypass_count = 0;
+                    return;
                 }
 
                 // Track repeated occurrences of the same bypass site.

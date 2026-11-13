@@ -186,6 +186,19 @@ fn ABPersonCreateInSource(_env: &mut Environment, _source: ABRecordRef) -> ABRec
     Ptr::null()
 }
 
+fn ABPersonComparePeopleByName(
+    _env: &mut Environment,
+    _person1: ABRecordRef,
+    _person2: ABRecordRef,
+    _context: MutVoidPtr,
+) -> i32 {
+    // The legacy Dead Space phone build references this AddressBook comparator
+    // during startup only to sort an empty address book. Returning equality is
+    // the iOS result for two absent records and keeps the old dyld import
+    // resolved without fabricating contacts.
+    0
+}
+
 fn ABPersonGetTypeOfProperty(_env: &mut Environment, _property: ABPropertyID) -> i32 {
     0
 }
@@ -326,6 +339,7 @@ pub const FUNCTIONS: FunctionExports = &[
     // ABPerson
     export_c_func!(ABPersonCreate()),
     export_c_func!(ABPersonCreateInSource(_)),
+    export_c_func!(ABPersonComparePeopleByName(_, _, _)),
     export_c_func!(ABPersonGetTypeOfProperty(_)),
     export_c_func!(ABPersonCopyLocalizedPropertyName(_)),
     export_c_func!(ABPersonGetSortOrdering()),
