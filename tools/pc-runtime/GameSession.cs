@@ -69,7 +69,7 @@ namespace DeadSpaceBootstrap
                 catch (InvalidOperationException) { }
                 finally { if (!retained) candidate.Dispose(); }
             }
-            launch.Text = anyRunning ? "已启动" : "启动游戏  →";
+            launch.Text = DeadSpaceUi.UiLanguage.Translate(anyRunning ? "已启动" : "启动游戏  →");
             launch.Enabled = !anyRunning && !diagnosticExporting;
             UpdateDiagnosticStatus();
             stopGame.Enabled = gameProcess != null;

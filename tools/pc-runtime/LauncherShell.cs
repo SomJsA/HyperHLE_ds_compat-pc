@@ -122,10 +122,6 @@ namespace DeadSpaceBootstrap
             safeBlackFloor.CheckedChanged += delegate { safeBlackGray.Enabled = safeBlackFloor.Checked; safeBlackGrayValue.Enabled = safeBlackFloor.Checked; };
             updateSafeGray(null, EventArgs.Empty);
             safeBlackFloor.Checked = false;
-            foreach(Control control in graphics.Controls) if(control.Top>=84) control.Top+=88;
-            graphics.AutoScrollMinSize=new Size(710,1184);
-            AddCheck(graphics,overlayEnabled,84,"高清中文文字组件（章节 / 任务 / 字幕）",true);
-            AddCheck(graphics,advancedLighting,128,"高级光影（默认开启）",true);
             Heading(input, "鼠标与操作", "鼠标捕获、瞄准与常用操作；手柄摇杆在04页单独调整。", 22);
             AddComboRow(input, "鼠标捕获", 96, mouseLook, new[] { "关闭", "仅瞄准时捕获", "始终捕获" });
             BuildPointerOptions(input);
@@ -191,6 +187,16 @@ namespace DeadSpaceBootstrap
             Disposed += delegate { statusTip.Dispose(); };
             status.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom; Controls.Add(status);
             ArrangeDistributionPages(graphics, input, compatibility);
+            // Insert primary controls after the existing resolution-summary and
+            // row arrangement, so later layout passes cannot cover them.
+            int graphicsBottom=0;
+            foreach(Control control in graphics.Controls) {
+                if(control.Top>=96) control.Top+=112;
+                graphicsBottom=Math.Max(graphicsBottom,control.Bottom);
+            }
+            graphics.AutoScrollMinSize=new Size(710,graphicsBottom+24);
+            AddCheck(graphics,overlayEnabled,112,"高清中文文字组件（章节 / 任务 / 字幕）",true);
+            AddCheck(graphics,advancedLighting,156,"高级光影（默认开启）",true);
             BuildPlayDiagnostics(compatibility);
             Theme(this);
             navigationHost.BackColor = Shell;

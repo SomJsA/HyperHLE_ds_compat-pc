@@ -11,7 +11,7 @@ namespace DeadSpaceUi
     {
         private static readonly Dictionary<string, string> ZhToEn = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            {"00 关于", "00 About"},
+            {"00 关于", "00 About"}, {"已启动", "Running"},
             {"高级光影（默认开启）", "Advanced lighting (on by default)"},
             {"高清中文文字组件（章节 / 任务 / 字幕）", "HD Chinese text (chapters / objectives / subtitles)"},
             {"快行动，破坏者！\r\n让我们把泰坦空间站烧成灰！", "Wake the fuck up, Vandal !\r\nWe Have a Titan Station to Burn !"},
@@ -289,6 +289,7 @@ namespace DeadSpaceUi
                     .Replace("启动器配置：", "Launcher config: ")
                     .Replace("原生配置与存档：", "Native config and saves: ")
                     .Replace("已识别：", "Detected: ")
+                    .Replace("已识别:", "Detected: ")
                     .Replace("已按屏幕预置；保存后下次直接读取配置。", "screen preset applied; the saved configuration will be reused next launch.")
                     .Replace("另需 CPU 解码和驱动空间；估算不是实测峰值。", "CPU decode and driver space are additional; this is an estimate, not a measured peak.")
                     .Replace("已选择「", "Selected ")
