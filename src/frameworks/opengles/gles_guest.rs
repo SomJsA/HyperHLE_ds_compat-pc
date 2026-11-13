@@ -9714,6 +9714,7 @@ fn glUniform1f(env: &mut Environment, location: GLint, v0: GLfloat) {
     with_ctx_and_mem(env, |gles, _mem| unsafe { gles.Uniform1f(location, v0) });
 }
 fn glUniform2f(env: &mut Environment, location: GLint, v0: GLfloat, v1: GLfloat) {
+    let (v0,v1)=crate::ds_shader_opening_fog::parameters(env,location,v0,v1);
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.Uniform2f(location, v0, v1)
     });

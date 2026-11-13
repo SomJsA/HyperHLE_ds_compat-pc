@@ -149,6 +149,13 @@ pub(super) fn shader_compat_state(env:&mut Environment)->Option<Rc<RefCell<crate
     let object=env.objc.borrow::<EAGLContextHostObject>(context);
     object.shader_compat.borrow().enabled().then(||object.shader_compat.clone())
 }
+pub(crate) fn shader_opening_fog_range(env:&mut Environment,renderer:u32,frame:u64,start:f32,end:f32)->Option<(f32,f32)> {
+    let context=env.framework_state.opengles.effective_ctx_id(env.current_thread)?;
+    let object=env.objc.borrow::<EAGLContextHostObject>(context);
+    if object.api!=2 {return None;}
+    let state=object.shader_compat.clone();
+    let result=state.borrow_mut().opening_range(renderer,frame,start,end); result
+}
 pub(super) fn shader_no_fog_key(env:&mut Environment)->Option<u32> {
     let context=env.framework_state.opengles.effective_ctx_id(env.current_thread)?;
     let object=env.objc.borrow::<EAGLContextHostObject>(context);

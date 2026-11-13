@@ -22,6 +22,7 @@ pub(crate) struct Namespace {
     objects: HashMap<u32, Rc<Texture>>,
 }
 pub(crate) struct GuestState {
+    opening_fog: HashMap<u32, crate::gles::ds_opening_fog::OpeningFog>,
     enabled: bool,
     force: bool,
     no_fog: Vec<u32>,
@@ -32,6 +33,7 @@ pub(crate) struct GuestState {
 impl Default for GuestState {
     fn default() -> Self {
         Self {
+            opening_fog: Default::default(),
             enabled: std::env::var("TOUCHHLE_DS_ES2_FOG_FIX").as_deref() == Ok("1")
                 && std::env::var("TOUCHHLE_DS_ES2_SCOPED_FOG").as_deref() != Ok("0"),
             force: std::env::var("TOUCHHLE_DS_NO_FOG").as_deref() == Ok("1"),
@@ -46,6 +48,12 @@ impl Default for GuestState {
     }
 }
 impl GuestState {
+    pub(crate) fn opening_range(&mut self, renderer:u32, frame:u64, start:f32, end:f32)->Option<(f32,f32)> {
+        // Context-owned history, independent of shared texture identities.
+        // An unexpected renderer population fails closed and remains bounded.
+        if self.opening_fog.len()>=16 && !self.opening_fog.contains_key(&renderer) { return None; }
+        self.opening_fog.entry(renderer).or_default().range(frame,start,end)
+    }
     pub(crate) fn enabled(&self) -> bool {
         self.enabled
     }

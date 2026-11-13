@@ -323,3 +323,5 @@ pub fn create_gles1_ctx_no_parent_stack(
     }
     gles1_ctx.expect("Couldn't create OpenGL ES 1.1 context!")
 }
+
+pub(crate) mod ds_opening_fog;

@@ -39,6 +39,7 @@ mod ds_frontend_controller;
 mod ds_font_roles;
 mod ds_frontend_trace;
 mod ds_game_clock;
+mod ds_shader_opening_fog;
 mod ds_shader_projection;
 mod ds_qte_geometry;
 mod ds_pointer;

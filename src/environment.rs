@@ -1543,6 +1543,7 @@ impl Environment {
         crate::ds_font_roles::prime(&mut self);
         crate::ds_frontend_trace::prime(&mut self);
         crate::ds_game_clock::prime(&mut self);
+        crate::ds_shader_opening_fog::prime(&mut self);
         crate::ds_shader_projection::prime(&mut self);
         crate::ds_guest_skin_probe::prime(&mut self);
         crate::frameworks::opengles::ds_test_assist::prime(&mut self);
