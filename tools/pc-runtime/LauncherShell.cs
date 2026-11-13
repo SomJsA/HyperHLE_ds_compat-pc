@@ -122,6 +122,10 @@ namespace DeadSpaceBootstrap
             safeBlackFloor.CheckedChanged += delegate { safeBlackGray.Enabled = safeBlackFloor.Checked; safeBlackGrayValue.Enabled = safeBlackFloor.Checked; };
             updateSafeGray(null, EventArgs.Empty);
             safeBlackFloor.Checked = false;
+            foreach(Control control in graphics.Controls) if(control.Top>=84) control.Top+=88;
+            graphics.AutoScrollMinSize=new Size(710,1184);
+            AddCheck(graphics,overlayEnabled,84,"高清中文文字组件（章节 / 任务 / 字幕）",true);
+            AddCheck(graphics,advancedLighting,128,"高级光影（默认开启）",true);
             Heading(input, "鼠标与操作", "鼠标捕获、瞄准与常用操作；手柄摇杆在04页单独调整。", 22);
             AddComboRow(input, "鼠标捕获", 96, mouseLook, new[] { "关闭", "仅瞄准时捕获", "始终捕获" });
             BuildPointerOptions(input);
@@ -154,7 +158,6 @@ namespace DeadSpaceBootstrap
             AddCheck(compatibility, confirmQuit, 492, "关闭游戏窗口前确认退出", true);
             AddCheck(compatibility, nativeInputs, 536, "PC 原生视角与移动", true);
             AddTextRow(compatibility, "触摸回退瞄准点", 580, aimPoint);
-            AddCheck(compatibility, overlayEnabled, 624, "高清图文组件（章节 / 任务追踪 / 字幕；样式由外部工作台调整）", true);
             AddCheck(compatibility, superMonitor, 668, "性能监视器与记录（2Hz）", false);
             AddComboRow(compatibility, "纹理上传同步", 712, textureSync,
                 new[] { "Finish（保守，默认）", "Flush（A/B）", "关闭（诊断）" });

@@ -307,6 +307,7 @@ namespace DeadSpaceBootstrap
             frameDump.Checked = false;
             nativeHud.Checked = true;
             overlayEnabled.Checked = true;
+            advancedLighting.Checked = true;
             subtitleMode.SelectedIndex=0;
             confirmQuit.Checked = true;
             superMonitor.Checked = false;
@@ -391,6 +392,8 @@ namespace DeadSpaceBootstrap
             frameDump.Checked = GetBool(values, "frame_dump", false);
             nativeHud.Checked = GetBool(values, "native_hud", true);
             overlayEnabled.Checked = GetBool(values, "overlay_enabled", true);
+            advancedLighting.Checked = GetBool(values, "advanced_lighting", true);
+            launchReviewCompleted = GetBool(values, "launch_review_r4_completed", false);
             SetCombo(subtitleMode,Get(values,"subtitle_mode","整段三行"));
             confirmQuit.Checked = GetBool(values, "confirm_quit", true);
             superMonitor.Checked = manualDiagnosticPolicy && GetBool(values, "super_monitor", false);
@@ -474,6 +477,8 @@ namespace DeadSpaceBootstrap
                 "frame_dump=" + (frameDump.Checked ? "1" : "0"),
                 "native_hud=" + (nativeHud.Checked ? "1" : "0"),
                 "overlay_enabled=" + (overlayEnabled.Checked ? "1" : "0"),
+                "advanced_lighting=" + (advancedLighting.Checked ? "1" : "0"),
+                "launch_review_r4_completed=" + (launchReviewCompleted ? "1" : "0"),
                 "subtitle_mode=" + subtitleMode.SelectedItem,
                 "confirm_quit=" + (confirmQuit.Checked ? "1" : "0"),
                 "super_monitor=" + (superMonitor.Checked ? "1" : "0"),
@@ -558,6 +563,7 @@ namespace DeadSpaceBootstrap
             string texturePath;
             try { texturePath = SelectedTextureRoot(); }
             catch (Exception error) { status.Text = error.Message; return; }
+            if (!ReviewFirstLaunch()) return;
             using (var warning = new FlickerWarningForm())
                 if (warning.ShowDialog(this) != DialogResult.OK) return;
             try { SaveKeyBindings(); SaveGamepadBindings(); }
@@ -568,6 +574,7 @@ namespace DeadSpaceBootstrap
             // Visual repairs must accompany every launch, including direct EXE
             // starts. Do not depend on the environment of a verification script.
             VisualCompatibility.Apply();
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_NATIVE_EFFECTS",advancedLighting.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_SUPER_MONITOR",superMonitor.Checked ? "1" : null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_PERF_TRACE",superMonitor.Checked ? "1" : null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_RUN_ID",Path.GetFileName(baseDir.TrimEnd(Path.DirectorySeparatorChar)) + ":" + RuntimeBuildTag());
@@ -804,7 +811,7 @@ namespace DeadSpaceBootstrap
             args.Append(" --force-composition --landscape-right");
             args.Append(" --scale-hack=").Append(renderScale);
             args.Append(" --stabilize-virtual-cursor=0.06,4");
-            args.Append(" --preferred-languages=zh-Hans,zh");
+            if (overlayEnabled.Checked) args.Append(" --preferred-languages=zh-Hans,zh");
             args.Append(" --stick-to-touch=30,190,120,110");
             if (fastPresent.Checked)
             {

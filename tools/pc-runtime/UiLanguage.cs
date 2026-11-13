@@ -12,6 +12,8 @@ namespace DeadSpaceUi
         private static readonly Dictionary<string, string> ZhToEn = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             {"00 关于", "00 About"},
+            {"高级光影（默认开启）", "Advanced lighting (on by default)"},
+            {"高清中文文字组件（章节 / 任务 / 字幕）", "HD Chinese text (chapters / objectives / subtitles)"},
             {"快行动，破坏者！\r\n让我们把泰坦空间站烧成灰！", "Wake the fuck up, Vandal !\r\nWe Have a Titan Station to Burn !"},
             {"死亡空间移动版（IOS端高清移植） · 启动器", "DEAD SPACE MOBILE · Launcher"},
             {"死亡空间移动版（IOS端高清移植） · 安装与更新", "DEAD SPACE MOBILE · Install & Update"},
