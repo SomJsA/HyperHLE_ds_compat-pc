@@ -1,0 +1,59 @@
+name: Verify public R4 updates and downloads
+on:
+  push:
+    branches: [codex/verify-public-20261112-r4]
+permissions:
+  contents: read
+jobs:
+  public:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify anonymous latest API, exact release files and comparison images
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json,time,hashlib,subprocess
+          from pathlib import Path
+          expected={'SomJsA/HyperHLE_ds_compat-pc': {'commit': '69d8aa385ceff7094c5f0ccfa7155750de36c8b4', 'files': {'DEAD-SPACE-MOBILE-PC-Setup-20261112-R4-FIX.exe': {'bytes': 57853440, 'sha256': '6e4472e0dfe4bc4c5bdc438f5c1de39a8d763b87d63ebe52724fc64af63ba179'}}, 'source_tag': '20261112-r4-source', 'source_commit': 'e893777a68d22aee140588086ec87b22035b84d4', 'regular_file_blobs': {'android/app/src/main/assets/touchHLE_default_options.txt': 'ffbc952253638288f97a6feb4ca023b55afeb3a9', 'android/app/src/main/res/drawable-nodpi/icon.png': '899780e7282e3d587c059028b461cdebeb42e447', 'android/app/src/main/res/drawable-nodpi/icon_preview.png': '899780e7282e3d587c059028b461cdebeb42e447', 'android/app/src/main/res/drawable-nodpi/icon_unofficial.png': '899780e7282e3d587c059028b461cdebeb42e447'}}, 'SomJsA/HyperHLE_ds_compat-android': {'commit': '00601e337e1687e39f70b29217963759ae6e833b', 'files': {'DEAD-SPACE-MOBILE-DATA-20261112-R4.apk': {'bytes': 601830859, 'sha256': '2ddad1f5f19c95afe73ebc2111e998cb94a7405c9a05942a0e678d1f353e216d'}, 'DEAD-SPACE-MOBILE-HD-20261112-R4.apk': {'bytes': 1385441154, 'sha256': '8a64548158225bf88771198ff5919ed39aa5798ca7eb94a89b2b8df6f37296bb'}}, 'source_tag': '20261112-r4-source', 'source_commit': '00601e337e1687e39f70b29217963759ae6e833b', 'regular_file_blobs': {'android/app/src/main/assets/touchHLE_default_options.txt': 'ffbc952253638288f97a6feb4ca023b55afeb3a9', 'android/app/src/main/res/drawable-nodpi/icon.png': '899780e7282e3d587c059028b461cdebeb42e447', 'android/app/src/main/res/drawable-nodpi/icon_preview.png': '899780e7282e3d587c059028b461cdebeb42e447', 'android/app/src/main/res/drawable-nodpi/icon_unofficial.png': '899780e7282e3d587c059028b461cdebeb42e447'}}}
+          images={'R4-advanced-lighting-detail.jpg': '66fd9a5d0bf4ef8f298b87ef31188fa401980b482da544dd7bec56f18f89d992', 'R4-opening-occlusion-detail.jpg': 'ba0d2f23f49170d1adf4dd4360b0bb7fc1c8be09fc128a67bc60df4426eb219d', 'R4-opening-flash-detail.jpg': 'd411ed261d068ea1beea31a402eb0d0cb8936c8e19fba876b65799c540c83338'}
+          tag='20261112-r4'
+          def get(url):
+              request=urllib.request.Request(url,headers={'Accept':'application/vnd.github+json','User-Agent':'DeadSpaceMobile-PublicR4Verification'})
+              with urllib.request.urlopen(request,timeout=45) as response:
+                  assert response.status==200
+                  body=response.read(512*1024+1)
+                  assert len(body)<=512*1024
+                  return body
+          for repo,item in expected.items():
+              body=get('https://api.github.com/repos/'+repo+'/releases/latest?verify='+str(int(time.time())))
+              release=json.loads(body)
+              assert release['tag_name']==tag and not release['draft'] and not release['prerelease']
+              reference=json.loads(get('https://api.github.com/repos/'+repo+'/git/ref/tags/'+tag))
+              assert reference['object']['sha']==item['commit']
+              source_reference=json.loads(get('https://api.github.com/repos/'+repo+'/git/ref/tags/'+item['source_tag']))
+              assert source_reference['object']['sha']==item['source_commit']
+              directory=Path('source-'+repo.rsplit('-',1)[-1])
+              cloned=subprocess.run(['git','clone','--depth','1','--branch',item['source_tag'],'--single-branch','https://github.com/'+repo+'.git',str(directory)],capture_output=True,text=True)
+              assert cloned.returncode==0,cloned.stderr[-1500:]
+              for name,blob in item['regular_file_blobs'].items():
+                  path=directory/name
+                  assert path.is_file() and not path.is_symlink()
+                  data=path.read_bytes()
+                  assert hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==blob
+              print('PUBLIC_SOURCE_CHECKOUT_OK',repo,item['source_commit'],flush=True)
+              assets={a['name']:a for a in release['assets']}
+              assert not any(n.startswith('codex-r4-transfer-') for n in assets)
+              for name,expected_file in item['files'].items():
+                  asset=assets[name]
+                  assert asset['size']==expected_file['bytes'] and asset['digest']=='sha256:'+expected_file['sha256'] and asset['state']=='uploaded'
+                  request=urllib.request.Request(asset['browser_download_url'],method='HEAD')
+                  with urllib.request.urlopen(request,timeout=45) as response:
+                      assert response.status==200 and int(response.headers['Content-Length'])==asset['size']
+                  print('PUBLIC_BINARY_OK',repo,name,asset['digest'],flush=True)
+              print('PUBLIC_LATEST_JSON',repo,json.dumps(release,ensure_ascii=True,separators=(',',':')),flush=True)
+          for name,sha in images.items():
+              url='https://raw.githubusercontent.com/SomJsA/HyperHLE_ds_compat-pc/'+tag+'/docs/releases/'+tag+'/'+name
+              assert hashlib.sha256(get(url)).hexdigest()==sha
+              print('PUBLIC_COMPARISON_OK',name,sha,flush=True)
+          print('ANONYMOUS_R4_LATEST_AND_DOWNLOADS_AND_IMAGES_OK',flush=True)
+          PY
