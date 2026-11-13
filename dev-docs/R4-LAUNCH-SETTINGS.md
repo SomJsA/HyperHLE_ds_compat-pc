@@ -6,6 +6,6 @@ The first interactive Launch click reviews Chinese HD text components, native hi
 
 Both languages explain that HD components currently contain Chinese text, can be disabled to use native game text/language settings, welcome multilingual contributions and plan support before R8 if no submissions arrive. Disabling the components also removes the forced Chinese preferred-language argument; UI language and game-native language settings remain distinct.
 
-Ordinary APK first review explicitly advertises advanced lighting despite its off default. Android main controls precede old quality presets; navigation links to text, display/lighting, presets, controls/details and saves. Labels must fit in both languages, and physical output size must not omit temporarily visible system bars.
+Ordinary APK first review explicitly advertises advanced lighting despite its off default. Android main controls are prominent, with no quality-preset buttons. Navigation links to text, display/lighting, gestures, details and saves. Labels must fit in both languages, and physical output size must not omit temporarily visible system bars.
 
 Acceptance evidence is recorded in the project report: actual first-launch cancel/confirm, preference persistence, ordinary low-to-high native renderer/context change, HD default high, native English text with components off, unchanged original saves and cleanup/sleep. Source/packaging tests do not replace full-game or hardware/manual gates. Publication remains subject to the user's explicit confirmation.
