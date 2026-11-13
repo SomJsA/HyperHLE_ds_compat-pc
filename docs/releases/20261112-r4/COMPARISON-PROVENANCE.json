@@ -1,0 +1,110 @@
+{
+  "operations": [
+    "crop",
+    "aspect-preserving resize",
+    "bilingual labels"
+  ],
+  "generated_game_pixels": false,
+  "brightness_adjustment": false,
+  "images": [
+    {
+      "file": "R4-advanced-lighting-detail.jpg",
+      "sha256": "66fd9a5d0bf4ef8f298b87ef31188fa401980b482da544dd7bec56f18f89d992",
+      "bytes": 162766,
+      "source_sha256": [
+        "a0c2130557953459d32e9360c575eec9db8804d46aa387678dbfe87fe37c1667",
+        "637ed22afde38f92fa73e54b9676bab311f3067d24d82e96b78fcfe16fdb832e"
+      ],
+      "source_dimensions": [
+        [
+          960,
+          640
+        ],
+        [
+          960,
+          640
+        ]
+      ],
+      "crop_xyxy": [
+        [
+          145,
+          285,
+          430,
+          440
+        ],
+        [
+          145,
+          285,
+          430,
+          440
+        ]
+      ]
+    },
+    {
+      "file": "R4-opening-occlusion-detail.jpg",
+      "sha256": "ba0d2f23f49170d1adf4dd4360b0bb7fc1c8be09fc128a67bc60df4426eb219d",
+      "bytes": 120040,
+      "source_sha256": [
+        "70a36a833aeb57baffa7320c3372cfbe98279a2c0dbf8a1fbe2ff1cba7c1c06f",
+        "84b80333f8d4a559cf380e75a6c9386e62567b922ea5270015d0e2b127de7819"
+      ],
+      "source_dimensions": [
+        [
+          960,
+          640
+        ],
+        [
+          960,
+          640
+        ]
+      ],
+      "crop_xyxy": [
+        [
+          240,
+          80,
+          930,
+          530
+        ],
+        [
+          240,
+          80,
+          930,
+          530
+        ]
+      ]
+    },
+    {
+      "file": "R4-opening-flash-detail.jpg",
+      "sha256": "d411ed261d068ea1beea31a402eb0d0cb8936c8e19fba876b65799c540c83338",
+      "bytes": 161125,
+      "source_sha256": [
+        "0aa8bbcf6954a0faa531b5583aa2b21cbcff02f9703887fed59fbd0244e9d4d6",
+        "221e11a4a766c00ff4d35f89f967156669f0ac8f628110a768125d987760574d"
+      ],
+      "source_dimensions": [
+        [
+          1920,
+          1200
+        ],
+        [
+          1920,
+          1200
+        ]
+      ],
+      "crop_xyxy": [
+        [
+          110,
+          300,
+          1300,
+          1080
+        ],
+        [
+          110,
+          300,
+          1300,
+          1080
+        ]
+      ]
+    }
+  ]
+}
