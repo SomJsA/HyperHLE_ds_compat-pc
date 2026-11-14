@@ -81,9 +81,10 @@ namespace DeadSpaceBootstrap
 
         private DeadSpaceResources.IpaLanguage SelectedLaunchTextLanguage()
         {
-            // Disabling the HD component must preserve the user's native
-            // language selection; fallback is only for the enabled component.
-            return overlayEnabled.Checked ? EffectiveTextLanguage() : SelectedTextLanguage();
+            // Keep the selected bank. The native VFS merges missing Japanese
+            // entries from English at launch; disabling the component remains
+            // a fully native path.
+            return SelectedTextLanguage();
         }
 
         private bool PrepareNativeLanguageSetting(DeadSpaceResources.IpaLanguage language)

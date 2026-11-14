@@ -867,11 +867,15 @@ namespace DeadSpaceBootstrap
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_TEXT_PATCH"] = useHdTextOverlay ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_TEXT_LANGUAGE"] = selectedTextLanguage == null ? "native" : selectedTextLanguage.Id;
+                info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_TEXT_FALLBACK"] = overlayEnabled.Checked && selectedTextLanguage != null && !selectedTextLanguage.Complete && !String.IsNullOrEmpty(selectedTextLanguage.FallbackId) ? "1" : null;
                 if (overlayEnabled.Checked && selectedTextLanguage != null)
                 {
+                    string preferredLanguages = selectedTextLanguage.LaunchPreferredLanguages();
+                    args = args.Replace(" --preferred-languages=" + selectedTextLanguage.PreferredLanguages, " --preferred-languages=" + preferredLanguages);
                     info.EnvironmentVariables["LANG"] = selectedTextLanguage.PreferredLanguages.Split(',')[0];
                     info.EnvironmentVariables["LC_ALL"] = selectedTextLanguage.PreferredLanguages.Split(',')[0];
                 }
+                info.Arguments = args.ToString();
                 info.EnvironmentVariables["TOUCHHLE_DS_CONFIRM_QUIT"] = confirmQuit.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_LAUNCHER_PATH"] = Application.ExecutablePath;
                 PrepareDefaultOptimizationEnvironment(info);

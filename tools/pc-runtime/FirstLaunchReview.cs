@@ -19,7 +19,7 @@ namespace DeadSpaceBootstrap
                 summary=FirstLaunchReviewForm.Summary(overlayEnabled.Checked, language, advancedLighting.Checked,
                     PcRenderResolution.Size(scale),SelectedOutputSize());
                 if (selectedLanguage != null && !selectedLanguage.Complete)
-                    summary += "\r\n" + (DeadSpaceUi.UiLanguage.English ? "This IPA language bank is incomplete; launch will fall back to its complete English bank to avoid placeholder text." : "该 IPA 的语言资源不完整；启动时会回退到完整英语资源，避免出现占位符。");
+                    summary += "\r\n" + (DeadSpaceUi.UiLanguage.English ? "This IPA language bank is partial; existing Japanese entries stay Japanese and missing entries use English to avoid placeholder text." : "该 IPA 的语言资源不完整；已有日文条目继续使用日文，缺失条目回退英语，避免出现占位符。");
                 if (resourceProfile != null) summary += "\r\n\r\n" + resourceProfile.Describe(DeadSpaceUi.UiLanguage.English);
             } catch (InvalidOperationException error) { status.Text=error.Message; return false; }
             using (var review=new FirstLaunchReviewForm(summary)) {

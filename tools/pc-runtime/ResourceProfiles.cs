@@ -19,10 +19,14 @@ namespace DeadSpaceResources
         internal bool HdOverlay;
         internal bool Complete = true;
         internal string FallbackId;
+        internal string LaunchPreferredLanguages()
+        {
+            return Complete || String.IsNullOrEmpty(FallbackId) ? PreferredLanguages : PreferredLanguages + ",en-US,en";
+        }
         internal string Display(bool english)
         {
             string label = english ? LabelEn : LabelZh;
-            return Complete ? label : label + (english ? " (partial; falls back to English)" : "（部分资源，启动回退英语）");
+            return Complete ? label : label + (english ? " (partial; missing entries fall back to English)" : "（部分资源，缺失条目回退英语）");
         }
     }
 
