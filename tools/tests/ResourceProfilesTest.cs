@@ -29,6 +29,18 @@ internal static class ResourceProfilesTest
                 Check(DeadSpaceResources.IpaProfiles.FindLanguage(p, "zh-tieba").HdOverlay && DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").HdOverlay && DeadSpaceResources.IpaProfiles.FindLanguage(p, "de-original").HdOverlay && !DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").Complete && DeadSpaceResources.IpaProfiles.EffectiveLanguage(p, "ja-original").Id == "en-original" && DeadSpaceResources.IpaProfiles.FindLanguage(p, "fr-original").PreferredLanguages == "fr-FR,fr", "multilingual HD overlay, incomplete Japanese fallback and locale mapping");
                 Check(p.Describe(true).Contains("1.3.34") && p.Describe(false).Contains("issue"), "Bilingual recommendation / issues");
             }
+            if (args.Length >= 7)
+            {
+                string[] extraIds = { "ipad-world-1.3.11", "ipad-1.0.3-build-1.3.11" };
+                for (int i = 0; i < extraIds.Length; i++)
+                {
+                    var p = IpaProfiles.Inspect(args[5 + i]);
+                    Check(p.Id == extraIds[i], "Real IPA identity " + extraIds[i]);
+                    Check(p.Lighting && p.HdText && !p.Textures, "New iPad capability " + extraIds[i]);
+                    Check(p.Languages.Count == 8, "New iPad language banks " + extraIds[i]);
+                    Check(p.Describe(true).Contains("1.3.34") && p.Describe(false).Contains("旧版"), "New iPad bilingual compatibility disclosure");
+                }
+            }
             string data = Path.Combine(output, "data"); Directory.CreateDirectory(data);
             string[] roots = new[] { "first", "second" }.Select(n => Path.Combine(data, "marker-content", n)).ToArray();
             foreach (string root in roots) { Directory.CreateDirectory(Path.Combine(root, "payload")); File.WriteAllText(Path.Combine(root, "installation.json"), "{}"); Fixture(Path.Combine(root, "payload", "DeadSpace.ipa"), root); }

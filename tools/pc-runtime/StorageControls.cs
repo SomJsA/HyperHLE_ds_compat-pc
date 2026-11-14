@@ -30,7 +30,7 @@ namespace DeadSpaceBootstrap
         private readonly System.Collections.Generic.List<Control> profileStorageTools = new System.Collections.Generic.List<Control>();
         private void RefreshStoragePath()
         {
-            string bundle = resourceProfile == null ? SaveStorage.Profile : resourceProfile.Id == "ipad-1.0.3" ? "com.ea.deadspace.ipad.bv" : resourceProfile.Id == "iphone-1.0.3" ? "com.ea.deadspace.inc" : SaveStorage.Profile;
+            string bundle = resourceProfile == null ? SaveStorage.Profile : resourceProfile.Id.StartsWith("ipad-", StringComparison.OrdinalIgnoreCase) ? "com.ea.deadspace.ipad.bv" : resourceProfile.Id == "iphone-1.0.3" ? "com.ea.deadspace.inc" : SaveStorage.Profile;
             storagePath.Text = "启动器配置：" + ConfigurationDirectory + "\r\n原生配置与存档：" + Path.Combine(SelectedDataRoot(), "touchHLE_sandbox", bundle);
             saveCompatibilityNote.Text = resourceProfile != null && resourceProfile.Id == "current"
                 ? "当前 1.3.34：存档可通过 PC / Android 三槽 ZIP 交换；不会与旧 IPA 自动合并。"

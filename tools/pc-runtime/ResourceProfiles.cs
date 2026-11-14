@@ -62,6 +62,8 @@ namespace DeadSpaceResources
         private static readonly string[][] Known = {
             new[] { "current", "Dead Space 1.3.34", "4732db2574300a5407b783c72e0caa6002e961441379cbb86ef5780fa06d36f0", "90fdce9a5b90f84a39156050c1011d36168357085e466fa268821b6ea03010b5" },
             new[] { "ipad-1.0.3", "Dead Space iPad 1.0.3", "28888b16cf63e7b548f197d046f71bb658a0ba05dd3fb33d015f64c820022d2f", "e5811c990a9797338f8fd76c78aa356b9b9a8997b5875df27783a607d65a2206" },
+            new[] { "ipad-world-1.3.11", "Dead Space iPad World 1.3.11", "4be1a481ca9127dd118a7088b2810fb1fd86e69210d952f248335b9a07b797a6", "e4abcb790afea3c084976b2a31e6e1b8e34a4f87079d46ada24012a4220d504b" },
+            new[] { "ipad-1.0.3-build-1.3.11", "Dead Space iPad 1.0.3 (build 1.3.11)", "dfaf979d0726de925d803c4baa9108acf7fdbfae221618b11ec1b315e9c9305b", "650e741753567e9b55cfaf9eb9f3f2b00397074b5b6ed1f9b1abab6e4cf8795d" },
             new[] { "iphone-1.0.3", "Dead Space iPhone 1.0.3 (build 1.3.8)", "cb751c1e6c4dffb67b08496c574df2bbf9bf637a86a1f44ce0d2c0cd2a7f3436", "0d83bece924b68c58c20353daeec21f9f1a6a064ad39170a2dc5391d8228c8cf" },
             new[] { "world-1.0.1", "Dead Space World 1.0.1", "311a769fc23614981649384fb264f638574999dde05bbe709faef3a5cd5aca8f", "7c67ee8cec2d88c64e6a643369c3b29f7f7f5f5b077d8380cf66210fc8a80851" }
         };
@@ -126,7 +128,7 @@ namespace DeadSpaceResources
                 }
                 else
                 {
-                    bool high = known[0] == "current" || known[0] == "ipad-1.0.3";
+                    bool high = known[0] == "current" || known[0].StartsWith("ipad-", StringComparison.OrdinalIgnoreCase);
                     if (high && !zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published_ipad2/", StringComparison.Ordinal))) return profile;
                     profile.Id = known[0]; profile.Name = known[1]; profile.Lighting = high;
                     // The PC HD text layer is host-side and is not tied to the

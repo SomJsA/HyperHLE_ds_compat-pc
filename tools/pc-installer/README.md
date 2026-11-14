@@ -38,6 +38,8 @@ launcher share `tools/pc-runtime/ResourceProfiles.cs`:
 | --- | --- | --- |
 | 1.3.34 | Standard / advanced | Matching marker 2x / 4x / 6x; multilingual HD text and PC input supported |
 | iPad 1.0.3 | Standard / advanced | Generic PC-to-touch compatibility path; language banks/host fonts load; binary-specific HD takeover and full gameplay controls still require verification; original textures only |
+| iPad World 1.3.11 | Standard / advanced | Generic PC-to-touch compatibility path; language banks/host fonts load; binary-specific HD takeover and full gameplay controls still require verification; original textures only |
+| iPad 1.0.3 (build 1.3.11) | Standard / advanced | Generic PC-to-touch compatibility path; language banks/host fonts load; binary-specific HD takeover and full gameplay controls still require verification; original textures only |
 | iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Generic PC-to-touch compatibility path; language banks/host fonts load; binary-specific HD takeover and full gameplay controls still require verification; original textures only |
 | Other fingerprints with standard published/stringdata layout | Unverified experimental path | HD text and compatible PC input are offered by default with a bilingual warning; lighting / external textures remain disabled and either trial can be turned off |
 | Other fingerprints without the standard layout | Unverified native path | Disabled pending adaptation |

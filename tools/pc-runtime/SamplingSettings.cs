@@ -11,9 +11,10 @@ namespace DeadSpaceBootstrap
         private readonly Label renderResolutionSummary = new Label();
         private bool AutomaticRenderSelected { get { return DeadSpaceUi.UiLanguage.EquivalentLabel(Convert.ToString(scaleHack.SelectedItem),AutomaticRenderScale); } }
         private bool LegacyIpaResolution { get { return resourceProfile != null && resourceProfile.Id != "current"; } }
+        private bool IpadGuestResolution { get { return resourceProfile != null && resourceProfile.Id.StartsWith("ipad-", StringComparison.OrdinalIgnoreCase); } }
         private int ResourceRenderScaleCap { get { return 32; } }
-        private int ResourceBaseWidth { get { return resourceProfile != null && resourceProfile.Id == "ipad-1.0.3" ? 768 : LegacyIpaResolution ? 320 : PcRenderResolution.BaseWidth; } }
-        private int ResourceBaseHeight { get { return resourceProfile != null && resourceProfile.Id == "ipad-1.0.3" ? 1024 : LegacyIpaResolution ? 480 : PcRenderResolution.BaseHeight; } }
+        private int ResourceBaseWidth { get { return IpadGuestResolution ? 768 : LegacyIpaResolution ? 320 : PcRenderResolution.BaseWidth; } }
+        private int ResourceBaseHeight { get { return IpadGuestResolution ? 1024 : LegacyIpaResolution ? 480 : PcRenderResolution.BaseHeight; } }
         private int EffectiveRenderScale(int scale) { return Math.Min(scale, ResourceRenderScaleCap); }
         private string ResourceRenderSize(int scale) { return checked(scale * ResourceBaseWidth) + " × " + checked(scale * ResourceBaseHeight); }
         private int AutomaticScaleForResource(int height)
@@ -49,7 +50,7 @@ namespace DeadSpaceBootstrap
             try {
                 int height = RenderReferenceHeight(), native = AutomaticScaleForResource(height);
                 int actual = SelectedRenderScale(); string output = SelectedOutputSize();
-                string legacyNote = resourceProfile != null && resourceProfile.Id == "ipad-1.0.3" ? (DeadSpaceUi.UiLanguage.English ? "\r\niPad guest size follows the original 768×1024 base; 8x is 6144×8192 and may require substantial VRAM." : "\r\niPad 客体按原始 768×1024 基准计算；8×为 6144×8192，可能需要大量显存。") : LegacyIpaResolution ? (DeadSpaceUi.UiLanguage.English ? "\r\nLegacy phone guest size follows its original 320×480 base; 8x is 2560×3840." : "\r\n旧手机 IPA 客体按原始 320×480 基准计算；8×为 2560×3840。") : "";
+                string legacyNote = IpadGuestResolution ? (DeadSpaceUi.UiLanguage.English ? "\r\niPad guest size follows the original 768×1024 base; 8x is 6144×8192 and may require substantial VRAM." : "\r\niPad 客体按原始 768×1024 基准计算；8×为 6144×8192，可能需要大量显存。") : LegacyIpaResolution ? (DeadSpaceUi.UiLanguage.English ? "\r\nLegacy phone guest size follows its original 320×480 base; 8x is 2560×3840." : "\r\n旧手机 IPA 客体按原始 320×480 基准计算；8×为 2560×3840。") : "";
                 renderResolutionSummary.Text = "屏幕匹配：" + ResourceRenderSize(native) + "（底分 " + native + "×；屏幕高度 " + height + "）\r\n当前内部："
                     + ResourceRenderSize(actual) + " · 输出：" + (output == null ? "跟随内部" : output.Replace("x", " × "))
                     + (AutomaticRenderSelected ? " · 自动" : " · 手动") + legacyNote;
