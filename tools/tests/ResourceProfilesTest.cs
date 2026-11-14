@@ -32,7 +32,9 @@ internal static class ResourceProfilesTest
             string data = Path.Combine(output, "data"); Directory.CreateDirectory(data);
             string[] roots = new[] { "first", "second" }.Select(n => Path.Combine(data, "marker-content", n)).ToArray();
             foreach (string root in roots) { Directory.CreateDirectory(Path.Combine(root, "payload")); File.WriteAllText(Path.Combine(root, "installation.json"), "{}"); Fixture(Path.Combine(root, "payload", "DeadSpace.ipa"), root); }
-            Check(!IpaProfiles.Inspect(Path.Combine(roots[0], "payload", "DeadSpace.ipa")).Adapted, "Unknown remains unadapted");
+            var unknownProfile = IpaProfiles.Inspect(Path.Combine(roots[0], "payload", "DeadSpace.ipa"));
+            Check(!unknownProfile.Adapted && unknownProfile.Experimental && unknownProfile.HdText && !unknownProfile.Textures, "Unknown published IPA uses explicit experimental HD-text trial");
+            Check(unknownProfile.Describe(false).Contains("未识别") && unknownProfile.Describe(true).Contains("not recognized"), "Unknown IPA warning is bilingual");
             ResourceSelection.Activate(data, roots[0]); Check(ResourceSelection.Read(data) == roots[0], "First selected");
             ResourceSelection.Activate(data, roots[1]); Directory.SetLastWriteTimeUtc(roots[0], DateTime.UtcNow.AddHours(1)); Check(ResourceSelection.Read(data) == roots[1], "Directory timestamp cannot override selection");
             ResourceSelection.Activate(data, roots[0]); Check(ResourceSelection.Read(data) == roots[0], "Reselect older existing content");

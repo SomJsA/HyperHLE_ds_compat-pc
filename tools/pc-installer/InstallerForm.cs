@@ -41,6 +41,7 @@ namespace DeadSpaceInstaller
         private DeadSpaceResources.IpaProfile sourceProfile;
         private string inspectedSource;
         private long inspectedLength, inspectedWriteTime;
+        private string unknownWarningSource;
         private readonly Button profileInfo = new Button();
         private InstallOptions activeOptions;
 
@@ -297,6 +298,17 @@ namespace DeadSpaceInstaller
                     hdChinesePack.Enabled = sourceProfile.HdText;
                     if (!sourceProfile.HdText) hdChinesePack.Checked = false;
                     PopulateInstallLanguages();
+                    string warningKey = info.FullName + "|" + info.Length + "|" + info.LastWriteTimeUtc.Ticks;
+                    if (sourceProfile.Experimental && !String.Equals(unknownWarningSource, warningKey, StringComparison.OrdinalIgnoreCase))
+                    {
+                        unknownWarningSource = warningKey;
+                        MessageBox.Show(this,
+                            DeadSpaceUi.UiLanguage.English
+                                ? "This IPA fingerprint is not verified. The program HD text component is enabled by default for a trial; uncheck it if the text layer is incomplete. PC input compatibility is also experimental and can be disabled later in the launcher."
+                                : "这个 IPA 指纹尚未验证。程序默认尝试高清文字组件；如果文字层不完整可以取消勾选。PC 操作兼容同样属于实验性功能，可在启动器中关闭。",
+                            DeadSpaceUi.UiLanguage.English ? "Unrecognized IPA / Warning" : "未识别 IPA / 警告",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
                 } else { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = true; PopulateInstallLanguages(); }
             } catch (Exception error) { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = false; PopulateInstallLanguages(); sourceHint.Text = I("无法读取资源清单：") + error.Message; }
             for (int i = 0; i < tiers.Length; i++) {

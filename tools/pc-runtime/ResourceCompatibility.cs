@@ -12,6 +12,8 @@ namespace DeadSpaceBootstrap
         private string loadedResourceIpa;
         private long resourceLength, resourceWriteTime;
         private readonly Button resourceCompatibilityInfo = new Button();
+        private bool unknownCompatibilityReviewPending;
+        private bool unknownCompatibilityReviewShown;
 
         private void BuildResourceCompatibility(Panel page)
         {
@@ -38,28 +40,53 @@ namespace DeadSpaceBootstrap
                 resourceProfile = IpaProfiles.Inspect(file.FullName);
                 loadedResourceIpa = file.FullName; resourceLength = file.Length; resourceWriteTime = file.LastWriteTimeUtc.Ticks;
                 if (hadSelection) launchReviewCompleted = false;
+                unknownCompatibilityReviewPending = resourceProfile.Experimental;
             }
             if (reset) {
                 advancedLighting.Checked = resourceProfile.Lighting;
                 overlayEnabled.Checked = resourceProfile.HdText;
-                nativeInputs.Checked = nativeHud.Checked = resourceProfile.Id == "current";
+                nativeInputs.Checked = resourceProfile.Id == "current" || resourceProfile.Experimental;
+                nativeHud.Checked = resourceProfile.Id == "current";
                 requestedTextLanguage = resourceProfile.HdText ? "zh-tieba" : "native";
                 launchReviewCompleted = false;
             }
             advancedLighting.Enabled = resourceProfile.Lighting;
             if (!advancedLighting.Enabled) advancedLighting.Checked = false;
             overlayEnabled.Enabled = resourceProfile.HdText;
-            nativeInputs.Enabled = nativeHud.Enabled = resourceProfile.Id == "current";
+            nativeInputs.Enabled = resourceProfile.Id == "current" || resourceProfile.Experimental;
+            nativeHud.Enabled = resourceProfile.Id == "current";
             if (!resourceProfile.HdText) overlayEnabled.Checked = false;
             if (!nativeInputs.Enabled) nativeInputs.Checked = nativeHud.Checked = false;
+            nativeHud.Checked = nativeHud.Enabled && nativeHud.Checked;
+            nativeInputs.Text = resourceProfile.Experimental
+                ? (DeadSpaceUi.UiLanguage.English ? "Experimental PC input compatibility (try)" : "实验性 PC 操作兼容（尝试）")
+                : (DeadSpaceUi.UiLanguage.English ? "Native PC camera and movement" : "原生视角与移动");
             PopulateTextLanguages(requestedTextLanguage);
             hdTextures.Enabled = resourceProfile.Textures;
             if (!resourceProfile.Textures) hdTextures.Checked = false;
-            if (saveEditorPage != null) saveEditorPage.Enabled = resourceProfile.HdText;
-            foreach (Control tool in profileStorageTools) tool.Enabled = resourceProfile.HdText;
+            // Legacy language overlays are supported, but save editing and
+            // transfer tools still depend on the verified 1.3.34 schema.
+            if (saveEditorPage != null) saveEditorPage.Enabled = resourceProfile.Id == "current";
+            foreach (Control tool in profileStorageTools) tool.Enabled = resourceProfile.Id == "current";
             RefreshStoragePath();
             resourceCompatibilityInfo.Text = resourceProfile.Name + " · " + (DeadSpaceUi.UiLanguage.English ? "Compatibility / supported graphics" : "适配状态 / 支持的画质");
             UpdateTextureDescription();
+        }
+
+        private void ReviewUnknownCompatibility()
+        {
+            if (!unknownCompatibilityReviewPending || unknownCompatibilityReviewShown || resourceProfile == null || !resourceProfile.Experimental) return;
+            unknownCompatibilityReviewPending = false;
+            unknownCompatibilityReviewShown = true;
+            string message = DeadSpaceUi.UiLanguage.English
+                ? "This IPA version is not in the verified compatibility list.\r\n\r\nThe launcher will try the program HD text layer and the experimental PC input compatibility path by default. They may be incomplete for this version.\r\n\r\nChoose Yes to try them now, or No to disable both. You can change these options later and submit the IPA fingerprint to Community issues."
+                : "这个 IPA 版本不在已验证兼容清单中。\r\n\r\n启动器默认尝试程序内置高清文字组件和实验性 PC 操作兼容路径；该版本可能存在不完整行为。\r\n\r\n选择“是”立即尝试，选择“否”关闭这两项。之后仍可在启动器修改，并携带 IPA 指纹到 Community 提 issue。";
+            DialogResult choice = MessageBox.Show(this, message, DeadSpaceUi.UiLanguage.English ? "Unrecognized IPA / Experimental compatibility" : "未识别 IPA / 实验性兼容", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+            bool enabled = choice == DialogResult.Yes;
+            overlayEnabled.Checked = enabled;
+            nativeInputs.Checked = enabled;
+            if (!enabled) requestedTextLanguage = "native";
+            PopulateTextLanguages(requestedTextLanguage);
         }
 
         private string SelectedTextLanguageId()

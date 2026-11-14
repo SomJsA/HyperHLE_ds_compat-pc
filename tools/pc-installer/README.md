@@ -39,12 +39,16 @@ launcher share `tools/pc-runtime/ResourceProfiles.cs`:
 | 1.3.34 | Standard / advanced | Matching marker 2x / 4x / 6x; multilingual HD text and PC input supported |
 | iPad 1.0.3 | Standard / advanced | Multilingual HD text and legacy PC input path; original textures only |
 | iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Multilingual HD text and legacy PC input path; original textures only |
-| Other fingerprints | Unverified native path | Disabled pending adaptation |
+| Other fingerprints with standard published/stringdata layout | Unverified experimental path | HD text and compatible PC input are offered by default with a bilingual warning; lighting / external textures remain disabled and either trial can be turned off |
+| Other fingerprints without the standard layout | Unverified native path | Disabled pending adaptation |
 
 All four known applications can use the program-bundled HD text component without
 an external marker. The marker is only needed for edition-specific external
 texture packs. Legacy E interaction uses a compatibility prompt path rather
-than assuming the 1.3.34 action-forwarder layout.
+than assuming the 1.3.34 action-forwarder layout. An unrecognized IPA with a
+readable standard language layout receives an explicit bilingual warning; the
+launcher tries the HD text and compatibility input paths by default, with a
+user choice to disable them.
 Resolution, MSAA and AF remain host controls; this is not a claim that every
 hardware / high setting was validated. The recommendation and Community issue
 entry are bilingual. 1.3.34 is the most fully adapted edition.

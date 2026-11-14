@@ -39,10 +39,12 @@ namespace DeadSpaceResources
         internal string ExecutableSha256, PlistSha256;
         internal readonly List<IpaLanguage> Languages = new List<IpaLanguage>();
         internal bool Adapted { get { return Id != "unknown"; } }
+        internal bool Experimental { get { return Id == "unknown" && HdText; } }
         internal string Describe(bool english)
         {
             string support = Id == "current" ? (english ? "Most fully adapted: 1.3.34." : "开发者推荐：1.3.34 的适配最完整。")
                 : Adapted ? (english ? "Adapted in R6; complete opening tested. Legacy editions use the compatible PC input path and the same multilingual HD text layer." : "已在 R6 适配并验证完整开场；旧版使用兼容 PC 操作路径和同一多语言高清文字叠加层。")
+                : Experimental ? (english ? "This IPA fingerprint is not recognized. Experimental PC controls and HD text are enabled by default for a trial; turn either off if it does not work." : "未识别此 IPA 指纹；默认试用实验性 PC 操作和高清文字组件，遇到问题可分别关闭。")
                 : (english ? "Not yet adapted or verified. Experimental native resources only; do not assume this package is supported." : "尚未适配或验证；仅尝试原生资源，不代表此构建已兼容。");
             return Name + "\r\n" + support
                 + "\r\n" + (english ? "Lighting: " : "光影：") + (Lighting ? (english ? "native standard / advanced." : "原生标准 / 高级可切换。") : (english ? "native standard only; advanced unavailable." : "仅原生标准；不开放高级光影。"))
@@ -110,15 +112,29 @@ namespace DeadSpaceResources
                 if (exe == null) return profile;
                 profile.ExecutableSha256 = Digest(exe, 128 * 1024 * 1024);
                 var known = Known.SingleOrDefault(k => k[2] == profile.ExecutableSha256 && k[3] == profile.PlistSha256);
-                if (known == null || !zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published/", StringComparison.Ordinal))) return profile;
-                bool high = known[0] == "current" || known[0] == "ipad-1.0.3";
-                if (high && !zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published_ipad2/", StringComparison.Ordinal))) return profile;
-                profile.Id = known[0]; profile.Name = known[1]; profile.Lighting = high;
-                // The PC HD text layer is host-side and is not tied to the
-                // external texture marker. Every known IPA can use it; only
-                // the 1.3.34 profile currently has matching texture packs.
-                profile.HdText = true;
-                profile.Textures = profile.Id == "current";
+                bool hasPublished = zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published/", StringComparison.Ordinal));
+                if (!hasPublished) return profile;
+                if (known == null)
+                {
+                    // Unknown versions may still expose the standard stringdata
+                    // layout. Offer an explicitly experimental host overlay and
+                    // compatibility input path; never claim native high-tier or
+                    // texture support for an unrecognized fingerprint.
+                    profile.Name = "Unrecognized IPA";
+                    profile.HdText = true;
+                    profile.Textures = false;
+                }
+                else
+                {
+                    bool high = known[0] == "current" || known[0] == "ipad-1.0.3";
+                    if (high && !zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published_ipad2/", StringComparison.Ordinal))) return profile;
+                    profile.Id = known[0]; profile.Name = known[1]; profile.Lighting = high;
+                    // The PC HD text layer is host-side and is not tied to the
+                    // external texture marker. Every known IPA can use it; only
+                    // the 1.3.34 profile currently has matching texture packs.
+                    profile.HdText = true;
+                    profile.Textures = profile.Id == "current";
+                }
                 string stringData = prefix + "published/stringdata/";
                 ZipArchiveEntry englishBank = zip.GetEntry(stringData + "ENG_US/deadspace_iphone.bin");
                 long englishBankLength = englishBank == null ? 0 : englishBank.Length;

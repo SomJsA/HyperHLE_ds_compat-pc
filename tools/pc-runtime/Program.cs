@@ -134,6 +134,7 @@ namespace DeadSpaceBootstrap
                 if (Width > area.Width) Width = area.Width;
                 aboutPanel.StartAutomaticCheck();
                 EnsureMarkerReady(false);
+                ReviewUnknownCompatibility();
             };
         }
 
@@ -576,6 +577,7 @@ namespace DeadSpaceBootstrap
             string texturePath;
             try { ApplyResourceCompatibility(ipa, false); }
             catch (Exception error) { status.Text = error.Message; return; }
+            ReviewUnknownCompatibility();
             try { texturePath = SelectedTextureRoot(); }
             catch (Exception error) { status.Text = error.Message; return; }
             if (!ReviewFirstLaunch()) return;
@@ -766,7 +768,7 @@ namespace DeadSpaceBootstrap
             // path for the known older fingerprints.
             bool legacyECompatibility = resourceProfile != null
                 && resourceProfile.Id != "current"
-                && resourceProfile.Id != "unknown";
+                && (resourceProfile.Id != "unknown" || nativeInputs.Checked);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_EKEY_TAP", legacyECompatibility ? "1" : null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_EKEY_LEGACY", legacyECompatibility ? "1" : null);
             foreach (string name in new[] { "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY", "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_TUTORIAL_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" })
@@ -803,7 +805,8 @@ namespace DeadSpaceBootstrap
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_XY", pcMouse.Checked ? aimPoint.Text.Trim() : null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_MOUSE_AIM_MODE", mouseAimMode.SelectedIndex == 1 ? "toggle" : "hold");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_CONTROLLER_AIM_MODE", padAimMode.SelectedIndex == 1 ? "toggle" : "hold");
-            Environment.SetEnvironmentVariable("TOUCHHLE_DS_NATIVE_INPUTS", nativeInputs.Checked ? "1" : "0");
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_NATIVE_INPUTS",
+                resourceProfile != null && resourceProfile.Id == "current" && nativeInputs.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_WALK", aimedWalk.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_FORWARD_LIMIT", (aimedForwardPercent.Value / 100m).ToString(System.Globalization.CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_KEY_STICK_GAIN", stickGain.Text.Trim());

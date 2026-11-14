@@ -27,6 +27,7 @@ namespace DeadSpaceBootstrap
         }
         internal static string Text(IDictionary<string, object> data, string key)
         { return Convert.ToString(Value(data, key), CultureInfo.InvariantCulture); }
+        private static string T(string zh, string en) { return DeadSpaceUi.UiLanguage.English ? en : zh; }
         internal static Dictionary<string, object> Read(string path)
         {
             try
@@ -72,23 +73,24 @@ namespace DeadSpaceBootstrap
         {
             var text = new StringBuilder();
             string renderer = Text(data, "renderer");
-            text.AppendLine("渲染器：" + (renderer.Length > 0 ? renderer : "待本次运行确认"));
+            text.AppendLine(T("渲染器：", "Renderer: ") + (renderer.Length > 0 ? renderer : T("待本次运行确认", "awaiting this run")));
             double width = Number(data, "width", 0), height = Number(data, "height", 0);
-            text.AppendLine("内部画面：" + (width > 0 && height > 0 ? width + " × " + height : "待确认"));
+            text.AppendLine(T("内部画面：", "Internal frame: ") + (width > 0 && height > 0 ? width + " × " + height : T("待确认", "pending")));
             object patch = Value(data, "text_patch");
-            text.AppendLine("中文文本：" + (patch is bool ? ((bool)patch ? "本次已挂载" : "已回退，部分原生文本可能恢复原版") : "待本次挂载确认"));
-            text.AppendLine(Filter(data, "af", "AF", "远处斜面纹理清晰度降低"));
-            text.AppendLine(Filter(data, "msaa", "MSAA", "边缘抗锯齿减弱"));
+            text.AppendLine(T("高清文字：", "HD text: ") + (patch is bool ? ((bool)patch ? T("本次已挂载", "mounted for this run") : T("已回退，部分原生文本可能恢复原版", "fallback active; some native text may be restored")) : T("待本次挂载确认", "awaiting mount confirmation")));
+            text.AppendLine(Filter(data, "af", "AF", T("远处斜面纹理清晰度降低", "distant angled textures may be softer")));
+            text.AppendLine(Filter(data, "msaa", "MSAA", T("边缘抗锯齿减弱", "edge antialiasing may be reduced")));
             return text.ToString();
         }
         private static string Filter(IDictionary<string, object> data, string key, string name, string impact)
         {
             double requested=Number(data,key+"_requested",-1),actual=Number(data,key+"_actual",-1);
-            if (requested < 0 || actual < 0) return name + "：待实际验证";
-            if (requested <= 1) return name + "：未开启";
-            if (actual < requested) return name + "：请求"+requested+"× → 实际"+actual+"×，"+impact;
-            if (key=="af" && !(Value(data,"af_verified") is bool && (bool)Value(data,"af_verified"))) return "AF：读回尚未确认";
-            return name+"：实际"+actual+"×，增加GPU负载";
+            string label = DeadSpaceUi.UiLanguage.English ? name + ": " : name + "：";
+            if (requested < 0 || actual < 0) return label + (DeadSpaceUi.UiLanguage.English ? "pending runtime verification" : "待实际验证");
+            if (requested <= 1) return label + (DeadSpaceUi.UiLanguage.English ? "off" : "未开启");
+            if (actual < requested) return label + (DeadSpaceUi.UiLanguage.English ? "requested " + requested + "x -> actual " + actual + "x, " + impact : "请求"+requested+"× → 实际"+actual+"×，"+impact);
+            if (key=="af" && !(Value(data,"af_verified") is bool && (bool)Value(data,"af_verified"))) return DeadSpaceUi.UiLanguage.English ? "AF: readback not confirmed" : "AF：读回尚未确认";
+            return label + (DeadSpaceUi.UiLanguage.English ? "actual " + actual + "x; higher GPU load" : "实际"+actual+"×，增加GPU负载");
         }
     }
 
@@ -100,17 +102,28 @@ namespace DeadSpaceBootstrap
         private readonly int pid;
         private readonly DateTime born=DateTime.UtcNow;
         private DateTime ready;
+        private static string ShutdownText(string value)
+        {
+            if (!DeadSpaceUi.UiLanguage.English || String.IsNullOrEmpty(value)) return value;
+            return value
+                .Replace("诊断已停止：写入失败，已有记录保留。", "Diagnostics stopped: writing failed; existing records kept.")
+                .Replace("诊断已结束：存在收尾缺口（排空超时）；已保留可用数据，请连同结束信息导出。", "Diagnostics ended with a shutdown gap (drain timeout); usable data was kept. Export it with the end information.")
+                .Replace("诊断已结束：存在收尾缺口；已保留可用数据，请连同结束信息导出。", "Diagnostics ended with a shutdown gap; usable data was kept. Export it with the end information.")
+                .Replace("诊断已结束：未观察到正常游戏退出；原因未确认，已有记录保留。", "Diagnostics ended without observing a normal game exit; the cause is unconfirmed and existing records were kept.")
+                .Replace("诊断已结束：已接收队列已排空，最终写入成功。", "Diagnostics ended with the receive queue drained and the final write completed.")
+                .Replace("诊断已结束：旧记录未提供完整的队尾核验信息。", "Diagnostics ended without complete tail verification in the older record.");
+        }
         protected override bool ShowWithoutActivation { get { return true; } }
         internal StartupReviewWindow(string path, int pid, string advice, string texture, string expectedGpu)
         {
             this.path=path;this.pid=pid;this.advice=advice;this.expectedGpu=expectedGpu;
-            Text="启动自检";ClientSize=new Size(680,490);StartPosition=FormStartPosition.CenterParent;
+            Text=DeadSpaceUi.UiLanguage.English ? "Startup review" : "启动自检";ClientSize=new Size(680,490);StartPosition=FormStartPosition.CenterParent;
             Font=new Font("Microsoft YaHei UI",11f);BackColor=Color.FromArgb(9,18,25);ForeColor=Color.Gainsboro;
             FormBorderStyle=FormBorderStyle.FixedToolWindow;ShowInTaskbar=false;
-            Controls.Add(new Label{Text="启动自检",Font=new Font(Font.FontFamily,19f,FontStyle.Bold),ForeColor=Color.FromArgb(94,218,230),Location=new Point(24,20),AutoSize=true});
+            Controls.Add(new Label{Text=DeadSpaceUi.UiLanguage.English ? "Startup review" : "启动自检",Font=new Font(Font.FontFamily,19f,FontStyle.Bold),ForeColor=Color.FromArgb(94,218,230),Location=new Point(24,20),AutoSize=true});
             detail=new Label{Location=new Point(26,70),Size=new Size(628,310),AutoEllipsis=true};Controls.Add(detail);
-            var close=new Button{Text="进入游戏",Location=new Point(520,440),Size=new Size(130,32)};close.Click+=delegate{Close();};Controls.Add(close);
-            Controls.Add(new Label{Text=String.IsNullOrEmpty(texture)?"高清资源：未指定资源包":"高清资源目录已选择，关卡实际上传待确认",Location=new Point(26,390),Size=new Size(620,43)});
+            var close=new Button{Text=DeadSpaceUi.UiLanguage.English ? "Enter game" : "进入游戏",Location=new Point(520,440),Size=new Size(130,32)};close.Click+=delegate{Close();};Controls.Add(close);
+            Controls.Add(new Label{Text=String.IsNullOrEmpty(texture) ? (DeadSpaceUi.UiLanguage.English ? "HD resources: no external pack selected" : "高清资源：未指定资源包") : (DeadSpaceUi.UiLanguage.English ? "HD resource directory selected; level upload is still pending" : "高清资源目录已选择，关卡实际上传待确认"),Location=new Point(26,390),Size=new Size(620,43)});
             timer.Interval=350;timer.Tick+=delegate{UpdateReport();};FormClosed+=delegate{timer.Stop();timer.Dispose();};timer.Start();UpdateReport();
         }
         private void UpdateReport()
@@ -118,15 +131,15 @@ namespace DeadSpaceBootstrap
             var data=StartupReviewData.Read(path);if(!StartupReviewData.Current(data,pid))data=null;
             string renderer=StartupReviewData.Text(data,"renderer");
             bool mismatch=renderer.Length>0 && !String.IsNullOrEmpty(expectedGpu) && renderer.IndexOf(expectedGpu,StringComparison.OrdinalIgnoreCase)<0;
-            string diagnostic="自动诊断：未请求或尚未建立会话";
+            string diagnostic=DeadSpaceUi.UiLanguage.English ? "Automatic diagnostics: not requested or no session yet" : "自动诊断：未请求或尚未建立会话";
             if(!String.IsNullOrEmpty(path)) {
                 string shutdown=DiagnosticFiles.ShutdownStatus(Path.GetDirectoryName(path));
                 var health=StartupReviewData.Read(Path.Combine(Path.GetDirectoryName(path),"health.json"));
-                if(shutdown!=null)diagnostic="自动"+shutdown;
-                else if(health!=null){int level=StartupReviewData.Text(health,"writer_error").Length>0?3:(int)StartupReviewData.Number(health,"detail_level",3);diagnostic="自动诊断："+(level==0?(StartupReviewData.Number(health,"persisted_frame_records",0)>0 && StartupReviewData.Number(health,"persisted_event_records",0)>0?"帧与事件落盘已核验":"等待有效帧/事件落盘确认"):level==1?"过载降频，缺口已标注":level==2?"详细记录暂停，保留轻量计数":"写入失败，已有记录保留");}
-                else if(File.Exists(Path.Combine(Path.GetDirectoryName(path),"host.json")))diagnostic="自动诊断：等待后端确认";
+                if(shutdown!=null)diagnostic=(DeadSpaceUi.UiLanguage.English ? "Automatic " : "自动")+ShutdownText(shutdown);
+                else if(health!=null){int level=StartupReviewData.Text(health,"writer_error").Length>0?3:(int)StartupReviewData.Number(health,"detail_level",3);diagnostic=DeadSpaceUi.UiLanguage.English ? "Automatic diagnostics: " + (level==0?(StartupReviewData.Number(health,"persisted_frame_records",0)>0 && StartupReviewData.Number(health,"persisted_event_records",0)>0?"frame and event persistence verified":"waiting for valid frame/event persistence"):level==1?"overload throttling; gaps marked":level==2?"detailed records paused; lightweight counters kept":"write failed; existing records kept") : "自动诊断："+(level==0?(StartupReviewData.Number(health,"persisted_frame_records",0)>0 && StartupReviewData.Number(health,"persisted_event_records",0)>0?"帧与事件落盘已核验":"等待有效帧/事件落盘确认"):level==1?"过载降频，缺口已标注":level==2?"详细记录暂停，保留轻量计数":"写入失败，已有记录保留");}
+                else if(File.Exists(Path.Combine(Path.GetDirectoryName(path),"host.json")))diagnostic=DeadSpaceUi.UiLanguage.English ? "Automatic diagnostics: waiting for backend confirmation" : "自动诊断：等待后端确认";
             }
-            detail.Text=StartupReviewData.Features(data)+diagnostic+"\n\n"+(mismatch?"当前渲染器与识别显卡不同，请核对系统显卡选择；已保存设置保持不变。":advice);
+            detail.Text=StartupReviewData.Features(data)+diagnostic+"\n\n"+(mismatch?(DeadSpaceUi.UiLanguage.English ? "The renderer differs from the detected GPU; check the system GPU selection. Saved settings were unchanged." : "当前渲染器与识别显卡不同，请核对系统显卡选择；已保存设置保持不变。"):advice);
             bool complete=data!=null && StartupReviewData.Text(data,"renderer").Length>0
                 && StartupReviewData.Number(data,"msaa_actual",-1)>=0 && StartupReviewData.Number(data,"af_actual",-1)>=0
                 && StartupReviewData.Value(data,"text_patch") is bool;
@@ -142,15 +155,15 @@ namespace DeadSpaceBootstrap
         private static bool ReviewProcessAlive(Process p)
         {try{return p!=null&&!p.HasExited;}catch(InvalidOperationException){return false;}}
         private string HardwareAdviceText()
-        {return "首次按显示器预置并保存；后续读取配置。内部尺寸与输出尺寸独立，画质调整保留分辨率。";}
+        {return DeadSpaceUi.UiLanguage.English ? "Apply the display preset once and save it; later launches read the saved configuration. Internal and output sizes stay independent." : "首次按显示器预置并保存；后续读取配置。内部尺寸与输出尺寸独立，画质调整保留分辨率。";}
         private void AddHardwareReviewButton(Control page)
         {
-            var button=new Button{Text="自动配置与启动状态",Location=new Point(492,23),Size=new Size(190,32)};
+            var button=new Button{Text=DeadSpaceUi.UiLanguage.English ? "Startup review" : "自动配置与启动状态",Location=new Point(492,23),Size=new Size(190,32)};
             button.Click+=delegate{
                 string message=detectedHardware.GpuName+"\n"+detectedHardware.CpuName+"\n\n"+HardwareAdviceText()+"\n\n"+renderResolutionSummary.Text;
                 var data=String.IsNullOrEmpty(startupReportPath)?null:StartupReviewData.Read(startupReportPath);
-                if(data!=null)message+="\n\n最近一次运行\n"+StartupReviewData.Features(data);
-                MessageBox.Show(this,message,"自动配置与启动状态",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                if(data!=null)message+="\n\n"+(DeadSpaceUi.UiLanguage.English ? "Last run\n" : "最近一次运行\n")+StartupReviewData.Features(data);
+                MessageBox.Show(this,message,DeadSpaceUi.UiLanguage.English ? "Startup review" : "自动配置与启动状态",MessageBoxButtons.OK,MessageBoxIcon.Information);
             };page.Controls.Add(button);
         }
         private void PrepareStartupReview(ProcessStartInfo info)

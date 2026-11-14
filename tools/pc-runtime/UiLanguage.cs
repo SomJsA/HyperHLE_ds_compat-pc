@@ -41,6 +41,7 @@ namespace DeadSpaceUi
             {"读取当前存档", "Read Current Save"}, {"保存插件开关", "Save Plugin Switches"}, {"启用高清纹理包", "Enable HD Texture Pack"},
             {"详细调试日志", "Verbose Debug Log"}, {"原生切枪、定位与暂停界面", "Native weapon, locator, and pause UI"},
             {"原生视角与移动", "Native PC camera and movement"},
+            {"实验性 PC 操作兼容（尝试）", "Experimental PC input compatibility (try)"},
             {"自动诊断（默认关闭；F7 单次保存仍可用）", "Automatic diagnostics (off by default; manual F7 remains available)"},
             {"自动配置与启动状态", "Startup Review"}, {"English", "中文"}, {"中文", "English"},
             {"窗口", "Window"}, {"无边框全屏", "Borderless Fullscreen"}, {"独占全屏", "Exclusive Fullscreen"},
