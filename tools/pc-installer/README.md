@@ -37,15 +37,17 @@ launcher share `tools/pc-runtime/ResourceProfiles.cs`:
 | Recognized application | Native lighting | External HD packs / enhanced text and controls |
 | --- | --- | --- |
 | 1.3.34 | Standard / advanced | Matching marker 2x / 4x / 6x; multilingual HD text and PC input supported |
-| iPad 1.0.3 | Standard / advanced | Multilingual HD text and legacy PC input path; original textures only |
-| iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Multilingual HD text and legacy PC input path; original textures only |
+| iPad 1.0.3 | Standard / advanced | Generic PC-to-touch compatibility path; language banks/host fonts load; binary-specific HD takeover and full gameplay controls still require verification; original textures only |
+| iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Generic PC-to-touch compatibility path; language banks/host fonts load; binary-specific HD takeover and full gameplay controls still require verification; original textures only |
 | Other fingerprints with standard published/stringdata layout | Unverified experimental path | HD text and compatible PC input are offered by default with a bilingual warning; lighting / external textures remain disabled and either trial can be turned off |
 | Other fingerprints without the standard layout | Unverified native path | Disabled pending adaptation |
 
-All four known applications can use the program-bundled HD text component without
-an external marker. The marker is only needed for edition-specific external
-texture packs. Legacy E interaction uses a compatibility prompt path rather
-than assuming the 1.3.34 action-forwarder layout. An unrecognized IPA with a
+All four known applications can load the program-bundled language banks and host
+fonts without an external marker. This does not mean that every old binary has a
+verified chapter/subtitle/objective takeover or full in-game PC action mapping.
+The marker is only needed for edition-specific external texture packs. Legacy E
+interaction uses a compatibility prompt path rather than assuming the 1.3.34
+action-forwarder layout. An unrecognized IPA with a
 readable standard language layout receives an explicit bilingual warning; the
 launcher tries the HD text and compatibility input paths by default, with a
 user choice to disable them.

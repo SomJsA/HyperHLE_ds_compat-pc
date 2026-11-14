@@ -131,7 +131,8 @@ namespace DeadSpaceBootstrap
             // persist resolved values, and leave later launches to saved settings.
             if(detectedHardware.Width>0 && detectedHardware.Height>0) {
                 string output=detectedHardware.ResolutionLabel;EnsureResolutionOption(output);SetCombo(displayResolution,output);
-                SelectRenderScale(PcRenderResolution.ScaleForHeight(detectedHardware.Height));
+                if (resourceProfile != null && resourceProfile.Id != "current") SetCombo(scaleHack, "屏幕匹配（启动时识别）");
+                else SelectRenderScale(PcRenderResolution.ScaleForHeight(detectedHardware.Height));
             } else {EnsureResolutionOption(AutomaticResolution);SetCombo(displayResolution,AutomaticResolution);SetCombo(scaleHack,AutomaticRenderScale);}
             windowMode.SelectedIndex=2;fpsCap.SelectedIndex=3;
             fsrMode.SelectedIndex=0;msaaSamples.SelectedIndex=2;anisotropy.SelectedIndex=1;

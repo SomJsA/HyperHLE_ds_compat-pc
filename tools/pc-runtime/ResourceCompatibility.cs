@@ -41,10 +41,10 @@ namespace DeadSpaceBootstrap
                 loadedResourceIpa = file.FullName; resourceLength = file.Length; resourceWriteTime = file.LastWriteTimeUtc.Ticks;
                 if (hadSelection) launchReviewCompleted = false;
                 unknownCompatibilityReviewPending = resourceProfile.Experimental;
-                // A resource switch must not inherit a high PC scale into a
-                // legacy guest before the user reviews the new dimensions.
-                // The full 8x option remains available for explicit selection.
-                if (resourceProfile.Id != "current") SelectRenderScale(2);
+                // A resource switch starts legacy editions in the automatic
+                // screen-matched mode. The full 8x option remains available
+                // for an explicit manual choice after the review.
+                if (resourceProfile.Id != "current") SetCombo(scaleHack, "屏幕匹配（启动时识别）");
             }
             if (reset) {
                 advancedLighting.Checked = resourceProfile.Lighting;

@@ -86,6 +86,9 @@ namespace DeadSpaceUi
             ,{"按住瞄准，松开收枪", "Hold to aim, release to lower"}, {"按下举枪，再按收枪", "Press to raise, press again to lower"}, {"RB 主射击／RT 副射击", "RB primary / RT secondary"}, {"RB 切换主副模式，RT 射击", "RB switches mode, RT fires"}
             ,{"切换模式会先完成原生切换，再射击；RT 不会同时强制切副模式。\r\n键鼠空格设置独立，位于02页。", "Mode switching completes natively before firing; RT does not force secondary mode.\r\nKeyboard Space settings are independent on page 02."}
             ,{"游戏文件与存档", "Game Files & Saves"}, {"选择游戏文件和存档位置；迁移不会覆盖已有进度。", "Choose game files and save location; migration never overwrites existing progress."}
+            ,{"当前 1.3.34：存档可通过 PC / Android 三槽 ZIP 交换；不会与旧 IPA 自动合并。", "Current 1.3.34: saves can be exchanged with PC / Android three-slot ZIP; they are not merged automatically with legacy IPAs."}
+            ,{"当前旧 IPA：存档按 IPA 版本独立保存；不会与 1.3.34 或其他旧 IPA 自动互通。切换回来会恢复该版本自己的进度。", "Current legacy IPA: saves are kept per IPA version; they are not automatically shared with 1.3.34 or another legacy IPA. Switching back restores that edition's own progress."}
+            ,{"尚未选定 IPA：选定后会显示对应的独立存档路径。", "No IPA selected yet: the edition-specific save path appears after selection."}
             ,{"安装位置", "Install Location"}, {"安装纹理", "Install Textures"}, {"更改 / 升级安装", "Change / Upgrade Install"}, {"选择 vandal.marker", "Choose vandal.marker"}, {"选择目录", "Choose Folder"}
             ,{"语言组件 / Language mode", "Language components / Language mode"}, {"高清文字组件（对话字幕 + 章节头）", "HD text component (dialogue subtitles + chapter headers)"}, {"高清中文组件（对话字幕 + 章节头）", "HD multilingual component (dialogue subtitles + chapter headers)"}, {"ⓘ 说明", "ⓘ Info"}
             ,{"关闭后回归原生语言行为；勾选后可选择 IPA 内置语言，启动时会使用对应语言环境。", "Disable this to restore native language behavior. When enabled, choose an IPA language and the matching language environment is used at launch."}
@@ -311,6 +314,15 @@ namespace DeadSpaceUi
                     .Replace("」；内部与输出分辨率保持独立。", "; internal and output resolution stay independent.")
                     .Replace("。", ".")
                     .Replace(".CPU", ". CPU");
+                dynamic = dynamic
+                    .Replace("性能（", "Performance (")
+                    .Replace("平衡（", "Balanced (")
+                    .Replace("清晰（", "Clear (")
+                    .Replace("精细（", "Fine (")
+                    .Replace("高画质（", "High Quality (")
+                    .Replace("手动（", "Manual (")
+                    .Replace("超采样（", "Supersampling (")
+                    .Replace("）", ")");
                 if (!String.Equals(dynamic, text, StringComparison.Ordinal)) return dynamic;
             }
             return text;

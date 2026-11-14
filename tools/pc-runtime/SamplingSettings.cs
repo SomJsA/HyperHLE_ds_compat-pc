@@ -16,6 +16,12 @@ namespace DeadSpaceBootstrap
         private int ResourceBaseHeight { get { return resourceProfile != null && resourceProfile.Id == "ipad-1.0.3" ? 1024 : LegacyIpaResolution ? 480 : PcRenderResolution.BaseHeight; } }
         private int EffectiveRenderScale(int scale) { return Math.Min(scale, ResourceRenderScaleCap); }
         private string ResourceRenderSize(int scale) { return checked(scale * ResourceBaseWidth) + " × " + checked(scale * ResourceBaseHeight); }
+        private int AutomaticScaleForResource(int height)
+        {
+            return LegacyIpaResolution
+                ? EffectiveRenderScale(PcRenderResolution.ScaleForGuestHeight(height, ResourceBaseHeight))
+                : EffectiveRenderScale(PcRenderResolution.ScaleForHeight(height));
+        }
         private int RenderReferenceHeight()
         {
             if (detectedHardware.Height > 0) return detectedHardware.Height;
@@ -41,7 +47,7 @@ namespace DeadSpaceBootstrap
         {
             if (scaleHack.SelectedIndex < 0) return;
             try {
-                int height = RenderReferenceHeight(), native = EffectiveRenderScale(PcRenderResolution.ScaleForHeight(height));
+                int height = RenderReferenceHeight(), native = AutomaticScaleForResource(height);
                 int actual = SelectedRenderScale(); string output = SelectedOutputSize();
                 string legacyNote = resourceProfile != null && resourceProfile.Id == "ipad-1.0.3" ? (DeadSpaceUi.UiLanguage.English ? "\r\niPad guest size follows the original 768×1024 base; 8x is 6144×8192 and may require substantial VRAM." : "\r\niPad 客体按原始 768×1024 基准计算；8×为 6144×8192，可能需要大量显存。") : LegacyIpaResolution ? (DeadSpaceUi.UiLanguage.English ? "\r\nLegacy phone guest size follows its original 320×480 base; 8x is 2560×3840." : "\r\n旧手机 IPA 客体按原始 320×480 基准计算；8×为 2560×3840。") : "";
                 renderResolutionSummary.Text = "屏幕匹配：" + ResourceRenderSize(native) + "（底分 " + native + "×；屏幕高度 " + height + "）\r\n当前内部："
@@ -56,7 +62,7 @@ namespace DeadSpaceBootstrap
             catch (InvalidOperationException) { return new { mode = "manual_game_scale", reference_height = (object)null,
                 requested_internal_width = actual * PcRenderResolution.BaseWidth, requested_internal_height = actual * PcRenderResolution.BaseHeight,
                 scope = "Physical screen height unknown; explicit manual render size preserved" }; }
-            int native = EffectiveRenderScale(PcRenderResolution.ScaleForHeight(height));
+            int native = AutomaticScaleForResource(height);
             return new { mode = AutomaticRenderSelected ? "screen_even_height" : "manual_game_scale",
                 policy = LegacyIpaResolution ? "legacy IPA original guest base; 8x remains available and output stays host-controlled" : "1080p=4x,1440p=6x,2160p=8x; independent of quality and output choice",
                 game_base_width = ResourceBaseWidth, game_base_height = ResourceBaseHeight,
@@ -74,7 +80,7 @@ namespace DeadSpaceBootstrap
         }
         private int SelectedRenderScale()
         {
-            if (AutomaticRenderSelected) return EffectiveRenderScale(PcRenderResolution.ScaleForHeight(RenderReferenceHeight()));
+            if (AutomaticRenderSelected) return AutomaticScaleForResource(RenderReferenceHeight());
             string label = Convert.ToString(scaleHack.SelectedItem);
             int split = label.IndexOf('x'), scale;
             if (split <= 0 || !Int32.TryParse(label.Substring(0, split), out scale) || scale < 1 || scale > 32)
@@ -102,7 +108,17 @@ namespace DeadSpaceBootstrap
                 if (split > 0) Int32.TryParse(selected.Substring(0, split), out requested);
             }
             scaleHack.Items.Clear();
-            scaleHack.Items.AddRange(new object[] { AutomaticRenderScale, "1x 性能", "2x 平衡", "3x 清晰", "4x 精细（1920×1280）", "5x 手动（2400×1600）", "6x 高画质（2880×1920）", "7x 手动（3360×2240）", "8x 超采样（3840×2560）" });
+            scaleHack.Items.AddRange(new object[] {
+                AutomaticRenderScale,
+                "1x 性能（" + ResourceRenderSize(1) + "）",
+                "2x 平衡（" + ResourceRenderSize(2) + "）",
+                "3x 清晰（" + ResourceRenderSize(3) + "）",
+                "4x 精细（" + ResourceRenderSize(4) + "）",
+                "5x 手动（" + ResourceRenderSize(5) + "）",
+                "6x 高画质（" + ResourceRenderSize(6) + "）",
+                "7x 手动（" + ResourceRenderSize(7) + "）",
+                "8x 超采样（" + ResourceRenderSize(8) + "）"
+            });
             if (automatic || requested <= 0) scaleHack.SelectedIndex = 0;
             else scaleHack.SelectedIndex = Math.Min(8, requested);
         }

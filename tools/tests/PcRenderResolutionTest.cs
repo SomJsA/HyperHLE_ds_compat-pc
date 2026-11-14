@@ -22,6 +22,7 @@ class PcRenderResolutionTest
         var assembly = Assembly.LoadFrom(Path.GetFullPath(args[0]));
         var calculator = assembly.GetType("DeadSpaceBootstrap.PcRenderResolution", true);
         var calc = calculator.GetMethod("ScaleForHeight", BindingFlags.NonPublic | BindingFlags.Static);
+        var guestCalc = calculator.GetMethod("ScaleForGuestHeight", BindingFlags.NonPublic | BindingFlags.Static);
         int[,] cases = {{1,2},{320,2},{321,2},{720,4},{1080,4},{1280,4},{1440,6},{2160,8},{4320,14}};
         for (int row=0; row<cases.GetLength(0); row++) {
             int scale=(int)calc.Invoke(null,new object[]{cases[row,0]});
@@ -31,6 +32,16 @@ class PcRenderResolutionTest
         foreach (int bad in new[]{0,-1,Int32.MaxValue}) {
             bool rejected=false;try {calc.Invoke(null,new object[]{bad});}catch(TargetInvocationException){rejected=true;}
             Check(rejected,"Invalid/unrepresentable height accepted");
+        }
+        int[,] legacyCases = {{900,480,2},{1080,480,3},{1440,480,3},{900,1024,1},{1080,1024,2},{2160,1024,3}};
+        for (int row=0; row<legacyCases.GetLength(0); row++) {
+            int scale=(int)guestCalc.Invoke(null,new object[]{legacyCases[row,0],legacyCases[row,1]});
+            Check(scale==legacyCases[row,2],"Legacy guest-height mapping wrong");
+            Check(scale*legacyCases[row,1]>=legacyCases[row,0] && (scale-1)*legacyCases[row,1]<legacyCases[row,0],"Legacy automatic mode is not the smallest covering integer");
+        }
+        foreach (object[] bad in new[]{new object[]{0,480},new object[]{900,0},new object[]{900,-1}}) {
+            bool rejected=false;try {guestCalc.Invoke(null,bad);}catch(TargetInvocationException){rejected=true;}
+            Check(rejected,"Invalid legacy guest dimensions accepted");
         }
         string ini=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"DeadSpace-Launcher.ini");
         Check(File.Exists(ini),"Isolated legacy INI must exist before constructing form; never touch user documents");
@@ -63,7 +74,7 @@ class PcRenderResolutionTest
             hardware.GetType().GetField("Height",hf).SetValue(hardware,1440);Call(form,"LoadSettings");
             Check((int)Call(form,"SelectedRenderScale")==6,"Reload did not recompute1440p to6x");
             Call(form,"SelectRenderScale",3);Call(form,"SaveSettings");Call(form,"LoadSettings");
-            Check((int)Call(form,"SelectedRenderScale")==3&&Convert.ToString(scale.SelectedItem)=="3x 清晰","Existing manual3x changed");
+            Check((int)Call(form,"SelectedRenderScale")==3&&Convert.ToString(scale.SelectedItem).StartsWith("3x 清晰（"),"Existing manual3x changed");
             for(int preset=0;preset<4;preset++){quality.SelectedIndex=preset;Check((int)Call(form,"SelectedRenderScale")==3,"Quality changed manual internal resolution");}
             Check(summary.Text.Contains("1440 × 960")&&summary.Text.Contains("手动"),"Manual actual size missing");
             hardware.GetType().GetField("Width",hf).SetValue(hardware,0);hardware.GetType().GetField("Height",hf).SetValue(hardware,0);

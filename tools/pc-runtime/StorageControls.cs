@@ -12,6 +12,9 @@ namespace DeadSpaceBootstrap
             Multiline = true, ReadOnly = true, WordWrap = false,
             ScrollBars = ScrollBars.Horizontal, BorderStyle = BorderStyle.None
         };
+        private readonly DeadSpaceUi.UiLanguage.LocalizedLabel saveCompatibilityNote = new DeadSpaceUi.UiLanguage.LocalizedLabel {
+            AutoSize = false, UseCompatibleTextRendering = false
+        };
 
         private string SelectedDataRoot()
         {
@@ -29,6 +32,11 @@ namespace DeadSpaceBootstrap
         {
             string bundle = resourceProfile == null ? SaveStorage.Profile : resourceProfile.Id == "ipad-1.0.3" ? "com.ea.deadspace.ipad.bv" : resourceProfile.Id == "iphone-1.0.3" ? "com.ea.deadspace.inc" : SaveStorage.Profile;
             storagePath.Text = "启动器配置：" + ConfigurationDirectory + "\r\n原生配置与存档：" + Path.Combine(SelectedDataRoot(), "touchHLE_sandbox", bundle);
+            saveCompatibilityNote.Text = resourceProfile != null && resourceProfile.Id == "current"
+                ? "当前 1.3.34：存档可通过 PC / Android 三槽 ZIP 交换；不会与旧 IPA 自动合并。"
+                : resourceProfile != null
+                    ? "当前旧 IPA：存档按 IPA 版本独立保存；不会与 1.3.34 或其他旧 IPA 自动互通。切换回来会恢复该版本自己的进度。"
+                    : "尚未选定 IPA：选定后会显示对应的独立存档路径。";
         }
 
         private void BuildStorageControls(Control page)
@@ -39,9 +47,11 @@ namespace DeadSpaceBootstrap
             var copy = new Button { Text = "从另一模式复制存档到所选模式", Location = new Point(30, 500), Size = new Size(300, 38) };
             page.Controls.Add(copy);
             LabelText(page, "切换位置不会自动合并进度；空目录会新建进度。复制只接受空目标，保留源档并逐文件校验。\r\n复制方向：另一模式 → 当前所选模式。请先退出游戏；已有目标存档时拒绝覆盖。", 30, 552, 675, 65);
-            LabelText(page, "三个槽位，一个 ZIP：同时包含全部现有档案和公共设置，可与 Android 互导。\r\n导入前自动备份当前三槽位；请先退出游戏。",30,630,675,55);
-            var exportZip=new Button {Text="导出三槽位 ZIP",Location=new Point(30,696),Size=new Size(300,38)};
-            var importZip=new Button {Text="导入 ZIP 并恢复三槽位",Location=new Point(348,696),Size=new Size(330,38)};
+            saveCompatibilityNote.SetBounds(30, 612, 675, 52);
+            page.Controls.Add(saveCompatibilityNote);
+            LabelText(page, "三个槽位，一个 ZIP：同时包含全部现有档案和公共设置，可与 Android 互导。\r\n导入前自动备份当前三槽位；请先退出游戏。",30,676,675,55);
+            var exportZip=new Button {Text="导出三槽位 ZIP",Location=new Point(30,742),Size=new Size(300,38)};
+            var importZip=new Button {Text="导入 ZIP 并恢复三槽位",Location=new Point(348,742),Size=new Size(330,38)};
             page.Controls.Add(exportZip);page.Controls.Add(importZip);
             profileStorageTools.AddRange(new Control[] { copy, exportZip, importZip });
             exportZip.Click+=delegate {using(var dialog=new SaveFileDialog {Filter="三槽位存档包 (*.zip)|*.zip",FileName="DeadSpace-Three-Slots-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".zip",OverwritePrompt=false})

@@ -17,6 +17,20 @@ namespace DeadSpaceBootstrap
                 if (width < 1 || actualHeight < height) throw new ArgumentOutOfRangeException("height"); }
             return scale;
         }
+
+        // Legacy IPAs expose a different guest surface (the phone builds are
+        // 320x480 and the iPad build is 768x1024).  Their automatic mode must
+        // follow that guest height, rather than applying the PC 480x320 policy
+        // and accidentally turning a saved/selected legacy install into a
+        // fixed 2x or an oversized 6x render target.
+        internal static int ScaleForGuestHeight(int height, int guestHeight)
+        {
+            if (height <= 0) throw new ArgumentOutOfRangeException("height");
+            if (guestHeight <= 0) throw new ArgumentOutOfRangeException("guestHeight");
+            long scale = ((long)height + guestHeight - 1) / guestHeight;
+            if (scale < 1 || scale > Int32.MaxValue) throw new ArgumentOutOfRangeException("height");
+            return (int)scale;
+        }
         internal static string Size(int scale)
         {
             if (scale <= 0) throw new ArgumentOutOfRangeException("scale");
