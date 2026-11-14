@@ -24,6 +24,7 @@ namespace DeadSpaceInstaller
         internal bool RegisterInstallation = true;
         internal bool LaunchAfterInstall;
         internal bool InstallHdChinese = true;
+        internal string HdTextLanguage = "zh-tieba";
         internal string LogPath;
     }
 
@@ -179,17 +180,17 @@ namespace DeadSpaceInstaller
                 bool changed = !String.Equals(previousResource, selected, StringComparison.OrdinalIgnoreCase);
                 // Defaults was freshly extracted from the program payload, even
                 // when this resource generation already existed in the cache.
-                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, true);
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese ? options.HdTextLanguage : "native", true);
                 if (options.RegisterInstallation)
-                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, changed);
+                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese ? options.HdTextLanguage : "native", changed);
                 progress(DeadSpaceResources.IpaProfiles.Inspect(Path.Combine(selected, "payload", "DeadSpace.ipa")).Describe(DeadSpaceUi.UiLanguage.English));
             }
             else
             {
                 progress(I("保留现有 GameData，正在更新程序..."));
-                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, true);
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese ? options.HdTextLanguage : "native", true);
                 if (options.RegisterInstallation)
-                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, false);
+                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese ? options.HdTextLanguage : "native", false);
             }
 
             WriteInstallerState(options, launcher);
@@ -278,7 +279,8 @@ namespace DeadSpaceInstaller
                     continue;
                 }
                 if (name == "--native-language") { options.InstallHdChinese = false; continue; }
-                if (name == "--hd-chinese") { options.InstallHdChinese = true; continue; }
+                if (name == "--hd-chinese") { options.InstallHdChinese = true; options.HdTextLanguage = "zh-tieba"; continue; }
+                if (name == "--hd-language") { if (index + 1 >= args.Length) throw new ArgumentException(I("缺少参数值：") + name); options.InstallHdChinese = true; options.HdTextLanguage = args[++index]; continue; }
                 if (index + 1 >= args.Length)
                     throw new ArgumentException(I("缺少参数值：") + name);
                 string value = args[++index];
@@ -548,7 +550,7 @@ namespace DeadSpaceInstaller
             var state = new Dictionary<string, object>
             {
                 { "schema", 1 },
-                { "distribution", "DEAD SPACE MOBILE R4.2 PC" },
+                { "distribution", "DEAD SPACE MOBILE R5-dev PC" },
                 { "version", version },
                 { "program_root", options.ProgramRoot },
                 { "game_data_root", options.GameDataRoot },
@@ -562,6 +564,7 @@ namespace DeadSpaceInstaller
                 { "program_update_preserves_game_data", true },
                 { "full_R15_complete", false }
                 ,{ "hd_chinese_overlay", options.InstallHdChinese }
+                ,{ "hd_text_language", options.InstallHdChinese ? options.HdTextLanguage : "native" }
             };
             string json = new JavaScriptSerializer().Serialize(state);
             string path = Path.Combine(options.ProgramRoot, "installer.json");

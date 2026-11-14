@@ -196,7 +196,17 @@ namespace DeadSpaceBootstrap
                 graphicsBottom=Math.Max(graphicsBottom,control.Bottom);
             }
             graphics.AutoScrollMinSize=new Size(710,graphicsBottom+24);
-            AddCheck(graphics,overlayEnabled,112,"高清中文文字组件（章节 / 任务 / 字幕）",true);
+            AddCheck(graphics,overlayEnabled,112,"高清文字组件（章节 / 任务 / 字幕）",true);
+            overlayEnabled.Width = 300;
+            hdTextLanguageLabel.Text = "高清语言：";
+            hdTextLanguageLabel.SetBounds(338, 116, 82, 26);
+            graphics.Controls.Add(hdTextLanguageLabel);
+            hdTextLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
+            hdTextLanguage.SetBounds(420, 112, 250, 28);
+            hdTextLanguage.Visible = hdTextLanguageLabel.Visible = false;
+            hdTextLanguage.SelectedIndexChanged += delegate { requestedTextLanguage = SelectedTextLanguageId(); };
+            overlayEnabled.CheckedChanged += delegate { UpdateTextLanguageVisibility(); };
+            graphics.Controls.Add(hdTextLanguage);
             AddCheck(graphics,advancedLighting,156,"高级光影（默认开启）",true);
             BuildPlayDiagnostics(compatibility);
             Theme(this);

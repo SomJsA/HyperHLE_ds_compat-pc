@@ -82,12 +82,15 @@ namespace DeadSpaceBootstrap
         private readonly CheckBox frameDump = new CheckBox();
         private readonly CheckBox nativeHud = new CheckBox();
         private readonly CheckBox overlayEnabled = new CheckBox();
+        private readonly ComboBox hdTextLanguage = new NoWheelComboBox();
+        private readonly Label hdTextLanguageLabel = new DeadSpaceUi.UiLanguage.LocalizedLabel();
         private readonly ComboBox subtitleMode = new NoWheelComboBox();
         private readonly CheckBox confirmQuit = new CheckBox();
         private readonly CheckBox superMonitor = new CheckBox();
 
         private readonly Label status = new DeadSpaceUi.UiLanguage.LocalizedLabel();
         private readonly Button languageToggle = new Button();
+        private string requestedTextLanguage = "zh-tieba";
 
         public LauncherForm() : this(AppDomain.CurrentDomain.BaseDirectory,
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), DisplayHardware.Detect()) { }
@@ -140,6 +143,7 @@ namespace DeadSpaceBootstrap
             languageToggle.Text = DeadSpaceUi.UiLanguage.ToggleCaption;
             if (aboutPanel != null) aboutPanel.ApplyLanguage();
             if (resourceProfile != null && File.Exists(loadedResourceIpa)) ApplyResourceCompatibility(loadedResourceIpa, false);
+            hdTextLanguageLabel.Text = "高清语言：";
             LayoutLauncher();
         }
 
@@ -309,6 +313,7 @@ namespace DeadSpaceBootstrap
             frameDump.Checked = false;
             nativeHud.Checked = true;
             overlayEnabled.Checked = true;
+            requestedTextLanguage = "zh-tieba";
             advancedLighting.Checked = true;
             subtitleMode.SelectedIndex=0;
             confirmQuit.Checked = true;
@@ -394,6 +399,7 @@ namespace DeadSpaceBootstrap
             frameDump.Checked = GetBool(values, "frame_dump", false);
             nativeHud.Checked = GetBool(values, "native_hud", true);
             overlayEnabled.Checked = GetBool(values, "overlay_enabled", true);
+            requestedTextLanguage = Get(values, "hd_text_language", "zh-tieba");
             advancedLighting.Checked = GetBool(values, "advanced_lighting", true);
             launchReviewCompleted = GetBool(values, "launch_review_r4_completed", false);
             SetCombo(subtitleMode,Get(values,"subtitle_mode","整段三行"));
@@ -483,6 +489,7 @@ namespace DeadSpaceBootstrap
                 "frame_dump=" + (frameDump.Checked ? "1" : "0"),
                 "native_hud=" + (nativeHud.Checked ? "1" : "0"),
                 "overlay_enabled=" + (overlayEnabled.Checked ? "1" : "0"),
+                "hd_text_language=" + SelectedTextLanguageId(),
                 "advanced_lighting=" + (advancedLighting.Checked ? "1" : "0"),
                 "launch_review_r4_completed=" + (launchReviewCompleted ? "1" : "0"),
                 "subtitle_mode=" + subtitleMode.SelectedItem,
@@ -744,12 +751,14 @@ namespace DeadSpaceBootstrap
                 "TOUCHHLE_DS_SKIP_TRI_HASH_COUNT",
                 skipTriangles);
 
+            DeadSpaceResources.IpaLanguage selectedTextLanguage = SelectedTextLanguage();
+            bool useHdTextOverlay = overlayEnabled.Checked && selectedTextLanguage != null && selectedTextLanguage.HdOverlay;
             foreach (string name in new[] { "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY", "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_TUTORIAL_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" })
-                Environment.SetEnvironmentVariable(name, overlayEnabled.Checked ? "1" : null);
+                Environment.SetEnvironmentVariable(name, useHdTextOverlay ? "1" : null);
             string localOverlayStyle=ConfigurationFile("overlay-style.json");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_OVERLAY_STYLE",File.Exists(localOverlayStyle)?localOverlayStyle:null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_SUBTITLE_MODE",subtitleMode.SelectedIndex==1?"paged":"three");
-            Environment.SetEnvironmentVariable("TOUCHHLE_DS_GPU_TEXT_OVERLAY", overlayEnabled.Checked && gpuTextOverlay.Checked ? "1" : "0");
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_GPU_TEXT_OVERLAY", useHdTextOverlay && gpuTextOverlay.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AUTO_OPENING_MIPS", openingMips.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AUTO_MIPS_ALL", globalMips.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_SKIP_READBACK_FINISH", skipFinish.Checked ? "1" : null);
@@ -819,7 +828,8 @@ namespace DeadSpaceBootstrap
             args.Append(" --force-composition --landscape-right");
             args.Append(" --scale-hack=").Append(renderScale);
             args.Append(" --stabilize-virtual-cursor=0.06,4");
-            if (overlayEnabled.Checked) args.Append(" --preferred-languages=zh-Hans,zh");
+            if (overlayEnabled.Checked && selectedTextLanguage != null && !String.IsNullOrEmpty(selectedTextLanguage.PreferredLanguages))
+                args.Append(" --preferred-languages=").Append(selectedTextLanguage.PreferredLanguages);
             args.Append(" --stick-to-touch=30,190,120,110");
             if (fastPresent.Checked)
             {
@@ -854,6 +864,13 @@ namespace DeadSpaceBootstrap
                 info.EnvironmentVariables["TOUCHHLE_DS_INPUT_MODE"] = inputMode.SelectedIndex == 1 ? "keyboard" : inputMode.SelectedIndex == 2 ? "gamepad" : "auto";
                 ApplyFireModeEnvironment(info);
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
+                info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_TEXT_PATCH"] = useHdTextOverlay ? "1" : "0";
+                info.EnvironmentVariables["TOUCHHLE_DS_TEXT_LANGUAGE"] = selectedTextLanguage == null ? "native" : selectedTextLanguage.Id;
+                if (overlayEnabled.Checked && selectedTextLanguage != null)
+                {
+                    info.EnvironmentVariables["LANG"] = selectedTextLanguage.PreferredLanguages.Split(',')[0];
+                    info.EnvironmentVariables["LC_ALL"] = selectedTextLanguage.PreferredLanguages.Split(',')[0];
+                }
                 info.EnvironmentVariables["TOUCHHLE_DS_CONFIRM_QUIT"] = confirmQuit.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_LAUNCHER_PATH"] = Application.ExecutablePath;
                 PrepareDefaultOptimizationEnvironment(info);

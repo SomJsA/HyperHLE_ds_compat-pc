@@ -42,12 +42,14 @@ namespace DeadSpaceBootstrap
                 advancedLighting.Checked = resourceProfile.Lighting;
                 overlayEnabled.Checked = resourceProfile.HdText;
                 nativeInputs.Checked = nativeHud.Checked = resourceProfile.HdText;
+                requestedTextLanguage = resourceProfile.HdText ? "zh-tieba" : "native";
                 launchReviewCompleted = false;
             }
             advancedLighting.Enabled = resourceProfile.Lighting;
             if (!advancedLighting.Enabled) advancedLighting.Checked = false;
             overlayEnabled.Enabled = nativeInputs.Enabled = nativeHud.Enabled = resourceProfile.HdText;
             if (!resourceProfile.HdText) overlayEnabled.Checked = nativeInputs.Checked = nativeHud.Checked = false;
+            PopulateTextLanguages(requestedTextLanguage);
             hdTextures.Enabled = resourceProfile.Textures;
             if (!resourceProfile.Textures) hdTextures.Checked = false;
             if (saveEditorPage != null) saveEditorPage.Enabled = resourceProfile.HdText;
@@ -55,6 +57,45 @@ namespace DeadSpaceBootstrap
             RefreshStoragePath();
             resourceCompatibilityInfo.Text = resourceProfile.Name + " · " + (DeadSpaceUi.UiLanguage.English ? "Compatibility / supported graphics" : "适配状态 / 支持的画质");
             UpdateTextureDescription();
+        }
+
+        private string SelectedTextLanguageId()
+        {
+            if (resourceProfile == null || hdTextLanguage.SelectedIndex < 0 || hdTextLanguage.SelectedIndex >= resourceProfile.Languages.Count)
+                return requestedTextLanguage ?? "native";
+            return resourceProfile.Languages[hdTextLanguage.SelectedIndex].Id;
+        }
+
+        private DeadSpaceResources.IpaLanguage SelectedTextLanguage()
+        {
+            if (resourceProfile == null) return null;
+            return DeadSpaceResources.IpaProfiles.FindLanguage(resourceProfile, SelectedTextLanguageId());
+        }
+
+        private void PopulateTextLanguages(string preferred)
+        {
+            hdTextLanguage.Items.Clear();
+            hdTextLanguage.SelectedIndex = -1;
+            if (resourceProfile != null && resourceProfile.HdText)
+            {
+                foreach (DeadSpaceResources.IpaLanguage language in resourceProfile.Languages)
+                    hdTextLanguage.Items.Add(language.Display(DeadSpaceUi.UiLanguage.English));
+                int selected = -1;
+                for (int i = 0; i < resourceProfile.Languages.Count; i++)
+                    if (String.Equals(resourceProfile.Languages[i].Id, preferred, StringComparison.OrdinalIgnoreCase)) { selected = i; break; }
+                if (selected < 0) for (int i = 0; i < resourceProfile.Languages.Count; i++)
+                    if (resourceProfile.Languages[i].HdOverlay) { selected = i; break; }
+                if (selected >= 0) { hdTextLanguage.SelectedIndex = selected; requestedTextLanguage = resourceProfile.Languages[selected].Id; }
+            }
+            if (resourceProfile == null || !resourceProfile.HdText) requestedTextLanguage = "native";
+            UpdateTextLanguageVisibility();
+        }
+
+        private void UpdateTextLanguageVisibility()
+        {
+            bool visible = resourceProfile != null && resourceProfile.HdText && overlayEnabled.Enabled && overlayEnabled.Checked && hdTextLanguage.Items.Count > 0;
+            hdTextLanguage.Visible = hdTextLanguageLabel.Visible = visible;
+            hdTextLanguage.Enabled = visible;
         }
     }
 }

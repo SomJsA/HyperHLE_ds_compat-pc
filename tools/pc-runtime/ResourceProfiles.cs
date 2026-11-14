@@ -9,6 +9,17 @@ using System.Web.Script.Serialization;
 
 namespace DeadSpaceResources
 {
+    internal sealed class IpaLanguage
+    {
+        internal string Id;
+        internal string Directory;
+        internal string PreferredLanguages;
+        internal string LabelZh;
+        internal string LabelEn;
+        internal bool HdOverlay;
+        internal string Display(bool english) { return english ? LabelEn : LabelZh; }
+    }
+
     // Match the uncompressed application, never the user supplied filename.
     // Recompressing an unchanged IPA therefore keeps its compatibility profile.
     internal sealed class IpaProfile
@@ -16,6 +27,7 @@ namespace DeadSpaceResources
         internal string Id = "unknown", Name = "Unrecognized IPA";
         internal bool Lighting, HdText, Textures;
         internal string ExecutableSha256, PlistSha256;
+        internal readonly List<IpaLanguage> Languages = new List<IpaLanguage>();
         internal bool Adapted { get { return Id != "unknown"; } }
         internal string Describe(bool english)
         {
@@ -25,6 +37,7 @@ namespace DeadSpaceResources
             return Name + "\r\n" + support
                 + "\r\n" + (english ? "Lighting: " : "光影：") + (Lighting ? (english ? "native standard / advanced." : "原生标准 / 高级可切换。") : (english ? "native standard only; advanced unavailable." : "仅原生标准；不开放高级光影。"))
                 + "\r\n" + (english ? "Textures: " : "纹理：") + (Textures ? (english ? "original, or matching marker packs at 2x / 4x / 6x when supplied." : "原版；匹配的 marker 提供时可选 2× / 4× / 6×。") : (english ? "original only; external HD packs are not adapted to this edition." : "仅原版；当前外置高清包未适配此构建。"))
+                + "\r\n" + (english ? "IPA languages: " : "IPA 内置语言：") + (Languages.Count == 0 ? (english ? "not detected." : "未检测到。") : String.Join(", ", Languages.Select(language => language.Display(english)).ToArray()))
                 + "\r\n" + (english ? "Internal / output resolution and MSAA / AF remain host settings; hardware limits apply. Opening validation used internal 2x, MSAA 4x / AF 4x; higher settings are not validated limits." : "内部 / 输出分辨率、MSAA / AF 为宿主设置，受硬件限制；开场实测内部 2×、MSAA 4× / AF 4×，不将更高选项当成已验证上限。")
                 + "\r\n" + (english ? "No external texture pack is required. Developer recommendation: 1.3.34. Other IPA owners are welcome to report issues with version / file fingerprints; arrange sample sharing privately." : "不依赖外置纹理也可运行。开发者推荐 1.3.34；也欢迎携带其他 IPA 的版本和文件指纹提 issue，样本另行私下联系。")
                 + (Id == "current" ? "" : "\r\n" + (english ? "Legacy progress is stored separately from 1.3.34 and is never migrated automatically. Save editing / transfer tools for these editions are not adapted." : "旧包进度与 1.3.34 分开保存，不自动跨版迁移；旧包存档编辑与互导工具尚未适配。"))
@@ -39,6 +52,16 @@ namespace DeadSpaceResources
             new[] { "ipad-1.0.3", "Dead Space iPad 1.0.3", "28888b16cf63e7b548f197d046f71bb658a0ba05dd3fb33d015f64c820022d2f", "e5811c990a9797338f8fd76c78aa356b9b9a8997b5875df27783a607d65a2206" },
             new[] { "iphone-1.0.3", "Dead Space iPhone 1.0.3 (build 1.3.8)", "cb751c1e6c4dffb67b08496c574df2bbf9bf637a86a1f44ce0d2c0cd2a7f3436", "0d83bece924b68c58c20353daeec21f9f1a6a064ad39170a2dc5391d8228c8cf" },
             new[] { "world-1.0.1", "Dead Space World 1.0.1", "311a769fc23614981649384fb264f638574999dde05bbe709faef3a5cd5aca8f", "7c67ee8cec2d88c64e6a643369c3b29f7f7f5f5b077d8380cf66210fc8a80851" }
+        };
+        private static readonly IpaLanguage[] LanguageCatalog = {
+            new IpaLanguage { Id = "zh-tieba", Directory = "CHS_CN", PreferredLanguages = "zh-Hans,zh", LabelZh = "中文-贴吧汉化组", LabelEn = "Chinese - Tieba Translation Group", HdOverlay = true },
+            new IpaLanguage { Id = "en-original", Directory = "ENG_US", PreferredLanguages = "en-US,en", LabelZh = "English-原生 IPA", LabelEn = "English - Original IPA" },
+            new IpaLanguage { Id = "fr-original", Directory = "FRE_FR", PreferredLanguages = "fr-FR,fr", LabelZh = "Français-原生 IPA", LabelEn = "Français - Original IPA" },
+            new IpaLanguage { Id = "de-original", Directory = "GER_DE", PreferredLanguages = "de-DE,de", LabelZh = "Deutsch-原生 IPA", LabelEn = "Deutsch - Original IPA" },
+            new IpaLanguage { Id = "it-original", Directory = "ITA_IT", PreferredLanguages = "it-IT,it", LabelZh = "Italiano-原生 IPA", LabelEn = "Italiano - Original IPA" },
+            new IpaLanguage { Id = "ja-original", Directory = "JPN_JP", PreferredLanguages = "ja-JP,ja", LabelZh = "日本語-原生 IPA", LabelEn = "日本語 - Original IPA" },
+            new IpaLanguage { Id = "ko-original", Directory = "KOR_KR", PreferredLanguages = "ko-KR,ko", LabelZh = "한국어-原生 IPA", LabelEn = "한국어 - Original IPA" },
+            new IpaLanguage { Id = "es-original", Directory = "SPA_ES", PreferredLanguages = "es-ES,es", LabelZh = "Español-原生 IPA", LabelEn = "Español - Original IPA" }
         };
         internal static string Digest(Stream source)
         { using (var sha = SHA256.Create()) return BitConverter.ToString(sha.ComputeHash(source)).Replace("-", "").ToLowerInvariant(); }
@@ -82,8 +105,38 @@ namespace DeadSpaceResources
                 if (high && !zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published_ipad2/", StringComparison.Ordinal))) return profile;
                 profile.Id = known[0]; profile.Name = known[1]; profile.Lighting = high;
                 profile.HdText = profile.Textures = profile.Id == "current";
+                string stringData = prefix + "published/stringdata/";
+                foreach (IpaLanguage language in LanguageCatalog)
+                {
+                    string member = stringData + language.Directory + "/deadspace_iphone.bin";
+                    if (zip.GetEntry(member) != null)
+                    {
+                        profile.Languages.Add(new IpaLanguage {
+                            Id = language.Id, Directory = language.Directory,
+                            PreferredLanguages = language.PreferredLanguages,
+                            LabelZh = language.LabelZh, LabelEn = language.LabelEn,
+                            HdOverlay = language.HdOverlay
+                        });
+                    }
+                }
                 return profile;
             }
+        }
+        internal static IpaLanguage FindLanguage(IpaProfile profile, string id)
+        {
+            if (String.Equals(id, "native", StringComparison.OrdinalIgnoreCase)) return null;
+            if (profile != null && !String.IsNullOrEmpty(id))
+            {
+                IpaLanguage match = profile.Languages.FirstOrDefault(language => String.Equals(language.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (match != null) return match;
+            }
+            return profile == null ? null : profile.Languages.FirstOrDefault(language => language.Id == "zh-tieba");
+        }
+        internal static string NormalizeLanguage(IpaProfile profile, string id, bool enabled)
+        {
+            if (!enabled || profile == null || !profile.HdText) return "native";
+            IpaLanguage match = FindLanguage(profile, id);
+            return match == null ? "native" : match.Id;
         }
     }
 
@@ -128,10 +181,17 @@ namespace DeadSpaceResources
         }
         internal static void Configure(string ini, string installed, bool hdChinese, bool reset)
         {
+            Configure(ini, installed, hdChinese ? "zh-tieba" : "native", reset);
+        }
+        internal static void Configure(string ini, string installed, string languageId, bool reset)
+        {
             var p = IpaProfiles.Inspect(Path.Combine(installed, "payload", "DeadSpace.ipa"));
+            string selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
+            IpaLanguage language = IpaProfiles.FindLanguage(p, selectedLanguage);
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 { "ipa", Path.Combine(installed, "payload", "DeadSpace.ipa") }, { "resource_profile", p.Id },
-                { "overlay_enabled", p.HdText && hdChinese ? "1" : "0" }
+                { "overlay_enabled", p.HdText && language != null && language.HdOverlay ? "1" : "0" },
+                { "hd_text_language", selectedLanguage }
             };
             if (!p.Lighting) values["advanced_lighting"] = "0";
             if (!p.HdText) values["native_inputs"] = values["native_hud"] = "0";
@@ -141,6 +201,10 @@ namespace DeadSpaceResources
                 values["advanced_lighting"] = p.Lighting ? "1" : "0";
                 values["native_inputs"] = values["native_hud"] = p.HdText ? "1" : "0";
                 values["hd_textures"] = "0";
+                selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
+                values["hd_text_language"] = selectedLanguage;
+                language = IpaProfiles.FindLanguage(p, selectedLanguage);
+                values["overlay_enabled"] = p.HdText && language != null && language.HdOverlay ? "1" : "0";
                 foreach (string tier in new[] { "2", "4", "6" }) values["texture_root_" + tier] = Path.Combine(installed, "payload", "texture-packs", tier);
                 string available = new[] { "4", "2", "6" }.FirstOrDefault(t => File.Exists(Path.Combine(installed, "payload", "texture-packs", t, "PACK.json")));
                 values["texture_scale"] = available ?? "4";

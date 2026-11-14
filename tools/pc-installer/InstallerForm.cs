@@ -21,6 +21,8 @@ namespace DeadSpaceInstaller
         private readonly CheckBox startMenuShortcut = new CheckBox();
         private readonly CheckBox launchAfter = new CheckBox();
         private readonly CheckBox hdChinesePack = new CheckBox();
+        private readonly ComboBox hdTextLanguage = new ComboBox();
+        private readonly Label hdTextLanguageLabel = new Label();
         private readonly Button languageInfo = new Button();
         private readonly Label space = new Label();
         private readonly Label sourceHint = new Label();
@@ -104,7 +106,7 @@ namespace DeadSpaceInstaller
 
             Note(content, I("语言组件 / Language mode"), true);
             var languageChoices = Flow();
-            hdChinesePack.Text = I("高清中文组件（对话字幕 + 章节头）");
+            hdChinesePack.Text = I("高清文字组件（对话字幕 + 章节头）");
             hdChinesePack.Checked = true;
             hdChinesePack.AutoSize = true;
             hdChinesePack.Font = new Font(Font, FontStyle.Bold);
@@ -112,6 +114,13 @@ namespace DeadSpaceInstaller
             hdChinesePack.BackColor = Color.FromArgb(20, 53, 64);
             hdChinesePack.Padding = new Padding(8, 5, 8, 5);
             hdChinesePack.Margin = new Padding(0, 4, 14, 4);
+            hdChinesePack.CheckedChanged += delegate { UpdateInstallLanguageVisibility(); };
+            hdTextLanguageLabel.Text = I("高清语言：");
+            hdTextLanguageLabel.AutoSize = true;
+            hdTextLanguageLabel.Margin = new Padding(0, 9, 5, 4);
+            hdTextLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
+            hdTextLanguage.Size = new Size(250, 28);
+            hdTextLanguage.Margin = new Padding(0, 4, 14, 4);
             languageInfo.Text = I("ⓘ 说明");
             languageInfo.AutoSize = true;
             languageInfo.FlatStyle = FlatStyle.Flat;
@@ -119,9 +128,11 @@ namespace DeadSpaceInstaller
             languageInfo.Margin = new Padding(0, 4, 14, 4);
             languageInfo.Click += delegate { ShowLanguageInfo(); };
             languageChoices.Controls.Add(hdChinesePack);
+            languageChoices.Controls.Add(hdTextLanguageLabel);
+            languageChoices.Controls.Add(hdTextLanguage);
             languageChoices.Controls.Add(languageInfo);
             content.Controls.Add(languageChoices);
-            Note(content, I("关闭后回归原生语言行为：安装版本不启用高清中文对话字幕和章节头；重新运行安装器即可切换。其他语言将在后续开放，欢迎通过 GitHub issue 投稿。"), false);
+            Note(content, I("关闭后回归原生语言行为；勾选后可选择 IPA 内置语言，启动时会使用对应语言环境。"), false);
 
             Note(content, I("高清纹理 · 可多选"), true);
             var choices = Flow();
@@ -285,8 +296,9 @@ namespace DeadSpaceInstaller
                     profileInfo.Visible = true;
                     hdChinesePack.Enabled = sourceProfile.HdText;
                     if (!sourceProfile.HdText) hdChinesePack.Checked = false;
-                } else { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = true; }
-            } catch (Exception error) { sourceProfile = null; profileInfo.Visible = false; sourceHint.Text = I("无法读取资源清单：") + error.Message; }
+                    PopulateInstallLanguages();
+                } else { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = true; PopulateInstallLanguages(); }
+            } catch (Exception error) { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = false; PopulateInstallLanguages(); sourceHint.Text = I("无法读取资源清单：") + error.Message; }
             for (int i = 0; i < tiers.Length; i++) {
                 bool missing = resourcePath.Text.Trim().Length > 0 && (!markerSource || !resourceBytes.ContainsKey((2 + i * 2).ToString()) || sourceProfile == null || !sourceProfile.Textures);
                 tiers[i].Enabled = !missing;
@@ -295,6 +307,39 @@ namespace DeadSpaceInstaller
                 if (missing) tiers[i].Checked = false;
             }
             UpdateSpace();
+        }
+        private string SelectedInstallLanguageId()
+        {
+            if (!hdChinesePack.Checked) return "native";
+            if (sourceProfile == null) return "zh-tieba";
+            if (hdTextLanguage.SelectedIndex < 0 || hdTextLanguage.SelectedIndex >= sourceProfile.Languages.Count)
+                return "native";
+            return sourceProfile.Languages[hdTextLanguage.SelectedIndex].Id;
+        }
+        private void PopulateInstallLanguages()
+        {
+            string previous = hdTextLanguage.SelectedIndex >= 0 && sourceProfile != null && hdTextLanguage.SelectedIndex < sourceProfile.Languages.Count
+                ? sourceProfile.Languages[hdTextLanguage.SelectedIndex].Id : "zh-tieba";
+            hdTextLanguage.Items.Clear();
+            hdTextLanguage.SelectedIndex = -1;
+            if (sourceProfile != null && sourceProfile.HdText)
+            {
+                foreach (DeadSpaceResources.IpaLanguage language in sourceProfile.Languages)
+                    hdTextLanguage.Items.Add(language.Display(DeadSpaceUi.UiLanguage.English));
+                int selected = -1;
+                for (int i = 0; i < sourceProfile.Languages.Count; i++)
+                    if (String.Equals(sourceProfile.Languages[i].Id, previous, StringComparison.OrdinalIgnoreCase)) { selected = i; break; }
+                if (selected < 0) for (int i = 0; i < sourceProfile.Languages.Count; i++)
+                    if (sourceProfile.Languages[i].HdOverlay) { selected = i; break; }
+                if (selected >= 0) hdTextLanguage.SelectedIndex = selected;
+            }
+            UpdateInstallLanguageVisibility();
+        }
+        private void UpdateInstallLanguageVisibility()
+        {
+            bool available = sourceProfile != null && sourceProfile.HdText && hdChinesePack.Enabled && hdChinesePack.Checked && hdTextLanguage.Items.Count > 0;
+            hdTextLanguageLabel.Visible = hdTextLanguage.Visible = available;
+            hdTextLanguage.Enabled = available;
         }
         private void UpdateSpace() {
             long bytes = resourceBytes.ContainsKey("ipa") ? resourceBytes["ipa"] : 0;
@@ -305,7 +350,7 @@ namespace DeadSpaceInstaller
         }
         private void BeginInstall() {
             if (busy) return;
-            activeOptions = new InstallOptions { ProgramRoot = programRoot.Text.Trim(), GameDataRoot = gameDataRoot.Text.Trim(), ResourcePath = resourcePath.Text.Trim(), Tier = Selection(), CreateShortcut = startMenuShortcut.Checked, CreateDesktopShortcut = desktopShortcut.Checked, RegisterInstallation = true, LaunchAfterInstall = launchAfter.Checked, InstallHdChinese = hdChinesePack.Checked };
+            activeOptions = new InstallOptions { ProgramRoot = programRoot.Text.Trim(), GameDataRoot = gameDataRoot.Text.Trim(), ResourcePath = resourcePath.Text.Trim(), Tier = Selection(), CreateShortcut = startMenuShortcut.Checked, CreateDesktopShortcut = desktopShortcut.Checked, RegisterInstallation = true, LaunchAfterInstall = launchAfter.Checked, InstallHdChinese = hdChinesePack.Checked, HdTextLanguage = SelectedInstallLanguageId() };
             busy = true; sections.Enabled = false; languageToggle.Enabled = false; settings.Enabled = false; install.Enabled = false; Cursor = Cursors.WaitCursor;
             progressBar.Style = ProgressBarStyle.Marquee; details.AppendText(Environment.NewLine + I("开始安装…"));
             worker.RunWorkerAsync(activeOptions);
@@ -321,13 +366,13 @@ namespace DeadSpaceInstaller
                 shell.RowStyles.Add(new RowStyle(SizeType.AutoSize)); shell.RowStyles.Add(new RowStyle(SizeType.AutoSize)); shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); shell.RowStyles.Add(new RowStyle(SizeType.AutoSize)); shell.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                 var heading = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Choose the language layer installed with the game" : I("选择随游戏安装的语言层"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(98, 218, 232), Margin = new Padding(0, 0, 0, 14) };
                 shell.Controls.Add(heading, 0, 0); shell.SetColumnSpan(heading, 2);
-                var hd = new Label { Text = DeadSpaceUi.UiLanguage.English ? "HD Chinese component" : I("高清中文组件"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(98, 218, 232), Margin = new Padding(0, 0, 0, 8) };
+                var hd = new Label { Text = DeadSpaceUi.UiLanguage.English ? "HD text component" : I("高清文字组件"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(98, 218, 232), Margin = new Padding(0, 0, 0, 8) };
                 var native = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Native behavior" : I("原生行为"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(221, 232, 237), Margin = new Padding(12, 0, 0, 8) };
                 shell.Controls.Add(hd, 0, 1); shell.Controls.Add(native, 1, 1);
-                var hdBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01\r\nHonorable Intentions\r\n\"Watch the locator. It knows this place better than anyone.\"\r\n\r\nGPU-cached Chinese dialogue, objective and chapter cards." : I("第 01 章\r\n当初善意\r\n“注意你的定位器。它比任何人都了解这个地方。”\r\n\r\nGPU 缓存的中文对话、目标和章节卡片。"), Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(20, 53, 64), ForeColor = ForeColor, Margin = new Padding(0, 0, 12, 12) };
-                var nativeBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01 / original game text\r\n\r\nThe HD Chinese subtitle and chapter layer is omitted. Re-run this installer to switch back." : I("Chapter 01 / 使用游戏原生文字\r\n\r\n不启用高清中文对话字幕和章节层。重新运行安装器即可切换。"), Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(19, 30, 40), ForeColor = ForeColor, Margin = new Padding(0, 0, 0, 12) };
+                var hdBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01\r\nHonorable Intentions\r\n\"Watch the locator. It knows this place better than anyone.\"\r\n\r\nChoose the Tieba Chinese HD component or one of the original language banks embedded in the selected IPA." : "第 01 章\r\n当初善意\r\n“注意你的定位器。它比任何人都了解这个地方。”\r\n\r\n可选择贴吧汉化组中文高清组件，或使用所选 IPA 内置的其他原生语言资源。", Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(20, 53, 64), ForeColor = ForeColor, Margin = new Padding(0, 0, 12, 12) };
+                var nativeBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01 / original game text\r\n\r\nDisabling the component restores the game's native language selection. Non-Chinese choices use the embedded IPA bank and disable the Chinese overlay." : "Chapter 01 / 使用游戏原生文字\r\n\r\n关闭组件会回归游戏原生语言选择；其他语言选项使用 IPA 内置资源，并关闭中文覆盖层。", Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(19, 30, 40), ForeColor = ForeColor, Margin = new Padding(0, 0, 0, 12) };
                 shell.Controls.Add(hdBody, 0, 2); shell.Controls.Add(nativeBody, 1, 2);
-                var note = new Label { Text = DeadSpaceUi.UiLanguage.English ? "More language options will be added later. Please submit requests through GitHub Issues." : I("其他语言选项将在后续开放，欢迎通过 GitHub issue 投稿。"), AutoSize = true, ForeColor = Color.FromArgb(142, 163, 176), Margin = new Padding(0, 6, 0, 10) };
+                var note = new Label { Text = DeadSpaceUi.UiLanguage.English ? "These choices are detected from the selected IPA. Submit additional HD translation components through GitHub Issues." : "选项由当前 IPA 自动检测；欢迎通过 GitHub issue 投稿其他语言的高清翻译组件。", AutoSize = true, ForeColor = Color.FromArgb(142, 163, 176), Margin = new Padding(0, 6, 0, 10) };
                 shell.Controls.Add(note, 0, 3); shell.SetColumnSpan(note, 2);
                 var closeInfo = new Button { Text = DeadSpaceUi.UiLanguage.English ? "Close" : I("关闭"), AutoSize = true, DialogResult = DialogResult.OK, Anchor = AnchorStyles.Right, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 0, 0, 0) };
                 shell.Controls.Add(closeInfo, 1, 4); shell.SetColumnSpan(closeInfo, 1);
