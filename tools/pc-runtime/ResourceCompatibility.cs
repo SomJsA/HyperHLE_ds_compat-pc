@@ -79,6 +79,13 @@ namespace DeadSpaceBootstrap
             return DeadSpaceResources.IpaProfiles.EffectiveLanguage(resourceProfile, SelectedTextLanguageId());
         }
 
+        private DeadSpaceResources.IpaLanguage SelectedLaunchTextLanguage()
+        {
+            // Disabling the HD component must preserve the user's native
+            // language selection; fallback is only for the enabled component.
+            return overlayEnabled.Checked ? EffectiveTextLanguage() : SelectedTextLanguage();
+        }
+
         private bool PrepareNativeLanguageSetting(DeadSpaceResources.IpaLanguage language)
         {
             if (!overlayEnabled.Checked || language == null) return true;

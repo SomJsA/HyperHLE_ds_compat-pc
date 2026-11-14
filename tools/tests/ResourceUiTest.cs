@@ -54,6 +54,10 @@ internal static class ResourceUiTest
                         Check(!(bool)language.GetType().GetField("HdOverlay", Hidden).GetValue(language), "Native Japanese disables Chinese overlay");
                         object effective = type.GetMethod("EffectiveTextLanguage", Hidden).Invoke(form, null);
                         Check(Convert.ToString(effective.GetType().GetField("Id", Hidden).GetValue(effective)) == "en-original", "Incomplete Japanese falls back to complete English bank");
+                        ((CheckBox)Field(form, "overlayEnabled")).Checked = false;
+                        object native = type.GetMethod("SelectedLaunchTextLanguage", Hidden).Invoke(form, null);
+                        Check(Convert.ToString(native.GetType().GetField("Id", Hidden).GetValue(native)) == "ja-original", "Disabled HD component preserves native Japanese selection");
+                        ((CheckBox)Field(form, "overlayEnabled")).Checked = true;
                     }
                     Check(((CheckBox)Field(form, "nativeInputs")).Checked == (i == 3), "Native controls switch");
                     Check(!(bool)Field(form, "launchReviewCompleted"), "Resource change requires first review");
