@@ -263,14 +263,27 @@ impl Environment {
         let startup_time = Instant::now();
         let launched_bundle_id = bundle.bundle_identifier().to_owned();
 
-        // The 1.0.1 World build ships a fat ARMv6/ARMv7 binary whose old
-        // startup path is stable on its ARMv6 slice. Keep this preference
-        // scoped to that exact legacy build; current 1.3.34 and other apps
-        // retain the normal ARMv7 preference.
-        if launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.0.1" {
-            unsafe { std::env::set_var("TOUCHHLE_DS_PREFER_ARMV6", "1"); }
-        } else {
-            unsafe { std::env::remove_var("TOUCHHLE_DS_PREFER_ARMV6"); }
+        // Native PC enhancements use the verified 1.3.34 code/object layout.
+        // Old editions have different functions at those addresses. Retain
+        // their original touch UI and rendering instead of calling into an
+        // unrelated function just because the desktop controls are enabled.
+        let legacy_deadspace = matches!(launched_bundle_id.as_str(),
+            "com.ea.deadspace.bv" | "com.ea.deadspace.inc" | "com.ea.deadspace.ipad.bv")
+            && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34");
+        if legacy_deadspace {
+            for name in ["TOUCHHLE_DS_NATIVE_INPUTS", "TOUCHHLE_DS_NATIVE_HUD", "TOUCHHLE_DS_FRONTEND_NAV"] {
+                unsafe { std::env::set_var(name, "0"); }
+            }
+            echo!("[DSlegacy] original touch controls retained; 1.3.34 native PC enhancements are unavailable for this edition");
+            // The tablet edition declares landscape-right interface content,
+            // opposite to the phone edition's device rotation. The PC launcher
+            // supplies --landscape-right for phones; honour the tablet plist
+            // instead so both rendering and touch coordinates stay upright.
+            if launched_bundle_id == "com.ea.deadspace.ipad.bv"
+                && bundle.supported_interface_orientations() == ["UIInterfaceOrientationLandscapeRight"]
+            {
+                options.initial_orientation = window::DeviceOrientation::LandscapeLeft;
+            }
         }
 
         if launched_bundle_id == "at.source.potato.full" {
@@ -2107,25 +2120,6 @@ impl Environment {
                             log_no_panic!("[udfdbg] typename={:?}", s);
                         }
                     }
-                }
-
-                // World 1.0.1 calls an optional actor-name callback while
-                // probing the startup world. On the real binary this missing
-                // callback means "not found"; returning a null result lets
-                // the caller finish the lookup. The generic UDF fallback
-                // preserves the stale result and re-enters this lookup until
-                // the loop guard fires, so keep this exact legacy return site
-                // scoped to the 1.0.1 build.
-                if pc == 0x1000
-                    && self.bundle.bundle_identifier() == "com.ea.deadspace.bv"
-                    && self.bundle.bundle_version() == "1.0.1"
-                    && lr == 0x34b4ec
-                {
-                    self.cpu.regs_mut()[0] = 0;
-                    self.cpu.branch(GuestFunction::from_addr_with_thumb_bit(lr));
-                    self.udf_bypass_last = None;
-                    self.udf_bypass_count = 0;
-                    return;
                 }
 
                 // Track repeated occurrences of the same bypass site.

@@ -277,7 +277,6 @@ impl MachO {
             OFile::FatFile { files, .. } => {
                 let mut best_subslice: Option<&[u8]> = None;
                 let mut best_type = None;
-                let prefer_armv6 = std::env::var("TOUCHHLE_DS_PREFER_ARMV6").as_deref() == Ok("1");
                 let mut had_truncated_slice = false;
                 for (arch, _) in files {
                     if arch.cputype != mach_object::CPU_TYPE_ARM {
@@ -309,15 +308,10 @@ impl MachO {
                         had_truncated_slice = true;
                         continue;
                     }
-                    let desired = if prefer_armv6 {
-                        mach_object::CPU_SUBTYPE_ARM_V6
-                    } else {
-                        mach_object::CPU_SUBTYPE_ARM_V7
-                    };
-                    if arch.cpusubtype == desired
-                        || (best_type.is_none()
-                            && (arch.cpusubtype == mach_object::CPU_SUBTYPE_ARM_V7
-                                || arch.cpusubtype == mach_object::CPU_SUBTYPE_ARM_V6))
+                    if arch.cpusubtype == mach_object::CPU_SUBTYPE_ARM_V7
+                        || (arch.cpusubtype == mach_object::CPU_SUBTYPE_ARM_V6
+                            && best_type != Some(mach_object::CPU_SUBTYPE_ARM_V7))
+                        || best_type.is_none()
                     {
                         best_subslice = Some(&bytes[off..off + size]);
                         best_type = Some(arch.cpusubtype);

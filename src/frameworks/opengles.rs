@@ -81,6 +81,8 @@ pub struct State {
     ds_hud_player_cache_thread: crate::ThreadId,
     ds_hud_player_cache_sampled: bool,
     ds_hud_player_cache_value: Option<(u32, u32)>,
+    /// Check the full native GetHud entry once before any fixed-layout call.
+    ds_native_hud_layout_verified: Option<bool>,
     ds_pc_look: crate::window::ds_pc_input::NativeLook,
     ds_player_action_cache: crate::ds_player_action_cache::Cache,
 }

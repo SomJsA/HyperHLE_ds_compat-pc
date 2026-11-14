@@ -1226,7 +1226,29 @@ fn ds_hud_player_cache_report(hit: bool) {
     }
 }
 
+fn ds_native_hud_layout_verified(env: &mut Environment) -> bool {
+    if let Some(verified) = env.framework_state.opengles.ds_native_hud_layout_verified {
+        return verified;
+    }
+    const GET_HUD: [u32; 7] = [
+        0xe92d_4080, 0xe1a0_700d, 0xebff_6c81, 0xebff_4da5,
+        0xe590_0000, 0xe280_0e25, 0xe8bd_8080,
+    ];
+    let verified = env.bundle.bundle_identifier() == "com.ea.deadspace.bv"
+        && env.bundle.bundle_version() == "1.3.34"
+        && env.bins[0].exported_symbols.get("__ZN10GameObject6GetHudEv") == Some(&0x0003_0474)
+        && GET_HUD.iter().enumerate().all(|(i, expected)| {
+            ds_read_aim_word(env, 0x0003_0474 + i as u32 * 4) == Some(*expected)
+        });
+    env.framework_state.opengles.ds_native_hud_layout_verified = Some(verified);
+    if !verified {
+        echo!("[DSnative-layout] unsupported GetHud layout; native PC calls withheld");
+    }
+    verified
+}
+
 fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
+    if !ds_native_hud_layout_verified(env) { return None; }
     if crate::ds_frontend_controller::capture_menu() {
         if ds_hud_player_cache_enabled() {
             let state = &mut env.framework_state.opengles;
@@ -1303,6 +1325,7 @@ fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
 // deliberately refuses to inspect a HUD while the frontend controller owns a
 // modal, so use this narrow verified lookup for BTN_PLAY_PAUSE only.
 fn ds_pause_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
+    if !ds_native_hud_layout_verified(env) { return None; }
     let hud: u32 = GuestFunction::from_addr_and_thumb_flag(0x0003_0474, false).call_from_host(env, ());
     let world = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
     if hud < 0x1000 || world < 0x1000 { return None; }

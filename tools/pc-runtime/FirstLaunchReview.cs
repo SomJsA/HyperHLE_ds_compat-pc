@@ -41,6 +41,8 @@ namespace DeadSpaceBootstrap
                 +"\r\n"+T("输出分辨率：","Output resolution: ")+output
                 +"\r\n\r\n"+T("高级光影在PC默认开启，恢复护甲与环境反光、动态灯光等原生高档效果。",
                     "Advanced lighting is on by default on PC. It restores native high-tier effects, including armor and environment reflections and dynamic lights.")
+                +"\r\n\r\n"+T("旧版IPA按其自带资源与渲染能力运行，可不安装外置高清纹理。1.0.3/1.0.1沿用原生触摸界面，1.3.34专用的增强操控和高清文字不适用于旧版。高级光影开关不会为旧包补入缺少的高档渲染资源。",
+                    "Legacy IPAs use their own resources and renderer; external HD textures are optional. Editions 1.0.3/1.0.1 retain the original touch UI. The enhanced controls and HD text for 1.3.34 do not apply to these editions. Advanced lighting cannot add high-tier content missing from an older IPA.")
                 +"\r\n\r\n"+T("高清文字目前为中文。可关闭高清中文组件，使用游戏原生文字与语言设置。欢迎多语言用户投稿；若暂无投稿，我们计划在R8之前支持其他语言的高清文字组件。",
                     "HD text is currently Chinese. Disable the HD Chinese components to use the game's native text and language settings. Contributions for other languages are welcome. If none are contributed, we plan to support HD text in other languages before R8.");
         }
