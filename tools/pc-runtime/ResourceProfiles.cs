@@ -17,7 +17,13 @@ namespace DeadSpaceResources
         internal string LabelZh;
         internal string LabelEn;
         internal bool HdOverlay;
-        internal string Display(bool english) { return english ? LabelEn : LabelZh; }
+        internal bool Complete = true;
+        internal string FallbackId;
+        internal string Display(bool english)
+        {
+            string label = english ? LabelEn : LabelZh;
+            return Complete ? label : label + (english ? " (partial; falls back to English)" : "（部分资源，启动回退英语）");
+        }
     }
 
     // Match the uncompressed application, never the user supplied filename.
@@ -106,16 +112,23 @@ namespace DeadSpaceResources
                 profile.Id = known[0]; profile.Name = known[1]; profile.Lighting = high;
                 profile.HdText = profile.Textures = profile.Id == "current";
                 string stringData = prefix + "published/stringdata/";
+                ZipArchiveEntry englishBank = zip.GetEntry(stringData + "ENG_US/deadspace_iphone.bin");
+                long englishBankLength = englishBank == null ? 0 : englishBank.Length;
                 foreach (IpaLanguage language in LanguageCatalog)
                 {
                     string member = stringData + language.Directory + "/deadspace_iphone.bin";
-                    if (zip.GetEntry(member) != null)
+                    ZipArchiveEntry bank = zip.GetEntry(member);
+                    if (bank != null)
                     {
                         profile.Languages.Add(new IpaLanguage {
                             Id = language.Id, Directory = language.Directory,
                             PreferredLanguages = language.PreferredLanguages,
                             LabelZh = language.LabelZh, LabelEn = language.LabelEn,
-                            HdOverlay = language.HdOverlay
+                            HdOverlay = language.HdOverlay,
+                            // Legacy World banks use a different key layout; compare against
+                            // the same IPA's English bank instead of fixed key names or size.
+                            Complete = englishBankLength <= 0 || bank.Length >= Math.Max(32768, englishBankLength / 2),
+                            FallbackId = language.Id == "en-original" ? null : "en-original"
                         });
                     }
                 }
@@ -137,6 +150,12 @@ namespace DeadSpaceResources
             if (!enabled || profile == null || !profile.HdText) return "native";
             IpaLanguage match = FindLanguage(profile, id);
             return match == null ? "native" : match.Id;
+        }
+        internal static IpaLanguage EffectiveLanguage(IpaProfile profile, string id)
+        {
+            IpaLanguage selected = FindLanguage(profile, id);
+            if (selected == null || selected.Complete || String.IsNullOrEmpty(selected.FallbackId)) return selected;
+            return FindLanguage(profile, selected.FallbackId) ?? selected;
         }
     }
 

@@ -581,7 +581,7 @@ namespace DeadSpaceBootstrap
             if (!ReviewFirstLaunch()) return;
             using (var warning = new FlickerWarningForm())
                 if (warning.ShowDialog(this) != DialogResult.OK) return;
-            DeadSpaceResources.IpaLanguage selectedTextLanguage = SelectedTextLanguage();
+            DeadSpaceResources.IpaLanguage selectedTextLanguage = EffectiveTextLanguage();
             try { SaveKeyBindings(); SaveGamepadBindings(); }
             catch (Exception error) { status.Text = error.Message; return; }
             try { SaveStorage.RequireStopped(); SaveStorage.EnsureWritable(SelectedDataRoot()); if(saveMode.SelectedIndex==1)DocumentsSettings.EnsureLayout(SelectedDataRoot()); }

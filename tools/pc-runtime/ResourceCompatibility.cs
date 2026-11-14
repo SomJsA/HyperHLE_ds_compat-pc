@@ -73,6 +73,12 @@ namespace DeadSpaceBootstrap
             return DeadSpaceResources.IpaProfiles.FindLanguage(resourceProfile, SelectedTextLanguageId());
         }
 
+        private DeadSpaceResources.IpaLanguage EffectiveTextLanguage()
+        {
+            if (resourceProfile == null) return null;
+            return DeadSpaceResources.IpaProfiles.EffectiveLanguage(resourceProfile, SelectedTextLanguageId());
+        }
+
         private bool PrepareNativeLanguageSetting(DeadSpaceResources.IpaLanguage language)
         {
             if (!overlayEnabled.Checked || language == null) return true;

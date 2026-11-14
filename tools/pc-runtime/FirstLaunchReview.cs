@@ -18,6 +18,8 @@ namespace DeadSpaceBootstrap
                 string language = selectedLanguage == null ? (DeadSpaceUi.UiLanguage.English ? "Native game language" : "原生语言设置") : selectedLanguage.Display(DeadSpaceUi.UiLanguage.English);
                 summary=FirstLaunchReviewForm.Summary(overlayEnabled.Checked, language, advancedLighting.Checked,
                     PcRenderResolution.Size(scale),SelectedOutputSize());
+                if (selectedLanguage != null && !selectedLanguage.Complete)
+                    summary += "\r\n" + (DeadSpaceUi.UiLanguage.English ? "This IPA language bank is incomplete; launch will fall back to its complete English bank to avoid placeholder text." : "该 IPA 的语言资源不完整；启动时会回退到完整英语资源，避免出现占位符。");
                 if (resourceProfile != null) summary += "\r\n\r\n" + resourceProfile.Describe(DeadSpaceUi.UiLanguage.English);
             } catch (InvalidOperationException error) { status.Text=error.Message; return false; }
             using (var review=new FirstLaunchReviewForm(summary)) {

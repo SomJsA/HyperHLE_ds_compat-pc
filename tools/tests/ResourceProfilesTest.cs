@@ -26,7 +26,7 @@ internal static class ResourceProfilesTest
                 Check(p.HdText == (i == 3) && p.Textures == (i == 3), "Enhanced components");
                 Check(p.Languages.Count == 8, "IPA embedded language banks " + ids[i]);
                 Check(DeadSpaceResources.IpaProfiles.FindLanguage(p, "zh-tieba") != null && DeadSpaceResources.IpaProfiles.FindLanguage(p, "en-original") != null, "Chinese / English language choices");
-                Check(DeadSpaceResources.IpaProfiles.FindLanguage(p, "zh-tieba").HdOverlay && !DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").HdOverlay && DeadSpaceResources.IpaProfiles.FindLanguage(p, "fr-original").PreferredLanguages == "fr-FR,fr", "HD overlay and locale mapping");
+                Check(DeadSpaceResources.IpaProfiles.FindLanguage(p, "zh-tieba").HdOverlay && !DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").HdOverlay && !DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").Complete && DeadSpaceResources.IpaProfiles.EffectiveLanguage(p, "ja-original").Id == "en-original" && DeadSpaceResources.IpaProfiles.FindLanguage(p, "fr-original").PreferredLanguages == "fr-FR,fr", "HD overlay, incomplete Japanese fallback and locale mapping");
                 Check(p.Describe(true).Contains("1.3.34") && p.Describe(false).Contains("issue"), "Bilingual recommendation / issues");
             }
             string data = Path.Combine(output, "data"); Directory.CreateDirectory(data);
