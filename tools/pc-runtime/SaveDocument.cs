@@ -14,8 +14,9 @@ namespace DeadSpaceBootstrap
         internal bool Editable;
     }
 
-    // Strict reader and length-preserving editor. Unknown state, actor lists,
-    // pointers, list lengths and string tables are never rewritten.
+    // Strict reader and bounded editor. Unknown state, actor lists, pointers
+    // and list lengths are never rewritten; a language switch may append one
+    // verified string-table entry while preserving all other sections.
     internal sealed class SaveDocument
     {
         internal readonly string FilePath;
@@ -299,6 +300,7 @@ namespace DeadSpaceBootstrap
                 || path == "misc/gameCompleted" || path == "misc/plus" || path == "plus_unlocked"
                 || path == "auto_reload" || path == "subtitles_enabled" || path == "tutorials_enabled" || path == "y_flipped"
                 || path == "sfx_volume" || path == "music_volume" || path == "brightness" || path == "sensitivity"
+                || path == "language"
                 || (path.StartsWith("levelCompletes/") && path.EndsWith("/complete"))
                 || (path.StartsWith("achievementCompletes/") && path.EndsWith("/complete"));
             if (path.StartsWith("levelCompletes/") || path.StartsWith("achievementCompletes/") || path == "misc/gameCompleted" || path == "misc/plus") group = "章节与周目";
@@ -306,14 +308,17 @@ namespace DeadSpaceBootstrap
         }
 
         private byte[] Encode(SaveValue field, string value)
+        { return Encode(field, value, new List<string>(Strings)); }
+        private byte[] Encode(SaveValue field, string value, List<string> strings)
         {
             if (!field.Editable) throw new InvalidDataException("字段只读：" + field.Path);
             if (field.Type == 9)
             { Require(value == "0" || value == "1", "布尔值只能为 0 或 1"); return new[] { (byte)(value == "1" ? 1 : 0) }; }
             if (field.Type == 13)
             {
-                int index = Strings.IndexOf(value);
-                Require(index >= 0 && IsItemName(value), "物品类型必须存在于本档字符串表：" + value);
+                int index = strings.IndexOf(value);
+                if (index < 0 && field.Path == "language") { strings.Add(value); index = strings.Count - 1; }
+                Require(index >= 0 && (field.Path == "language" || IsItemName(value)), "物品类型必须存在于本档字符串表：" + value);
                 return BitConverter.GetBytes(checked((ushort)(index + 1)));
             }
             if (field.Type == 10)
@@ -327,16 +332,28 @@ namespace DeadSpaceBootstrap
             if (field.Path.IndexOf("upgrade_level_") >= 0) Require(integer <= 4, "升级等级范围为 0–4");
             return BitConverter.GetBytes(integer);
         }
+        private static byte[] PackStrings(List<string> strings)
+        {
+            var bytes = new List<byte>(); PutU32(bytes, checked((uint)strings.Count));
+            foreach (string value in strings)
+            {
+                byte[] utf8 = Encoding.UTF8.GetBytes(value);
+                PutU32(bytes, checked((uint)utf8.Length)); bytes.AddRange(utf8);
+            }
+            return bytes.ToArray();
+        }
         internal static bool IsItemName(string value)
         { return value.StartsWith("AMMO_", StringComparison.Ordinal) || value.StartsWith("HEALTH_", StringComparison.Ordinal) || value.StartsWith("OXYGEN_", StringComparison.Ordinal) || value == "PENG" || value == "STASIS_PACK"; }
 
         internal byte[] EditBytes(IDictionary<string, string> changes)
         {
-            byte[] edited = (byte[])original.Clone(); var allowed = new HashSet<int>();
+            byte[] edited = (byte[])original.Clone(); var allowed = new HashSet<int>(); var strings = new List<string>(Strings); bool stringsChanged = false;
             foreach (var change in changes)
             {
                 SaveValue field; Require(Values.TryGetValue(change.Key, out field), "找不到字段：" + change.Key);
-                byte[] bytes = Encode(field, change.Value.Trim());
+                int beforeStrings = strings.Count;
+                byte[] bytes = Encode(field, change.Value.Trim(), strings);
+                stringsChanged |= strings.Count != beforeStrings;
                 Require(bytes.Length <= field.Width, "写入超出字段长度");
                 for (int i = 0; i < bytes.Length; i++) { edited[field.Offset + i] = bytes[i]; allowed.Add(field.Offset + i); }
             }
@@ -344,12 +361,21 @@ namespace DeadSpaceBootstrap
             Array.Copy(BitConverter.GetBytes(Hash(edited, data, dataLength)), 0, edited, header + 8, 4);
             for (int i = 0; i < 4; i++) allowed.Add(header + 8 + i);
             for (int i = 0; i < edited.Length; i++) Require(edited[i] == original[i] || allowed.Contains(i), "修改越过字段边界");
-            var reread = new SaveDocument(FilePath, edited);
+            byte[] result = edited;
+            if (stringsChanged)
+            {
+                var replacements = new Dictionary<string, byte[]> {
+                    { "DATA", CopySectionPayload(edited, "DATA") },
+                    { "STRS", PackStrings(strings) }
+                };
+                result = RebuildSections(replacements);
+            }
+            var reread = new SaveDocument(FilePath, result);
             foreach (var change in changes)
             {
-                SaveValue field = Values[change.Key]; byte[] expected = Encode(field, change.Value.Trim());
+                SaveValue field = Values[change.Key]; byte[] expected = Encode(field, change.Value.Trim(), reread.Strings);
                 SaveValue actual = reread.Values[change.Key];
-                for (int i = 0; i < expected.Length; i++) Require(edited[actual.Offset + i] == expected[i], "写后字段校验失败");
+                for (int i = 0; i < expected.Length; i++) Require(result[actual.Offset + i] == expected[i], "写后字段校验失败");
             }
             // The selected weapon must still be available. Never manufacture
             // or change the current-weapon flags as a side effect of editing.
@@ -360,7 +386,13 @@ namespace DeadSpaceBootstrap
                     if (reread.Values.TryGetValue(field.Path.Substring(0, field.Path.Length - 7) + "available", out available))
                         Require(available.Value == "1", "不能锁定当前装备的武器");
                 }
-            return edited;
+            return result;
+        }
+
+        private byte[] CopySectionPayload(byte[] bytes, string tag)
+        {
+            int[] section = sections[tag]; var payload = new byte[section[2]];
+            Buffer.BlockCopy(bytes, section[1], payload, 0, payload.Length); return payload;
         }
 
         internal string Preview(IDictionary<string, string> changes)
@@ -368,8 +400,10 @@ namespace DeadSpaceBootstrap
             byte[] edited = EditBytes(changes); var lines = new List<string>(); int difference = 0;
             foreach (var change in changes) if (Values[change.Key].Value != change.Value.Trim())
                 lines.Add(change.Key + ": " + Values[change.Key].Value + " → " + change.Value.Trim());
-            for (int i = 0; i < edited.Length; i++) if (edited[i] != original[i]) difference++;
-            lines.Add("长度保持 " + edited.Length + " 字节；变化 " + difference + " 字节（含 DATA 校验）。");
+            int common = Math.Min(edited.Length, original.Length);
+            for (int i = 0; i < common; i++) if (edited[i] != original[i]) difference++;
+            difference += Math.Abs(edited.Length - original.Length);
+            lines.Add("长度 " + edited.Length + " 字节（原 " + original.Length + "）；变化 " + difference + " 字节（含 DATA / STRS 校验）。");
             return String.Join("\r\n", lines.ToArray());
         }
 

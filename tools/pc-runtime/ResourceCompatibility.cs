@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using DeadSpaceResources;
@@ -70,6 +71,32 @@ namespace DeadSpaceBootstrap
         {
             if (resourceProfile == null) return null;
             return DeadSpaceResources.IpaProfiles.FindLanguage(resourceProfile, SelectedTextLanguageId());
+        }
+
+        private bool PrepareNativeLanguageSetting(DeadSpaceResources.IpaLanguage language)
+        {
+            if (!overlayEnabled.Checked || language == null) return true;
+            string file = Path.Combine(SaveStorage.ProfilePath(SelectedDataRoot()), "Documents", "var", "settings.sb");
+            if (!File.Exists(file)) return true;
+            try
+            {
+                var document = new SaveDocument(file);
+                SaveValue current;
+                if (!document.Values.TryGetValue("language", out current))
+                {
+                    status.Text = "已有 settings.sb，但缺少语言字段；已保留原存档，未启动。";
+                    return false;
+                }
+                if (String.Equals(current.Value, language.Directory, StringComparison.Ordinal)) return true;
+                string backup = document.Write(new Dictionary<string, string> { { "language", language.Directory } });
+                status.Text = "已将 settings.sb 语言切换为 " + language.Directory + "；原文件备份于 " + backup;
+                return true;
+            }
+            catch (Exception error)
+            {
+                status.Text = "无法安全切换 settings.sb 语言，已保留原存档：" + error.Message;
+                return false;
+            }
         }
 
         private void PopulateTextLanguages(string preferred)

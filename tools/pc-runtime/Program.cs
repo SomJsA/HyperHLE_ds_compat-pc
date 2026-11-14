@@ -581,10 +581,12 @@ namespace DeadSpaceBootstrap
             if (!ReviewFirstLaunch()) return;
             using (var warning = new FlickerWarningForm())
                 if (warning.ShowDialog(this) != DialogResult.OK) return;
+            DeadSpaceResources.IpaLanguage selectedTextLanguage = SelectedTextLanguage();
             try { SaveKeyBindings(); SaveGamepadBindings(); }
             catch (Exception error) { status.Text = error.Message; return; }
             try { SaveStorage.RequireStopped(); SaveStorage.EnsureWritable(SelectedDataRoot()); if(saveMode.SelectedIndex==1)DocumentsSettings.EnsureLayout(SelectedDataRoot()); }
             catch (Exception error) { status.Text = "存档目录不可用：" + error.Message; return; }
+            if (!PrepareNativeLanguageSetting(selectedTextLanguage)) return;
             SaveSettings();
             // Visual repairs must accompany every launch, including direct EXE
             // starts. Do not depend on the environment of a verification script.
@@ -751,7 +753,6 @@ namespace DeadSpaceBootstrap
                 "TOUCHHLE_DS_SKIP_TRI_HASH_COUNT",
                 skipTriangles);
 
-            DeadSpaceResources.IpaLanguage selectedTextLanguage = SelectedTextLanguage();
             bool useHdTextOverlay = overlayEnabled.Checked && selectedTextLanguage != null && selectedTextLanguage.HdOverlay;
             foreach (string name in new[] { "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY", "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_TUTORIAL_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" })
                 Environment.SetEnvironmentVariable(name, useHdTextOverlay ? "1" : null);

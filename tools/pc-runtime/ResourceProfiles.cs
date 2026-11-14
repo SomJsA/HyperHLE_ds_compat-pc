@@ -190,7 +190,7 @@ namespace DeadSpaceResources
             IpaLanguage language = IpaProfiles.FindLanguage(p, selectedLanguage);
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 { "ipa", Path.Combine(installed, "payload", "DeadSpace.ipa") }, { "resource_profile", p.Id },
-                { "overlay_enabled", p.HdText && language != null && language.HdOverlay ? "1" : "0" },
+                { "overlay_enabled", p.HdText && language != null ? "1" : "0" },
                 { "hd_text_language", selectedLanguage }
             };
             if (!p.Lighting) values["advanced_lighting"] = "0";
@@ -204,7 +204,7 @@ namespace DeadSpaceResources
                 selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
                 values["hd_text_language"] = selectedLanguage;
                 language = IpaProfiles.FindLanguage(p, selectedLanguage);
-                values["overlay_enabled"] = p.HdText && language != null && language.HdOverlay ? "1" : "0";
+                values["overlay_enabled"] = p.HdText && language != null ? "1" : "0";
                 foreach (string tier in new[] { "2", "4", "6" }) values["texture_root_" + tier] = Path.Combine(installed, "payload", "texture-packs", tier);
                 string available = new[] { "4", "2", "6" }.FirstOrDefault(t => File.Exists(Path.Combine(installed, "payload", "texture-packs", t, "PACK.json")));
                 values["texture_scale"] = available ?? "4";

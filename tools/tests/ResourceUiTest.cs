@@ -46,6 +46,13 @@ internal static class ResourceUiTest
                     Check(((CheckBox)Field(form, "advancedLighting")).Enabled == (i == 0 || i == 3), "Launcher lighting gating");
                     Check(((CheckBox)Field(form, "overlayEnabled")).Enabled == (i == 3), "Launcher text gating");
                     var launcherLanguages = (ComboBox)Field(form, "hdTextLanguage"); Check(launcherLanguages.Items.Count == (i == 3 ? 8 : 0), "Launcher language dropdown");
+                    if (i == 3)
+                    {
+                        launcherLanguages.SelectedIndex = 5;
+                        Check(Convert.ToString(type.GetMethod("SelectedTextLanguageId", Hidden).Invoke(form, null)) == "ja-original", "Japanese selection identity");
+                        object language = type.GetMethod("SelectedTextLanguage", Hidden).Invoke(form, null);
+                        Check(!(bool)language.GetType().GetField("HdOverlay", Hidden).GetValue(language), "Native Japanese disables Chinese overlay");
+                    }
                     Check(((CheckBox)Field(form, "nativeInputs")).Checked == (i == 3), "Native controls switch");
                     Check(!(bool)Field(form, "launchReviewCompleted"), "Resource change requires first review");
                     string saves = Convert.ToString(type.GetMethod("SelectedDataRoot", Hidden).Invoke(form, null));

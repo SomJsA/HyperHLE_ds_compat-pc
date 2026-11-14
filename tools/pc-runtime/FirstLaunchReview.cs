@@ -48,7 +48,9 @@ namespace DeadSpaceBootstrap
                 +"\r\n\r\n"+T("旧版IPA按其自带资源与渲染能力运行，可不安装外置高清纹理。1.0.3/1.0.1沿用原生触摸界面，1.3.34专用的增强操控和高清文字不适用于旧版。高级光影开关不会为旧包补入缺少的高档渲染资源。",
                     "Legacy IPAs use their own resources and renderer; external HD textures are optional. Editions 1.0.3/1.0.1 retain the original touch UI. The enhanced controls and HD text for 1.3.34 do not apply to these editions. Advanced lighting cannot add high-tier content missing from an older IPA.")
                 +"\r\n\r\n"+T("中文选项使用贴吧汉化组高清组件；其他选项使用 IPA 内置原生文字，并在启动时传入对应语言环境。关闭组件则完全回归游戏原生语言设置。",
-                    "Chinese uses the Tieba Translation Group HD component. Other choices use the IPA's embedded native text and pass the matching language environment at launch. Disable the component to use the game's native language settings.");
+                    "Chinese uses the Tieba Translation Group HD component. Other choices use the IPA's embedded native text and pass the matching language environment at launch. Disable the component to use the game's native language settings.")
+                +"\r\n"+T("已有存档的 settings.sb 会在启动前按所选语言切换，并自动保留备份。",
+                    "If a save already exists, settings.sb is switched before launch and a backup is kept automatically.");
         }
         internal FirstLaunchReviewForm(string summary)
         {
