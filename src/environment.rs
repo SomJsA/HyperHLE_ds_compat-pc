@@ -410,10 +410,14 @@ impl Environment {
         // iPhone 3GS (iPhone2,1) is the historical touchHLE phone default
         // (320x480, GLES2-capable); iPad 2 (iPad2,1) is the tablet default.
         let default_phone = if launched_bundle_id == "com.ea.deadspace.bv"
+            && bundle.bundle_version() == "1.3.34"
             && std::env::var("TOUCHHLE_DS_NATIVE_EFFECTS").as_deref() != Ok("0") {
             DeviceFamily::iPhone4s
         } else { DeviceFamily::iPhone3GS };
-        let default_ipad = DeviceFamily::iPad2;
+        let default_ipad = if launched_bundle_id == "com.ea.deadspace.ipad.bv"
+            && bundle.bundle_version() == "1.0.3"
+            && std::env::var("TOUCHHLE_DS_NATIVE_EFFECTS").as_deref() == Ok("0")
+        { DeviceFamily::iPad } else { DeviceFamily::iPad2 };
 
         let device_family = if let Some(dfo) = device_family_override {
             let override_is_ipad = dfo.is_ipad();
@@ -449,7 +453,8 @@ impl Environment {
             default_phone
         };
         log!("{:?} device family is chosen.", device_family);
-        if launched_bundle_id=="com.ea.deadspace.bv" {
+        if launched_bundle_id=="com.ea.deadspace.bv"
+            || (launched_bundle_id=="com.ea.deadspace.ipad.bv" && bundle.bundle_version()=="1.0.3") {
             if std::env::var_os("TOUCHHLE_DS_ES2_FOG_FIX").is_none() {
                 unsafe { std::env::set_var("TOUCHHLE_DS_ES2_FOG_FIX", "1"); }
             }

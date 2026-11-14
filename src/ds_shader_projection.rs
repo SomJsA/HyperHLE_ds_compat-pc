@@ -16,9 +16,13 @@ const EXPECTED: &[u32] = &[
     0xe591202c, 0xe58021cc, 0xe5912030, 0xe58021d0, 0xe5912034, 0xe58021d4, 0xe5912038, 0xe58021d8,
     0xe591103c, 0xe58011dc, 0xe12fff1e,
 ];
+const IPAD_ENTRY: u32 = 0x0059_d110;
+const IPAD_SITE: u32 = 0x0059_d170;
+const IPAD_EXPECTED: &[u32] = &[0xe3a03001,0xe5c03118,0xe591c000,0xe5919004,0xe5912008,0xe591300c,0xe580c1a0,0xe58091a4,0xe591c010,0xe5919014,0xe58021a8,0xe58031ac,0xe5912018,0xe591301c,0xe580c1b0,0xe58091b4,0xe591c020,0xe5919024,0xe58021b8,0xe58031bc,0xe5912028,0xe591302c,0xe580c1c0,0xe58091c4,0xe58021c8,0xe58031cc,0xe591c030,0xe5919034,0xe5912038,0xe591303c,0xe580c1d0,0xe58091d4,0xe58021d8,0xe58031dc,0xe12fff1e];
 #[derive(Default)]
 pub(crate) struct State {
     armed: bool,
+    site: u32,
     corrected: u64,
 }
 fn word(env: &Environment, at: u32) -> Option<u32> {
@@ -45,8 +49,11 @@ fn opening_projection(m: &[f32; 16]) -> bool {
             .iter()
             .all(|i| m[*i].abs() < 0.00001)
 }
+fn matches_ipad(entry: Option<u32>, mut read: impl FnMut(u32) -> Option<u32>) -> bool {
+    entry == Some(IPAD_ENTRY) && IPAD_EXPECTED.iter().enumerate().all(|(i,v)| read(IPAD_ENTRY+i as u32*4)==Some(*v))
+}
 pub(crate) fn prime(env: &mut Environment) {
-    if env.bundle.bundle_identifier() != "com.ea.deadspace.bv"
+    if !matches!(env.bundle.bundle_identifier(), "com.ea.deadspace.bv" | "com.ea.deadspace.ipad.bv")
         || std::env::var("TOUCHHLE_DS_ES2_PROJ_FIX").as_deref() == Ok("0")
         || std::env::var("TOUCHHLE_DS_PROJ_Z_INFINITE").as_deref() == Ok("0")
         || std::env::var_os("TOUCHHLE_DS_NO_PROJ_Z_FIX").is_some()
@@ -57,17 +64,20 @@ pub(crate) fn prime(env: &mut Environment) {
         .exported_symbols
         .get("__ZN3m3g17ShaderRendererAPI13SetProjectionERKN10Vectormath3Aos7Matrix4E")
         .copied();
-    if !matches(entry, |a| word(env, a)) {
+    let site = if env.bundle.bundle_identifier()=="com.ea.deadspace.ipad.bv" && env.bundle.bundle_version()=="1.0.3" && matches_ipad(entry,|a|word(env,a)) { IPAD_SITE }
+        else if env.bundle.bundle_identifier()=="com.ea.deadspace.bv" && matches(entry,|a|word(env,a)) { SITE } else {
+
         echo!("[DSes2-projection] unknown original code; unchanged");
         return;
-    }
-    env.mem.write(MutPtr::<u32>::from_bits(SITE), BKPT);
-    env.cpu.invalidate_cache_range(SITE, 4);
+    };
+    env.mem.write(MutPtr::<u32>::from_bits(site), BKPT);
+    env.cpu.invalidate_cache_range(site, 4);
     env.framework_state.opengles.ds_shader_projection.armed = true;
+    env.framework_state.opengles.ds_shader_projection.site = site;
     echo!("[DSes2-projection] verified projection store armed");
 }
 pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
-    if !env.framework_state.opengles.ds_shader_projection.armed || env.cpu.regs()[Cpu::PC] != SITE {
+    if !env.framework_state.opengles.ds_shader_projection.armed || env.cpu.regs()[Cpu::PC] != env.framework_state.opengles.ds_shader_projection.site {
         return false;
     }
     let regs = *env.cpu.regs();
@@ -88,7 +98,8 @@ pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
     } else {
         regs[2]
     };
-    replay_store(&mut env.cpu, &mut env.mem, value);
+    let site=env.framework_state.opengles.ds_shader_projection.site;
+    replay_store(&mut env.cpu, &mut env.mem, value, site);
     if corrected {
         let state = &mut env.framework_state.opengles.ds_shader_projection;
         state.corrected = state.corrected.saturating_add(1);
@@ -99,10 +110,10 @@ pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
     true
 }
 
-fn replay_store(cpu: &mut Cpu, mem: &mut crate::mem::Mem, value: u32) {
+fn replay_store(cpu: &mut Cpu, mem: &mut crate::mem::Mem, value: u32, site: u32) {
     let address = cpu.regs()[0].wrapping_add(0x1c8);
     mem.write(MutPtr::<u32>::from_bits(address), value);
-    cpu.regs_mut()[Cpu::PC] = SITE + 4;
+    cpu.regs_mut()[Cpu::PC] = site + 4;
 }
 #[cfg(test)]
 mod tests {
@@ -123,6 +134,14 @@ mod tests {
             assert!(!matches(entry, |_| panic!("unknown binary read")));
         }
         assert_eq!(EXPECTED[((SITE - ENTRY) / 4) as usize], STORE);
+    }
+    #[test]
+    fn ipad_profile_requires_every_original_word_and_exact_entry() {
+        let read=|a|Some(IPAD_EXPECTED[((a-IPAD_ENTRY)/4) as usize]);
+        assert!(matches_ipad(Some(IPAD_ENTRY),read));
+        assert!(!matches_ipad(Some(IPAD_ENTRY+4), |_|panic!("unknown entry read")));
+        for i in 0..IPAD_EXPECTED.len() { assert!(!matches_ipad(Some(IPAD_ENTRY),|a|read(a).map(|v|v^u32::from(a==IPAD_ENTRY+i as u32*4)))); }
+        assert_eq!(IPAD_EXPECTED[((IPAD_SITE-IPAD_ENTRY)/4) as usize],STORE);
     }
     fn projection() -> [f32; 16] {
         let mut m = [0.; 16];
@@ -188,7 +207,7 @@ mod tests {
             } else {
                 cpu.regs()[2]
             };
-            replay_store(&mut cpu, &mut mem, value);
+            replay_store(&mut cpu, &mut mem, value, SITE);
         }
         assert!(matches!(
             cpu.run_or_step(&mut mem, Some(&mut ticks)),

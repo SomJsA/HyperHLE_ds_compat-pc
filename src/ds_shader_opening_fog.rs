@@ -15,28 +15,37 @@ Guard { name: "__ZNK3m3g3Fog8GetColorEv", address: 0x509db8, words: &[0xe5900050
 Guard { name: "__ZN2im4gles9Uniform2fEiff", address: 0x465bec, words: &[0xea116653] }
 ];
 
+#[path="ds_shader_opening_fog_ipad.rs"]
+mod ipad;
+const IPAD_RETURN_PC:u32=0x0059_d678;
+const IPAD_UNIFORM_RETURN_PC:u32=0x0058_a70c;
 const RETURN_PC:u32=0x0056_8af4;
 #[derive(Default)]
 pub(crate) struct State {
-    armed:bool,fix:bool,trace:bool,corrected:u64,logs:u32,
+    armed:bool,fix:bool,trace:bool,corrected:u64,logs:u32,tablet:bool,
     previous:Option<(u32,u32,u32,bool)>,last_error:Option<&'static str>,
 }
 fn word(env:&Environment,at:u32)->Option<u32> {
     Some(u32::from_le_bytes(env.mem.get_bytes_fallible(ConstVoidPtr::from_bits(at),4)?.try_into().ok()?))
 }
 fn matches(mut symbol:impl FnMut(&str)->Option<u32>,mut read:impl FnMut(u32)->Option<u32>)->bool {
-    GUARDS.iter().all(|g|symbol(g.name)==Some(g.address) && g.words.iter().enumerate().all(|(i,v)|read(g.address+i as u32*4)==Some(*v)))
+    matches_guards(GUARDS,&mut symbol,&mut read)
+}
+fn matches_guards(guards:&[Guard],mut symbol:impl FnMut(&str)->Option<u32>,mut read:impl FnMut(u32)->Option<u32>)->bool {
+    guards.iter().all(|g|symbol(g.name)==Some(g.address) && g.words.iter().enumerate().all(|(i,v)|read(g.address+i as u32*4)==Some(*v)))
 }
 pub(crate) fn prime(env:&mut Environment) {
-    if env.bundle.bundle_identifier()!="com.ea.deadspace.bv" {return;}
+    let tablet=env.bundle.bundle_identifier()=="com.ea.deadspace.ipad.bv" && env.bundle.bundle_version()=="1.0.3";
+    if env.bundle.bundle_identifier()!="com.ea.deadspace.bv" && !tablet {return;}
     let fix=std::env::var("TOUCHHLE_DS_OPENING_FOG_FIX").as_deref()!=Ok("0");
     let trace=std::env::var("TOUCHHLE_DS_ES2_OPENING_FOG_TRACE").as_deref()==Ok("1");
     if !fix && !trace {return;}
-    if !matches(|s|env.bins[0].exported_symbols.get(s).copied(),|a|word(env,a)) {
+    let guards=if tablet {ipad::GUARDS}else{GUARDS};
+    if !matches_guards(guards,|s|env.bins[0].exported_symbols.get(s).copied(),|a|word(env,a)) {
         echo!("[DSes2-opening-fog] unknown original code; unchanged");return;
     }
     let s=&mut env.framework_state.opengles.ds_shader_opening_fog;
-    s.armed=true;s.fix=fix;s.trace=trace;
+    s.armed=true;s.fix=fix;s.trace=trace;s.tablet=tablet;
     echo!("[DSes2-opening-fog] original call verified; fix={} trace={}",fix,trace);
 }
 #[derive(Debug)]
@@ -63,8 +72,14 @@ fn input(regs:&[u32;16],location:i32,x:f32,y:f32,mut read:impl FnMut(u32)->Optio
     Ok(Input{renderer,start,end,enabled})
 }
 pub(crate) fn parameters(env:&mut Environment,location:i32,x:f32,y:f32)->(f32,f32) {
-    if env.cpu.regs()[Cpu::LR]!=RETURN_PC || !env.framework_state.opengles.ds_shader_opening_fog.armed {return (x,y);}
-    let regs=*env.cpu.regs();
+    if !env.framework_state.opengles.ds_shader_opening_fog.armed {return (x,y);}
+    let mut regs=*env.cpu.regs();
+    if env.framework_state.opengles.ds_shader_opening_fog.tablet {
+        // The tablet wrapper calls glUniform2f via BL, preserving its caller
+        // in the verified PUSH {r7,lr} frame. Normalize only this local copy.
+        if regs[Cpu::LR]!=IPAD_UNIFORM_RETURN_PC || word(env,regs[Cpu::SP].wrapping_add(4))!=Some(IPAD_RETURN_PC) {return (x,y);}
+        regs.swap(4,5);regs[Cpu::LR]=RETURN_PC;
+    } else if regs[Cpu::LR]!=RETURN_PC {return (x,y);}
     let input=match input(&regs,location,x,y,|a|word(env,a)) {
         Ok(v)=>v,Err(reason)=> {
             let s=&mut env.framework_state.opengles.ds_shader_opening_fog;
@@ -105,6 +120,14 @@ mod tests {
         assert_eq!(GUARDS.iter().find(|g|g.address==0x509db8).unwrap().words[0],0xe5900050);
         for g in GUARDS {for(i,w)in g.words.iter().enumerate(){let a=g.address+i as u32*4;m.insert(a,w^1);assert!(!matches(sym,|p|m.get(&p).copied()));m.insert(a,*w);}}
         assert!(!matches(|_|None,|a|m.get(&a).copied()));
+    }
+    #[test]
+    fn ipad_guard_checks_every_original_word_and_symbol() {
+        let mut m=BTreeMap::new();for g in ipad::GUARDS {for(i,w)in g.words.iter().enumerate(){m.insert(g.address+i as u32*4,*w);}}
+        let sym=|s:&str|ipad::GUARDS.iter().find(|g|g.name==s).map(|g|g.address);
+        assert!(matches_guards(ipad::GUARDS,sym,|a|m.get(&a).copied()));
+        for g in ipad::GUARDS {for(i,w)in g.words.iter().enumerate(){let a=g.address+i as u32*4;m.insert(a,w^1);assert!(!matches_guards(ipad::GUARDS,sym,|p|m.get(&p).copied()));m.insert(a,*w);}}
+        assert!(!matches_guards(ipad::GUARDS,|_|None,|a|m.get(&a).copied()));
     }
     #[test]
     fn only_original_linear_black_perspective_payload_is_eligible() {
