@@ -41,6 +41,10 @@ namespace DeadSpaceBootstrap
                 loadedResourceIpa = file.FullName; resourceLength = file.Length; resourceWriteTime = file.LastWriteTimeUtc.Ticks;
                 if (hadSelection) launchReviewCompleted = false;
                 unknownCompatibilityReviewPending = resourceProfile.Experimental;
+                // A resource switch must not inherit a high PC scale into a
+                // legacy guest before the user reviews the new dimensions.
+                // The full 8x option remains available for explicit selection.
+                if (resourceProfile.Id != "current") SelectRenderScale(2);
             }
             if (reset) {
                 advancedLighting.Checked = resourceProfile.Lighting;
@@ -158,6 +162,7 @@ namespace DeadSpaceBootstrap
                 if (selected >= 0) { hdTextLanguage.SelectedIndex = selected; requestedTextLanguage = resourceProfile.Languages[selected].Id; }
             }
             if (resourceProfile == null || !resourceProfile.HdText) requestedTextLanguage = "native";
+            ApplyResourceResolutionOptions();
             UpdateTextLanguageVisibility();
         }
 

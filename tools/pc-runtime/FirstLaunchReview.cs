@@ -17,7 +17,7 @@ namespace DeadSpaceBootstrap
                 DeadSpaceResources.IpaLanguage selectedLanguage = SelectedTextLanguage();
                 string language = selectedLanguage == null ? (DeadSpaceUi.UiLanguage.English ? "Native game language" : "原生语言设置") : selectedLanguage.Display(DeadSpaceUi.UiLanguage.English);
                 summary=FirstLaunchReviewForm.Summary(overlayEnabled.Checked, language, advancedLighting.Checked,
-                    PcRenderResolution.Size(scale),SelectedOutputSize());
+                    ResourceRenderSize(scale),SelectedOutputSize());
                 if (selectedLanguage != null && !selectedLanguage.Complete)
                     summary += "\r\n" + (DeadSpaceUi.UiLanguage.English ? "This IPA language bank is partial; existing Japanese entries stay Japanese and missing entries use English to avoid placeholder text." : "该 IPA 的语言资源不完整；已有日文条目继续使用日文，缺失条目回退英语，避免出现占位符。");
                 if (resourceProfile != null) summary += "\r\n\r\n" + resourceProfile.Describe(DeadSpaceUi.UiLanguage.English);

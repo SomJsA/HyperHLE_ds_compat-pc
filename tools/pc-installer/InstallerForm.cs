@@ -323,10 +323,9 @@ namespace DeadSpaceInstaller
         private string SelectedInstallLanguageId()
         {
             if (!hdChinesePack.Checked) return "native";
-            if (sourceProfile == null) return "zh-tieba";
-            if (hdTextLanguage.SelectedIndex < 0 || hdTextLanguage.SelectedIndex >= sourceProfile.Languages.Count)
-                return "native";
-            return sourceProfile.Languages[hdTextLanguage.SelectedIndex].Id;
+            // Keep installation deterministic; language selection is presented
+            // by the launcher at first start and does not require reinstalling.
+            return "zh-tieba";
         }
         private void PopulateInstallLanguages()
         {
@@ -349,7 +348,10 @@ namespace DeadSpaceInstaller
         }
         private void UpdateInstallLanguageVisibility()
         {
-            bool available = sourceProfile != null && sourceProfile.HdText && hdChinesePack.Enabled && hdChinesePack.Checked && hdTextLanguage.Items.Count > 0;
+            // Installation chooses the default HD language only. The full
+            // language selector belongs to the launcher first-start review,
+            // where it can be changed without reinstalling the IPA.
+            bool available = false;
             hdTextLanguageLabel.Visible = hdTextLanguage.Visible = available;
             hdTextLanguage.Enabled = available;
         }
@@ -376,15 +378,15 @@ namespace DeadSpaceInstaller
                 var shell = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(22), ColumnCount = 2, RowCount = 5 };
                 shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50)); shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
                 shell.RowStyles.Add(new RowStyle(SizeType.AutoSize)); shell.RowStyles.Add(new RowStyle(SizeType.AutoSize)); shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); shell.RowStyles.Add(new RowStyle(SizeType.AutoSize)); shell.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                var heading = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Choose the language layer installed with the game" : I("选择随游戏安装的语言层"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(98, 218, 232), Margin = new Padding(0, 0, 0, 14) };
+                var heading = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Language selection happens in the launcher" : "语言选择将在启动器中完成", AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(98, 218, 232), Margin = new Padding(0, 0, 0, 14) };
                 shell.Controls.Add(heading, 0, 0); shell.SetColumnSpan(heading, 2);
                 var hd = new Label { Text = DeadSpaceUi.UiLanguage.English ? "HD text component" : I("高清文字组件"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(98, 218, 232), Margin = new Padding(0, 0, 0, 8) };
                 var native = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Native behavior" : I("原生行为"), AutoSize = true, Font = new Font(dialog.Font, FontStyle.Bold), ForeColor = Color.FromArgb(221, 232, 237), Margin = new Padding(12, 0, 0, 8) };
                 shell.Controls.Add(hd, 0, 1); shell.Controls.Add(native, 1, 1);
-                var hdBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01\r\nHonorable Intentions\r\n\"Watch the locator. It knows this place better than anyone.\"\r\n\r\nChoose the Tieba Chinese HD component or one of the original language banks embedded in the selected IPA." : "第 01 章\r\n当初善意\r\n“注意你的定位器。它比任何人都了解这个地方。”\r\n\r\n可选择贴吧汉化组中文高清组件，或使用所选 IPA 内置的其他原生语言资源。", Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(20, 53, 64), ForeColor = ForeColor, Margin = new Padding(0, 0, 12, 12) };
+                var hdBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01\r\nHonorable Intentions\r\n\"Watch the locator. It knows this place better than anyone.\"\r\n\r\nThe installer enables the HD text component with the default Chinese layer. Choose another embedded language later in the launcher." : "第 01 章\r\n当初善意\r\n“注意你的定位器。它比任何人都了解这个地方。”\r\n\r\n安装器默认启用中文高清文字组件；其他内置语言请在启动器中选择。", Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(20, 53, 64), ForeColor = ForeColor, Margin = new Padding(0, 0, 12, 12) };
                     var nativeBody = new Label { Text = DeadSpaceUi.UiLanguage.English ? "Chapter 01 / original game text\r\n\r\nDisabling the component restores the game's native language selection. Enabled choices use the selected IPA bank and a multilingual HD overlay." : "Chapter 01 / 使用游戏原生文字\r\n\r\n关闭组件会回归游戏原生语言选择；启用后使用所选 IPA 语言表和多语言高清叠加层。", Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(12), BackColor = Color.FromArgb(19, 30, 40), ForeColor = ForeColor, Margin = new Padding(0, 0, 0, 12) };
                 shell.Controls.Add(hdBody, 0, 2); shell.Controls.Add(nativeBody, 1, 2);
-                var note = new Label { Text = DeadSpaceUi.UiLanguage.English ? "These choices are detected from the selected IPA. Submit additional HD translation components through GitHub Issues." : "选项由当前 IPA 自动检测；欢迎通过 GitHub issue 投稿其他语言的高清翻译组件。", AutoSize = true, ForeColor = Color.FromArgb(142, 163, 176), Margin = new Padding(0, 6, 0, 10) };
+                var note = new Label { Text = DeadSpaceUi.UiLanguage.English ? "The language list is intentionally hidden during installation. Change it at first launch; submit additional HD translation components through GitHub Issues." : "安装阶段刻意隐藏语言列表；首次启动时再选择。欢迎通过 GitHub issue 投稿其他语言的高清翻译组件。", AutoSize = true, ForeColor = Color.FromArgb(142, 163, 176), Margin = new Padding(0, 6, 0, 10) };
                 shell.Controls.Add(note, 0, 3); shell.SetColumnSpan(note, 2);
                 var closeInfo = new Button { Text = DeadSpaceUi.UiLanguage.English ? "Close" : I("关闭"), AutoSize = true, DialogResult = DialogResult.OK, Anchor = AnchorStyles.Right, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 0, 0, 0) };
                 shell.Controls.Add(closeInfo, 1, 4); shell.SetColumnSpan(closeInfo, 1);
