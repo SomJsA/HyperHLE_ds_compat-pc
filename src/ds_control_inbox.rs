@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 #[derive(Debug, PartialEq)]
 pub enum Command {
     Touch(String),
+    NormalizedTouch { action: String, x: f32, y: f32 },
     Action(String),
     Hud(String),
     Aim(bool),
@@ -73,6 +74,14 @@ impl Inbox {
             "key" if args.len()==2 && ["down","up"].contains(&args[0]) => {
                 let slot=["W","A","S","D","UP","LEFT","DOWN","RIGHT","SPACE","E","G","B","LCTRL","RCTRL","Z"].iter().position(|key|*key==args[1]).ok_or("unsupported test key")?;
                 Command::DirectionKey {slot,down:args[0]=="down"}
+            }
+            "tap-unit" | "down-unit" | "move-unit" | "up-unit" if args.len() == 2 => {
+                let x = args[0].parse::<f32>().map_err(|_| "invalid coordinate")?;
+                let y = args[1].parse::<f32>().map_err(|_| "invalid coordinate")?;
+                if !x.is_finite() || !y.is_finite() || !(0.0..=1.0).contains(&x) || !(0.0..=1.0).contains(&y) {
+                    return Err("coordinate outside normalized surface".into());
+                }
+                Command::NormalizedTouch { action: words[1].trim_end_matches("-unit").into(), x, y }
             }
             "tap" | "down" | "move" | "up" | "swipe" => {
                 let n = if words[1] == "swipe" { 4 } else { 2 };
@@ -217,6 +226,18 @@ impl Inbox {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn normalized_tablet_input_preserves_phone_limits_and_rejects_invalid_values() {
+        let mut i = Inbox::default();
+        assert!(i.accept("1 tap 481 3").is_err());
+        assert!(i.accept("2 tap-unit NaN 0.5").is_err());
+        assert!(i.accept("3 down-unit 0.5 1.1").is_err());
+        assert!(i.accept("4 move-unit 0.5 -0.1").is_err());
+        assert_eq!(i.accept("5 tap-unit 0.9 0.95").unwrap(),
+            Some((5, Command::NormalizedTouch { action: "tap".into(), x: 0.9, y: 0.95 })));
+        assert_eq!(i.accept("6 up-unit 0.9 0.95").unwrap(),
+            Some((6, Command::NormalizedTouch { action: "up".into(), x: 0.9, y: 0.95 })));
+    }
     #[test]
     fn sequence_prevents_replay_and_rejects_stale_writes() {
         let mut i = Inbox::default();

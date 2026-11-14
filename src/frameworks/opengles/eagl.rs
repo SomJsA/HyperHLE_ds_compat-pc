@@ -2266,7 +2266,13 @@ unsafe fn present_renderbuffer(env: &mut Environment, renderbuffer: GLuint, this
     // FIXME: A cleaner solution would be to read the actual transform from
     //        the EAGL layer's view hierarchy and apply it here, instead of
     //        using a device-family heuristic.
+    // This edition rotates its own GL content like the phone edition. The
+    // generic iPad compensation adds an extra half-turn to an already
+    // oriented frame, separating the visible buttons from their touch areas.
+    let deadspace_tablet_self_rotates = env.bundle.bundle_identifier() == "com.ea.deadspace.ipad.bv"
+        && env.bundle.bundle_version() == "1.0.3";
     let needs_autorotation_compensation = device_family.is_ipad()
+        && !deadspace_tablet_self_rotates
         && !matches!(
             device_orientation,
             crate::window::DeviceOrientation::Portrait

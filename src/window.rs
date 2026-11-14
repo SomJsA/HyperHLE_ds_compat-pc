@@ -1387,6 +1387,10 @@ impl Window {
                 echo!("[DScontrol] sequence={} queued {:?}",sequence,command);
                 match command {
                     Command::Touch(action)=>self.ds_queue_action(action),
+                    Command::NormalizedTouch { action, x, y } => {
+                        let (width, height) = size_for_orientation(self.device_family, self.device_orientation, NonZeroU32::new(1).unwrap());
+                        self.ds_queue_action(format!("{} {} {}", action, x * width as f32, y * height as f32));
+                    },
                     Command::Action(action)=>match action.as_str() {
                         "interact"=>DS_EKEY_INTERACT.store(true,Relaxed),
                         "kinesis"=>DS_FKEY_KINESIS.store(true,Relaxed),
