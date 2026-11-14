@@ -131,7 +131,7 @@ namespace DeadSpaceBootstrap
                 { "telekinesis_available", "念力可用" }, { "plasmasaw_available", "切割锯可用" }, { "gameCompleted", "通关标志" }, { "plus", "周目标志" },
                 { "available", "持有" }, { "clip", "弹匣 / 能量数值" }, { "altmode", "副模式状态" }, { "current", "当前装备" }, { "unlocked", "已解锁" },
                 { "complete", "完成标志" }, { "level", "关卡" }, { "difficulty", "难度" }, { "name", "名称" }, { "level_id", "保存关卡" }, { "savetype", "保存类型" },
-                { "attack", "攻击增强" }, { "defense", "防御增强" }, { "loot", "资源增强" }, { "nodes_2", "节点增强" }, { "nodes_1_registration", "注册增强" },
+                { "attack", "攻击增强" }, { "defense", "防御增强" }, { "loot", "资源增强" }, { "nodes_2", "节点增强" }, { "nodes_1_registration", "注册增强" }, { "language", "语言" },
                 { "subtitles_enabled", "字幕" }, { "auto_reload", "自动装弹" }, { "tutorials_enabled", "教程提示" }, { "y_flipped", "反转垂直" },
                 { "plus_unlocked", "新周目解锁提示" }, { "sfx_volume", "音效音量" }, { "music_volume", "音乐音量" }, { "brightness", "亮度" }, { "sensitivity", "灵敏度" } };
             int last = path.LastIndexOf('/'); string leaf = path.Substring(last + 1), label;

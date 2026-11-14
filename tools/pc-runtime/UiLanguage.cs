@@ -32,7 +32,7 @@ namespace DeadSpaceUi
             {"01 画质与显示", "01 Graphics"}, {"02 鼠标与操作", "02 Mouse"},
             {"03 键盘绑定", "03 Keyboard"}, {"04 手柄与摇杆", "04 Gamepad"},
             {"05 游戏与存档位置", "05 Game & Saves"}, {"06 调试", "06 Debug"},
-            {"输出分辨率", "Output Resolution"}, {"窗口模式", "Window Mode"}, {"帧率上限", "FPS Limit"}, {"超分算法", "Upscaler"},
+            {"输出分辨率", "Output Resolution"}, {"窗口模式", "Window Mode"}, {"帧率上限", "FPS Limit"}, {"超分算法", "Upscaler"}, {"语言", "Language"},
             {"鼠标捕获", "Mouse Capture"}, {"输入设备", "Input Device"}, {"兼容与诊断", "Compatibility & Diagnostics"},
             {"纹理上传同步", "Texture Upload Sync"}, {"长句字幕", "Long Subtitle"}, {"存档位置", "Save Location"},
             {"恢复默认", "Restore Defaults"}, {"撤销", "Undo"}, {"应用", "Apply"}, {"启动游戏 →", "Launch Game →"}, {"启动游戏  →", "Launch Game →"}, {"停止游戏", "Stop Game"},
