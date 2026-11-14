@@ -20,6 +20,49 @@ namespace DeadSpaceUi
         internal const string CurrentTag = "20261112-r5-dev";
 
         internal sealed class Result { internal string State, Tag; }
+        private static Result FromTag(string tag)
+        {
+            if (String.IsNullOrWhiteSpace(tag)) return new Result { State = "invalid" };
+            return Interpret(200, "{\"tag_name\":\"" + tag.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\",\"draft\":false}");
+        }
+        private static string TagFromLocation(string location)
+        {
+            if (String.IsNullOrEmpty(location)) return null;
+            Match match = Regex.Match(location, "/releases/tag/([^\"'/?#]+)", RegexOptions.IgnoreCase);
+            return match.Success ? Uri.UnescapeDataString(match.Groups[1].Value) : null;
+        }
+        private static Result CheckReleasePage()
+        {
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create(ReleaseUrl);
+                request.Method = "GET"; request.UserAgent = "DeadSpace-Mobile-PC/" + CurrentTag;
+                request.Timeout = 7000; request.ReadWriteTimeout = 7000; request.AllowAutoRedirect = false;
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    string tag = TagFromLocation(response.Headers["Location"]);
+                    if (!String.IsNullOrEmpty(tag)) return FromTag(tag);
+                    using (var stream = response.GetResponseStream())
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        char[] buffer = new char[1024 * 1024]; int count = reader.ReadBlock(buffer, 0, buffer.Length);
+                        string html = new string(buffer, 0, count);
+                        tag = TagFromLocation(Regex.Match(html, "/SomJsA/HyperHLE_ds_compat-pc/releases/tag/[^\"'/?#]+", RegexOptions.IgnoreCase).Value);
+                        return String.IsNullOrEmpty(tag) ? new Result { State = "invalid" } : FromTag(tag);
+                    }
+                }
+            }
+            catch (WebException error)
+            {
+                using (var response = error.Response as HttpWebResponse)
+                {
+                    string tag = response == null ? null : TagFromLocation(response.Headers["Location"]);
+                    return String.IsNullOrEmpty(tag) ? new Result { State = "network" } : FromTag(tag);
+                }
+            }
+            catch (IOException) { return new Result { State = "network" }; }
+            catch (UriFormatException) { return new Result { State = "invalid" }; }
+        }
         internal static Result Interpret(int code, string json)
         {
             if (code == 401 || code == 403 || code == 404) return new Result { State = "unavailable" };
@@ -63,7 +106,10 @@ namespace DeadSpaceUi
                 }
             } catch (WebException error) {
                 using (var response = error.Response as HttpWebResponse)
-                    return Interpret(response == null ? 0 : (int)response.StatusCode, "");
+                {
+                    Result api = Interpret(response == null ? 0 : (int)response.StatusCode, "");
+                    return api.State == "unavailable" ? CheckReleasePage() : api;
+                }
             } catch (IOException) { return new Result { State = "network" }; }
         }
     }
