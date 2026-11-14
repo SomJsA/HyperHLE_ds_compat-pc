@@ -58,6 +58,12 @@ This is an installation record, not a new marker format. A program-only upgrade
 keeps the selected resources. `--no-register` updates isolated defaults only and
 never the real user's Documents configuration.
 
+Legacy launches keep progress under `legacy-ipa/<profile>` within the selected
+save root. In particular, World 1.0.1 must not read 1.3.34's existing sandbox just
+because both use `com.ea.deadspace.bv`. Switching back restores the current save
+root without copying, overwriting or deleting progress. Unported legacy save
+editing and transfer tools are disabled; native saving remains available.
+
 Build:
 
 ```powershell

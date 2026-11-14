@@ -46,6 +46,9 @@ internal static class ResourceUiTest
                     Check(((CheckBox)Field(form, "overlayEnabled")).Enabled == (i == 3), "Launcher text gating");
                     Check(((CheckBox)Field(form, "nativeInputs")).Checked == (i == 3), "Native controls switch");
                     Check(!(bool)Field(form, "launchReviewCompleted"), "Resource change requires first review");
+                    string saves = Convert.ToString(type.GetMethod("SelectedDataRoot", Hidden).Invoke(form, null));
+                    Check(saves.Contains("legacy-ipa") == (i != 3), "Legacy saves cannot share 1.3.34 progress");
+                    Check(((Control)Field(form, "saveEditorPage")).Enabled == (i == 3), "Unsupported legacy save editor disabled");
                 }
             }
             Console.WriteLine("PASS " + checks + " checks; installer ZH/EN identities, availability, launcher switching / review. No desktop input or installation."); return 0;

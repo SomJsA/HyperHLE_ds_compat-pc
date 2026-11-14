@@ -17,8 +17,18 @@ namespace DeadSpaceBootstrap
         {
             string root=SaveStorage.Root(DistributionLayout.PortableData(baseDir),
                 documentsDirectory, saveMode.SelectedIndex == 1);
+            // World 1.0.1 shares 1.3.34's bundle ID. Never let a legacy launch
+            // auto-read or overwrite the current edition's native progress.
+            if (resourceProfile != null && resourceProfile.Id != "current")
+                root = Path.Combine(root, "legacy-ipa", resourceProfile.Id == "unknown" ? "unknown-" + resourceProfile.ExecutableSha256 : resourceProfile.Id);
             if(saveMode.SelectedIndex==1)DocumentsSettings.RequireCompatibleLayout(root);
             return root;
+        }
+        private readonly System.Collections.Generic.List<Control> profileStorageTools = new System.Collections.Generic.List<Control>();
+        private void RefreshStoragePath()
+        {
+            string bundle = resourceProfile == null ? SaveStorage.Profile : resourceProfile.Id == "ipad-1.0.3" ? "com.ea.deadspace.ipad.bv" : resourceProfile.Id == "iphone-1.0.3" ? "com.ea.deadspace.inc" : SaveStorage.Profile;
+            storagePath.Text = "启动器配置：" + ConfigurationDirectory + "\r\n原生配置与存档：" + Path.Combine(SelectedDataRoot(), "touchHLE_sandbox", bundle);
         }
 
         private void BuildStorageControls(Control page)
@@ -33,6 +43,7 @@ namespace DeadSpaceBootstrap
             var exportZip=new Button {Text="导出三槽位 ZIP",Location=new Point(30,696),Size=new Size(300,38)};
             var importZip=new Button {Text="导入 ZIP 并恢复三槽位",Location=new Point(348,696),Size=new Size(330,38)};
             page.Controls.Add(exportZip);page.Controls.Add(importZip);
+            profileStorageTools.AddRange(new Control[] { copy, exportZip, importZip });
             exportZip.Click+=delegate {using(var dialog=new SaveFileDialog {Filter="三槽位存档包 (*.zip)|*.zip",FileName="DeadSpace-Three-Slots-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".zip",OverwritePrompt=false})
                 {if(dialog.ShowDialog(this)!=DialogResult.OK)return;try {SaveBundle.Export(SelectedDataRoot(),dialog.FileName);status.Text="已导出全部三槽位及公共设置："+dialog.FileName;}catch(Exception error){status.Text="未导出："+error.Message;}}};
             importZip.Click+=delegate {using(var dialog=new OpenFileDialog {Filter="三槽位存档包 (*.zip)|*.zip",Title="恢复整个 ZIP 的三个槽位；当前状态会先备份"})
@@ -40,7 +51,7 @@ namespace DeadSpaceBootstrap
             saveMode.SelectedIndexChanged += delegate
             {
                 if (DeadSpaceUi.UiLanguage.IsApplying) return;
-                try { storagePath.Text = "启动器配置："+ConfigurationDirectory+"\r\n原生配置与存档：" + SaveStorage.ProfilePath(SelectedDataRoot()); }
+                try { RefreshStoragePath(); }
                 catch (Exception error) { storagePath.Text = error.Message; }
                 loadedSave = null; writeSave.Enabled = false;
                 InvalidateEditor();

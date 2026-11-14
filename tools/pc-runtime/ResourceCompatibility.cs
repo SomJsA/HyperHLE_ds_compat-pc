@@ -50,6 +50,9 @@ namespace DeadSpaceBootstrap
             if (!resourceProfile.HdText) overlayEnabled.Checked = nativeInputs.Checked = nativeHud.Checked = false;
             hdTextures.Enabled = resourceProfile.Textures;
             if (!resourceProfile.Textures) hdTextures.Checked = false;
+            if (saveEditorPage != null) saveEditorPage.Enabled = resourceProfile.HdText;
+            foreach (Control tool in profileStorageTools) tool.Enabled = resourceProfile.HdText;
+            RefreshStoragePath();
             resourceCompatibilityInfo.Text = resourceProfile.Name + " · " + (DeadSpaceUi.UiLanguage.English ? "Compatibility / supported graphics" : "适配状态 / 支持的画质");
             UpdateTextureDescription();
         }

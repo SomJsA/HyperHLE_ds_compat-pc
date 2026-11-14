@@ -27,6 +27,7 @@ namespace DeadSpaceResources
                 + "\r\n" + (english ? "Textures: " : "纹理：") + (Textures ? (english ? "original, or matching marker packs at 2x / 4x / 6x when supplied." : "原版；匹配的 marker 提供时可选 2× / 4× / 6×。") : (english ? "original only; external HD packs are not adapted to this edition." : "仅原版；当前外置高清包未适配此构建。"))
                 + "\r\n" + (english ? "Internal / output resolution and MSAA / AF remain host settings; hardware limits apply. Opening validation used internal 2x, MSAA 4x / AF 4x; higher settings are not validated limits." : "内部 / 输出分辨率、MSAA / AF 为宿主设置，受硬件限制；开场实测内部 2×、MSAA 4× / AF 4×，不将更高选项当成已验证上限。")
                 + "\r\n" + (english ? "No external texture pack is required. Developer recommendation: 1.3.34. Other IPA owners are welcome to report issues with version / file fingerprints; arrange sample sharing privately." : "不依赖外置纹理也可运行。开发者推荐 1.3.34；也欢迎携带其他 IPA 的版本和文件指纹提 issue，样本另行私下联系。")
+                + (Id == "current" ? "" : "\r\n" + (english ? "Legacy progress is stored separately from 1.3.34 and is never migrated automatically. Save editing / transfer tools for these editions are not adapted." : "旧包进度与 1.3.34 分开保存，不自动跨版迁移；旧包存档编辑与互导工具尚未适配。"))
                 + "\r\nhttps://github.com/SomJsA/DeadSpaceMobile-Community/issues";
         }
     }
