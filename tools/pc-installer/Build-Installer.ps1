@@ -1,9 +1,12 @@
 param(
     [Parameter(Mandatory=$true)][string]$ProgramDirectory,
-    [Parameter(Mandatory=$true)][string]$OutputDirectory
+    [Parameter(Mandatory=$true)][string]$OutputDirectory,
+    [string]$ReleaseLabel = 'R5-dev'
 )
 
 $ErrorActionPreference = 'Stop'
+$ReleaseLabel = $ReleaseLabel.Trim()
+if ([string]::IsNullOrWhiteSpace($ReleaseLabel) -or $ReleaseLabel -notmatch '^[A-Za-z0-9.-]+$') { throw 'Invalid release label.' }
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
 $programDirectory = (Resolve-Path -LiteralPath $ProgramDirectory).Path
 $outputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
@@ -26,7 +29,7 @@ if (Test-Path -LiteralPath (Join-Path $programDirectory 'Assets/texture-packs'))
 New-Item -ItemType Directory -Path $outputDirectory | Out-Null
 $programZip = Join-Path $outputDirectory 'program-payload.zip'
 $uninstaller = Join-Path $outputDirectory 'DeadSpace-Uninstall.exe'
-$installer = Join-Path $outputDirectory 'DEAD-SPACE-MOBILE-PC-Installer-20261112-R5-dev.exe'
+$installer = Join-Path $outputDirectory ("DEAD-SPACE-MOBILE-PC-Installer-20261112-" + $ReleaseLabel + ".exe")
 
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
