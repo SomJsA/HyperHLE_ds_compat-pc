@@ -829,6 +829,8 @@ namespace DeadSpaceBootstrap
                         return directory;
                 }
             }
+            catch (InvalidDataException error) { status.Text = error.Message; }
+            catch (ArgumentException error) { status.Text = error.Message; }
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
             return null;

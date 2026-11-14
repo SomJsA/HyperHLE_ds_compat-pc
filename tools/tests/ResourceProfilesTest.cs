@@ -35,7 +35,7 @@ internal static class ResourceProfilesTest
             ResourceSelection.Activate(data, roots[0]); Check(ResourceSelection.Read(data) == roots[0], "Reselect older existing content");
             string before = File.ReadAllText(Path.Combine(data, "active-resource.json"));
             string bad = Path.Combine(data, "marker-content", "bad"); Directory.CreateDirectory(bad);
-            bool rejected = false; try { ResourceSelection.Activate(data, bad); } catch (IOException) { rejected = true; }
+            bool rejected = false; try { ResourceSelection.Activate(data, bad); } catch (IOException) { rejected = true; } catch (InvalidDataException) { rejected = true; }
             Check(rejected && before == File.ReadAllText(Path.Combine(data, "active-resource.json")), "Failed selection preserves active pointer");
             File.WriteAllText(Path.Combine(data, "active-resource.json"), "{\"schema\":1,\"content_id\":\"../escape\"}"); rejected = false;
             try { ResourceSelection.Read(data); } catch (InvalidDataException) { rejected = true; } Check(rejected, "Traversal rejected");

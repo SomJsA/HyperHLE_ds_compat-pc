@@ -133,6 +133,8 @@ namespace DeadSpaceInstaller
                         return directory;
                 }
             }
+            catch (InvalidDataException) { }
+            catch (ArgumentException) { }
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
             return null;
