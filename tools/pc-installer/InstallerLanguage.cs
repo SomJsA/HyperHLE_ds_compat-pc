@@ -53,6 +53,7 @@ private static readonly Dictionary<string,string> Messages = new Dictionary<stri
 {"已有资源时可留空，仅更新程序。首次安装请选择 marker 或 IPA。","Leave empty to preserve existing resources and update only the program. First installation requires a marker or IPA."},
 {"找不到此资源文件，请检查路径。","Resource file not found. Check the path."},
 {"IPA 仅安装原版资源，不包含高清纹理包。","IPA installs original resources only; it contains no HD texture packs."},
+{"IPA 安装原版资源和程序内置高清文字组件；外置高清纹理包仍需匹配 marker。","IPA installs original resources and the program-bundled HD text component; matching marker required only for external HD texture packs."},
 {"缺少 vandal.json","Missing vandal.json"},
 {"资源清单过大","Resource manifest is too large"},
 {"marker 只读安装。请选择需要保留在电脑上的纹理档位。","Read-only marker installation. Select texture tiers to keep on this computer."},
