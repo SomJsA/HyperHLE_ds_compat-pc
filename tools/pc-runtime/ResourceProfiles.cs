@@ -20,7 +20,7 @@ namespace DeadSpaceResources
         internal string Describe(bool english)
         {
             string support = Id == "current" ? (english ? "Most fully adapted: 1.3.34." : "开发者推荐：1.3.34 的适配最完整。")
-                : Adapted ? (english ? "Adapted in R4.1; complete opening tested. Legacy editions retain native touch controls and native text." : "已在 R4.1 适配并验证完整开场；旧版沿用原生触摸和原生文字。")
+                : Adapted ? (english ? "Adapted in R4.2; complete opening tested. Legacy editions retain native touch controls and native text." : "已在 R4.2 适配并验证完整开场；旧版沿用原生触摸和原生文字。")
                 : (english ? "Not yet adapted or verified. Experimental native resources only; do not assume this package is supported." : "尚未适配或验证；仅尝试原生资源，不代表此构建已兼容。");
             return Name + "\r\n" + support
                 + "\r\n" + (english ? "Lighting: " : "光影：") + (Lighting ? (english ? "native standard / advanced." : "原生标准 / 高级可切换。") : (english ? "native standard only; advanced unavailable." : "仅原生标准；不开放高级光影。"))

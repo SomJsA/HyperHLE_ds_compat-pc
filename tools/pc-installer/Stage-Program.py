@@ -86,7 +86,7 @@ def main() -> int:
     shutil.copy2(args.diagnostic_map.resolve(), output / "Game/diagnostic-map.json")
     readme = output / "Docs/INSTALLER-README.txt"
     readme.write_text(
-        "DEAD SPACE MOBILE PC installation payload - 20261112-R4.1\n\n"
+        "DEAD SPACE MOBILE PC installation payload - 20261112-R4.2\n\n"
         "This directory is embedded inside the installation EXE. It is not a\n"
         "user-facing floating package.\n\n"
         "Program files default to %LOCALAPPDATA%\\Programs\\DeadSpaceLegacy.\n"
@@ -222,7 +222,8 @@ def main() -> int:
         launcher_implementation_commit=args.implementation_commit,
         native_code_commit=args.implementation_commit,
         distribution_id=output.name,
-        release_tag="20261112-r4.1",
+        release_tag="20261112-r4.2",
+        revision="R4.2",
         launcher_sha256=launcher_sha,
         native_sha256=native_sha,
         native_bank_sha256=sha(repo / "res/overlay/deadspace_iphone.bin"),
@@ -246,7 +247,8 @@ def main() -> int:
         launcher_implementation_commit=args.implementation_commit,
         native_code_commit=args.implementation_commit,
         distribution_id=output.name,
-        release_tag="20261112-r4.1",
+        release_tag="20261112-r4.2",
+        revision="R4.2",
         launcher_sha256=launcher_sha,
         native_sha256=native_sha,
         native_bank_sha256=sha(repo / "res/overlay/deadspace_iphone.bin"),

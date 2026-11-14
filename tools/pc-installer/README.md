@@ -29,7 +29,7 @@ registered program and GameData roots, replaces program files, and preserves
 the installed IPA, textures, configuration, saves and unknown files. A marker
 is needed again only when adding or changing resource tiers.
 
-R4.1 identifies applications by the SHA-256 of the uncompressed main executable
+R4.2 identifies applications by the SHA-256 of the uncompressed main executable
 and Info.plist, plus the required standard / high-tier resource directories.
 The source filename is never used as a version identifier. The installer and
 launcher share `tools/pc-runtime/ResourceProfiles.cs`:

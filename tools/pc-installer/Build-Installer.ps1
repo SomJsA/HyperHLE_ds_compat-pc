@@ -26,7 +26,7 @@ if (Test-Path -LiteralPath (Join-Path $programDirectory 'Assets/texture-packs'))
 New-Item -ItemType Directory -Path $outputDirectory | Out-Null
 $programZip = Join-Path $outputDirectory 'program-payload.zip'
 $uninstaller = Join-Path $outputDirectory 'DeadSpace-Uninstall.exe'
-$installer = Join-Path $outputDirectory 'DEAD-SPACE-MOBILE-PC-Installer-20261112-R4.1-RC2.exe'
+$installer = Join-Path $outputDirectory 'DEAD-SPACE-MOBILE-PC-Installer-20261112-R4.2.exe'
 
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem

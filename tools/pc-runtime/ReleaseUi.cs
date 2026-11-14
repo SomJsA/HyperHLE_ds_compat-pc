@@ -17,7 +17,7 @@ namespace DeadSpaceUi
         internal const string ProjectUrl = "https://github.com/" + Repository;
         internal const string ReleaseUrl = ProjectUrl + "/releases/latest";
         internal const string ApiUrl = "https://api.github.com/repos/" + Repository + "/releases/latest";
-        internal const string CurrentTag = "20261112-r4.1";
+        internal const string CurrentTag = "20261112-r4.2";
 
         internal sealed class Result { internal string State, Tag; }
         internal static Result Interpret(int code, string json)
