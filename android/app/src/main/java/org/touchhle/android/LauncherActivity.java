@@ -193,7 +193,9 @@ public class LauncherActivity extends Activity {
         fsr3AsyncEnabled = prefs.getBoolean(KEY_FSR3_ASYNC, false);
         fsr3DirectOutputEnabled = prefs.getBoolean(KEY_FSR3_DIRECT_OUTPUT, false);
         textLanguage = normalizeTextLanguage(prefs.getString(KEY_TEXT_LANGUAGE, "zh-tieba"));
-        hdTextEnabled = prefs.getBoolean(KEY_HD_TEXT, false);
+        // Both Android packages use the independent Canvas layer by default;
+        // the expensive framebuffer-readback path is no longer required.
+        hdTextEnabled = prefs.getBoolean(KEY_HD_TEXT, true);
 
         if (freshInstall) {
             qualityPreset = PRESET_RECOMMENDED;
@@ -392,11 +394,11 @@ public class LauncherActivity extends Activity {
         creditsLabel.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
         creditsLabel.setGravity(Gravity.END);
         credits.addView(creditsLabel);
-        TextView keyboardCredit = text("键鼠测试：天雷本雷", 11, COLOR_TEXT, false);
+        TextView keyboardCredit = text("Android / 键鼠测试：天雷本雷", 11, COLOR_TEXT, false);
         keyboardCredit.setGravity(Gravity.END);
         keyboardCredit.setPadding(0, dp(5), 0, 0);
         credits.addView(keyboardCredit);
-        TextView remainingCredit = text("剩余全部工作：SomJs", 11, COLOR_MUTED, false);
+        TextView remainingCredit = text("维护与集成：SomJs", 11, COLOR_MUTED, false);
         remainingCredit.setGravity(Gravity.END);
         remainingCredit.setPadding(0, dp(2), 0, 0);
         credits.addView(remainingCredit);
@@ -410,6 +412,30 @@ public class LauncherActivity extends Activity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
 
+        addSection(content, "贡献与反馈 / Contributions");
+        LinearLayout contributionBlock = new LinearLayout(this);
+        contributionBlock.setOrientation(LinearLayout.VERTICAL);
+        contributionBlock.setPadding(dp(14), dp(10), dp(14), dp(10));
+        contributionBlock.setBackground(panelBackground(COLOR_PANEL, COLOR_LINE));
+        TextView contributionText = text(
+                "SomJs：项目主要开发、PC 主线与手柄修复\n"
+                        + "IxYun_2（腹黑小喵）：超级校对、超级测试\n"
+                        + "MisakaCharlotte（是的呀啊）：超级校对、超级测试\n"
+                        + "特洛克·洛克莱斯：超级核查测试\n"
+                        + "天雷本雷：键鼠/Android 设备游玩测试\n"
+                        + "豆沙包里有磁：键鼠测试（顶着极低的全存储帧率）",
+                13, COLOR_TEXT, false);
+        contributionText.setLineSpacing(0f, 1.12f);
+        contributionBlock.addView(contributionText);
+        contributionBlock.addView(linkRow("GitHub Community / 提交 Bug Issue",
+                "https://github.com/SomJsA/DeadSpaceMobile-Community"));
+        contributionBlock.addView(linkRow("贴吧 / Tieba",
+                "https://tieba.baidu.com/wxf/341915?kw=%E6%AD%BB%E4%BA%A1%E7%A9%BA%E9%97%B4&fr=sharewise"));
+        contributionBlock.addView(linkRow("Bilibili",
+                "https://space.bilibili.com/34237026"));
+        content.addView(contributionBlock, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
         addSection(content, "01  /  高清文字组件");
         LinearLayout textBlock = new LinearLayout(this);
         textBlock.setOrientation(LinearLayout.VERTICAL);
@@ -417,7 +443,7 @@ public class LauncherActivity extends Activity {
         textBlock.setBackground(panelBackground(COLOR_PANEL, COLOR_LINE));
         TextView textHint = text(
                 "按所选 IPA 语言显示高清叠加文字 / Show HD overlay text in the selected IPA language。"
-                        + "Android 默认关闭 / off by default；开启时对白、章节和目标会使用 CPU 合成，可能降低帧率。",
+                        + "Android 使用独立 Canvas 合成层；首次启动可关闭。",
                 13, COLOR_MUTED, false);
         textHint.setLineSpacing(0f, 1.08f);
         textBlock.addView(textHint);
@@ -1498,6 +1524,19 @@ public class LauncherActivity extends Activity {
                 primary ? Color.rgb(169, 245, 247) : COLOR_LINE));
         button.setPadding(dp(15), 0, dp(15), 0);
         return button;
+    }
+
+    private TextView linkRow(String label, String url) {
+        TextView link = text("↗  " + label, 14, COLOR_ACCENT, false);
+        link.setPadding(0, dp(10), 0, dp(2));
+        link.setOnClickListener(view -> {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            } catch (ActivityNotFoundException error) {
+                Toast.makeText(this, "没有可用的浏览器打开链接。", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return link;
     }
 
     private TextView text(String value, int sizeSp, int color, boolean bold) {

@@ -60,6 +60,7 @@ public class MainActivity extends SDLActivity {
     private TextView fpsOverlay;
     private AlertDialog pauseDialog;
     private boolean manualPause;
+    private ChapterOverlayView chapterOverlay;
     private final Runnable fpsUpdateRunnable = this::updateFpsOverlay;
 
     @Override
@@ -72,6 +73,36 @@ public class MainActivity extends SDLActivity {
         if (showFps) {
             installFpsOverlay();
         }
+        if (getIntent().getBooleanExtra("hd_text_overlay", false)) {
+            waitForCanvasLanguageBank(0);
+        }
+    }
+
+    private void waitForCanvasLanguageBank(int attempt) {
+        if (chapterOverlay != null || !getIntent().getBooleanExtra("hd_text_overlay", false)) return;
+        String language = normalizeTextLanguage(getIntent().getStringExtra("hd_text_language"));
+        File base = getExternalFilesDir(null);
+        if (base == null) base = getFilesDir();
+        File primary = new File(base, "overlay-language/" + language + ".sbin");
+        if (!primary.isFile() || primary.length() == 0) {
+            if (attempt < 160) {
+                getWindow().getDecorView().postDelayed(() -> waitForCanvasLanguageBank(attempt + 1), 250);
+            } else {
+                Log.w(TAG, "[DStext-view] language bank did not arrive; retaining native display");
+            }
+            return;
+        }
+        try {
+            chapterOverlay = new ChapterOverlayView(this,
+                    getIntent().getBooleanExtra("viewport_stretch", false), language);
+            mLayout.addView(chapterOverlay, new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.MATCH_PARENT));
+            chapterOverlay.bringToFront();
+        } catch (RuntimeException | LinkageError error) {
+            chapterOverlay = null;
+            Log.e(TAG, "[DStext-view] Canvas layer unavailable; retaining native display", error);
+        }
     }
 
     @Override
@@ -80,6 +111,7 @@ public class MainActivity extends SDLActivity {
         if (manualPause) {
             pauseNativeThread();
         }
+        if (chapterOverlay != null) { chapterOverlay.setRunning(!manualPause); }
         scheduleImmersiveMode();
         if (showFps || logStats) {
             startFpsUpdates();
@@ -88,6 +120,7 @@ public class MainActivity extends SDLActivity {
 
     @Override
     protected void onPause() {
+        if (chapterOverlay != null) { chapterOverlay.setRunning(false); }
         stopFpsUpdates();
         super.onPause();
     }
@@ -99,6 +132,7 @@ public class MainActivity extends SDLActivity {
             pauseDialog.dismiss();
             pauseDialog = null;
         }
+        if (chapterOverlay != null) { chapterOverlay.setRunning(false); }
         scheduleGameProcessExit();
         // SDL onDestroy() sends SDL_QUIT and then waits for the native thread.
         // If our in-game pause menu still owns the native pause semaphore, that
@@ -150,6 +184,7 @@ public class MainActivity extends SDLActivity {
     private void pauseForMenu() {
         if (!manualPause) {
             manualPause = true;
+            if (chapterOverlay != null) { chapterOverlay.setRunning(false); }
             pauseNativeThread();
         }
     }
@@ -157,6 +192,7 @@ public class MainActivity extends SDLActivity {
     private void resumeFromMenu() {
         if (manualPause) {
             manualPause = false;
+            if (chapterOverlay != null) { chapterOverlay.setRunning(true); }
             resumeNativeThread();
         }
     }
@@ -339,6 +375,9 @@ public class MainActivity extends SDLActivity {
                         hdTextOverlay = false;
                     }
                 }
+                // The activity reads this after SDL has called getArguments;
+                // keep the effective value if an optional bank was rejected.
+                getIntent().putExtra("hd_text_overlay", hdTextOverlay);
                 configureTextLanguage(textLanguage, hdTextOverlay, textFiles);
                 configureRuntimeOptions(
                         scale, fpsCap, debugLogs, dumpFrames, pcCompat,
@@ -685,14 +724,15 @@ public class MainActivity extends SDLActivity {
                 ? null : files.english.getAbsolutePath());
         setOptionalEnv("TOUCHHLE_DS_NATIVE_TEXT_FALLBACK",
                 "ja-original".equals(language) ? "1" : null);
-        // Android has no context-owned GPU text path. Keep the high-resolution
-        // layer opt-in; enabling it uses the existing CPU composition path.
+        // Android's Canvas view owns the text layer. The native hooks only
+        // suppress the original cards while Java draws them independently.
         String enabled = overlay ? "1" : null;
         for (String name : new String[] {
                 "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY",
                 "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" }) {
             setOptionalEnv(name, enabled);
         }
+        setOptionalEnv("TOUCHHLE_DS_ANDROID_CANVAS_TEXT", overlay ? "1" : null);
         unsetEnv("TOUCHHLE_DS_TUTORIAL_OVERLAY");
         setEnv("TOUCHHLE_DS_GPU_TEXT_OVERLAY", "0");
     }

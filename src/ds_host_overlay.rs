@@ -88,6 +88,14 @@ fn host() -> &'static Mutex<Host> {
     })
 }
 pub(crate) fn prepare() {
+    // Android's Canvas layer owns chapter/subtitle/objective composition when
+    // selected. Do not prepare host cards or force the renderbuffer readback
+    // path in that mode.
+    if cfg!(target_os = "android")
+        && std::env::var_os("TOUCHHLE_DS_ANDROID_CANVAS_TEXT").is_some()
+    {
+        return;
+    }
     let _stutter_span=crate::ds_stutter_probe::Span::new(7,0);
     if std::env::var_os("TOUCHHLE_DS_CHAPTER_OVERLAY").is_none()
         && std::env::var_os("TOUCHHLE_DS_SUBTITLE_OVERLAY").is_none()
@@ -135,6 +143,11 @@ pub(crate) fn prepare() {
 /// hints are drawn directly in the final present pass, so they must not force
 /// a full readback and CA recomposition.
 pub(crate) fn active() -> bool {
+    if cfg!(target_os = "android")
+        && std::env::var_os("TOUCHHLE_DS_ANDROID_CANVAS_TEXT").is_some()
+    {
+        return false;
+    }
     visible() && !gpu::enabled()
 }
 
