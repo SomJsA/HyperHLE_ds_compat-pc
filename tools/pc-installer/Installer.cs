@@ -154,7 +154,7 @@ namespace DeadSpaceInstaller
 
             progress(I("正在解包程序文件..."));
             ExtractProgram(options.ProgramRoot);
-            ApplyLanguageMode(options.ProgramRoot, options.InstallHdChinese);
+            ApplyLanguageMode(options.ProgramRoot, options.InstallHdChinese, options.RegisterInstallation);
             string launcher = Path.Combine(
                 options.ProgramRoot, "DeadSpace Launcher.exe");
             if (!File.Exists(launcher))
@@ -588,13 +588,14 @@ namespace DeadSpaceInstaller
             return VersionFallback;
         }
 
-        private static void ApplyLanguageMode(string programRoot, bool hdChinese)
+        private static void ApplyLanguageMode(string programRoot, bool hdChinese, bool updateUserConfiguration)
         {
             string value = "overlay_enabled=" + (hdChinese ? "1" : "0");
-            var files = new List<string> {
-                Path.Combine(programRoot, "Defaults", "DeadSpace-Launcher.ini"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini")
-            };
+            var files = new List<string> { Path.Combine(programRoot, "Defaults", "DeadSpace-Launcher.ini") };
+            // --no-register is used for isolated compatibility installations.
+            // Such an installation must not rewrite the real user's settings.
+            if (updateUserConfiguration)
+                files.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"));
             foreach (string path in files)
             {
                 if (!File.Exists(path)) continue;
