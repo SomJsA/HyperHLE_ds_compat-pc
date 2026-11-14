@@ -42,6 +42,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * A wrapper class over SDLActivity
@@ -322,6 +324,22 @@ public class MainActivity extends SDLActivity {
                 boolean fsr3FgSynthetic = getIntent().getBooleanExtra(
                         "fsr3_fg_synthetic", false);
                 boolean fsr3FgProbe = getIntent().getBooleanExtra("fsr3_fg_probe", false);
+                String textLanguage = normalizeTextLanguage(
+                        getIntent().getStringExtra("hd_text_language"));
+                boolean hdTextOverlay = getIntent().getBooleanExtra("hd_text_overlay", false);
+                OverlayLanguageFiles textFiles = null;
+                if (hdTextOverlay) {
+                    try {
+                        textFiles = prepareOverlayLanguageFiles(ipa, textLanguage);
+                    } catch (IOException error) {
+                        // A legacy IPA can lack a complete string bank. Keep the
+                        // native game language working instead of making launch
+                        // fail just because the optional HD layer is unavailable.
+                        Log.w(TAG, "HD text bank unavailable; using native text", error);
+                        hdTextOverlay = false;
+                    }
+                }
+                configureTextLanguage(textLanguage, hdTextOverlay, textFiles);
                 configureRuntimeOptions(
                         scale, fpsCap, debugLogs, dumpFrames, pcCompat,
                         skipReadback, fsrMode, aaEnabled, sharpenTenths, stretchViewport,
@@ -331,7 +349,7 @@ public class MainActivity extends SDLActivity {
                         fsr3FgSynthetic, fsr3FgProbe);
 
                 List<String> args = new ArrayList<>();
-                args.add("--preferred-languages=zh-Hans,zh");
+                args.add("--preferred-languages=" + preferredLanguages(textLanguage));
                 args.add("--scale-hack=" + scale);
                 args.add(fpsCap == 0 ? "--fps-limit=off" : "--fps-limit=" + fpsCap);
                 if (debugLogs) {
@@ -614,6 +632,119 @@ public class MainActivity extends SDLActivity {
         }
     }
 
+    private static final class OverlayLanguageFiles {
+        final File primary;
+        final File english;
+        OverlayLanguageFiles(File primary, File english) {
+            this.primary = primary;
+            this.english = english;
+        }
+    }
+
+    private static String normalizeTextLanguage(String value) {
+        if (value == null) return "zh-tieba";
+        switch (value) {
+            case "en-original": case "fr-original": case "de-original":
+            case "it-original": case "ja-original": case "ko-original":
+            case "es-original": case "zh-tieba": return value;
+            default: return "zh-tieba";
+        }
+    }
+
+    private static String languageDirectory(String id) {
+        switch (id) {
+            case "en-original": return "ENG_US";
+            case "fr-original": return "FRE_FR";
+            case "de-original": return "GER_DE";
+            case "it-original": return "ITA_IT";
+            case "ja-original": return "JPN_JP";
+            case "ko-original": return "KOR_KR";
+            case "es-original": return "SPA_ES";
+            default: return "CHS_CN";
+        }
+    }
+
+    private static String preferredLanguages(String id) {
+        switch (id) {
+            case "en-original": return "en-US,en";
+            case "fr-original": return "fr-FR,fr";
+            case "de-original": return "de-DE,de";
+            case "it-original": return "it-IT,it";
+            case "ja-original": return "ja-JP,ja,en-US,en";
+            case "ko-original": return "ko-KR,ko";
+            case "es-original": return "es-ES,es";
+            default: return "zh-Hans,zh";
+        }
+    }
+
+    private void configureTextLanguage(String language, boolean overlay,
+            OverlayLanguageFiles files) {
+        setEnv("TOUCHHLE_DS_TEXT_LANGUAGE", language);
+        setOptionalEnv("TOUCHHLE_DS_TEXT_BANK", files == null ? null : files.primary.getAbsolutePath());
+        setOptionalEnv("TOUCHHLE_DS_TEXT_FALLBACK_BANK", files == null || files.english == null
+                ? null : files.english.getAbsolutePath());
+        setOptionalEnv("TOUCHHLE_DS_NATIVE_TEXT_FALLBACK",
+                "ja-original".equals(language) ? "1" : null);
+        // Android has no context-owned GPU text path. Keep the high-resolution
+        // layer opt-in; enabling it uses the existing CPU composition path.
+        String enabled = overlay ? "1" : null;
+        for (String name : new String[] {
+                "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY",
+                "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" }) {
+            setOptionalEnv(name, enabled);
+        }
+        unsetEnv("TOUCHHLE_DS_TUTORIAL_OVERLAY");
+        setEnv("TOUCHHLE_DS_GPU_TEXT_OVERLAY", "0");
+    }
+
+    private OverlayLanguageFiles prepareOverlayLanguageFiles(File ipa, String language)
+            throws IOException {
+        File base = getExternalFilesDir(null);
+        if (base == null) base = getFilesDir();
+        File directory = new File(base, "overlay-language");
+        if (!directory.isDirectory() && !directory.mkdirs()) {
+            throw new IOException("Cannot create overlay language directory");
+        }
+        String primaryDirectory = languageDirectory(language);
+        File primary = new File(directory, language + ".sbin");
+        File english = "ENG_US".equals(primaryDirectory)
+                ? null : new File(directory, "en-original.sbin");
+        try (ZipFile zip = new ZipFile(ipa)) {
+            String prefix = null;
+            for (java.util.Enumeration<? extends ZipEntry> entries = zip.entries(); entries.hasMoreElements();) {
+                String name = entries.nextElement().getName();
+                if (name.startsWith("Payload/") && name.endsWith(".app/Info.plist")
+                        && name.split("/").length == 3) {
+                    if (prefix != null) throw new IOException("Ambiguous IPA application");
+                    prefix = name.substring(0, name.length() - "Info.plist".length());
+                }
+            }
+            if (prefix == null) throw new IOException("IPA application plist is missing");
+            copyLanguageEntry(zip, prefix, primaryDirectory, primary);
+            if (english != null) copyLanguageEntry(zip, prefix, "ENG_US", english);
+        }
+        return new OverlayLanguageFiles(primary, english);
+    }
+
+    private static void copyLanguageEntry(ZipFile zip, String prefix, String directory, File target)
+            throws IOException {
+        String name = prefix + "published/stringdata/" + directory + "/deadspace_iphone.bin";
+        ZipEntry entry = zip.getEntry(name);
+        if (entry == null || entry.getSize() <= 0 || entry.getSize() > 2L * 1024 * 1024) {
+            throw new IOException("Missing or oversized language bank: " + directory);
+        }
+        File temporary = new File(target.getParentFile(), "." + target.getName() + ".part");
+        try (InputStream input = zip.getInputStream(entry);
+             FileOutputStream output = new FileOutputStream(temporary)) {
+            byte[] buffer = new byte[16384];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            output.getFD().sync();
+        }
+        if (target.exists() && !target.delete()) throw new IOException("Cannot replace " + target);
+        if (!temporary.renameTo(target)) throw new IOException("Cannot install " + target);
+    }
+
     private void applyDiagnosticEnvOverrides(String spec) {
         if (spec == null || spec.isEmpty() || spec.length() > 4096) {
             return;
@@ -643,6 +774,10 @@ public class MainActivity extends SDLActivity {
         } catch (Throwable t) {
             Log.w(TAG, "Could not set environment variable " + name, t);
         }
+    }
+
+    private static void setOptionalEnv(String name, String value) {
+        if (value == null) unsetEnv(name); else setEnv(name, value);
     }
 
     private static void unsetEnv(String name) {

@@ -26,6 +26,8 @@ pub(super) struct State {
 sans_bold_ja: Option<Font>,
 sans_regular_zh: Option<Font>,
 sans_bold_zh: Option<Font>,
+    sans_regular_kr: Option<Font>,
+    sans_bold_kr: Option<Font>,
     sans_regular_ar: Option<Font>,
     sans_bold_ar: Option<Font>,
 }
@@ -475,7 +477,8 @@ fn convert_line_break_mode(ui_mode: UILineBreakMode) -> WrapMode {
 /// render and which require the Noto Sans CJK fallback.
 pub(crate) fn is_cjk_char(c: u32) -> bool {
     (0x3000..=0x30FF).contains(&c) || (0xFF00..=0xFFEF).contains(&c) ||
-    (0x4e00..=0x9FA0).contains(&c) || (0x3400..=0x4DBF).contains(&c)
+    (0x4e00..=0x9FA0).contains(&c) || (0x3400..=0x4DBF).contains(&c) ||
+    (0xAC00..=0xD7AF).contains(&c)
 }
 
 /// Returns `true` if the codepoint belongs to one of the Arabic Unicode blocks.
@@ -524,6 +527,21 @@ fn get_font<'a>(state: &'a mut State, kind: FontKind, text: &str, ds_role: Optio
         }
         let slot = match role { crate::ds_font_roles::Role::Frontend => &mut state.ds_title, crate::ds_font_roles::Role::Story => &mut state.ds_story };
         return slot.get_or_insert_with(|| crate::ds_font_roles::load(role));
+    }
+    let language = std::env::var("TOUCHHLE_DS_TEXT_LANGUAGE")
+        .unwrap_or_else(|_| "zh-tieba".to_owned())
+        .to_ascii_lowercase();
+    if language.starts_with("ja") {
+        if is_bold {
+            return state.sans_bold_ja.get_or_insert_with(Font::sans_bold_ja);
+        }
+        return state.sans_regular_ja.get_or_insert_with(Font::sans_regular_ja);
+    }
+    if language.starts_with("ko") {
+        if is_bold {
+            return state.sans_bold_kr.get_or_insert_with(Font::sans_bold_kr);
+        }
+        return state.sans_regular_kr.get_or_insert_with(Font::sans_regular_kr);
     }
     if is_bold {
         return state.sans_bold_zh.get_or_insert_with(Font::sans_bold_zh);

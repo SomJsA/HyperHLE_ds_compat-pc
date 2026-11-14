@@ -23,6 +23,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +57,8 @@ public class LauncherActivity extends Activity {
     static final String KEY_FSR3_DIRECT_OUTPUT = "fsr3_direct_output";
     static final String KEY_FSR3_FORCE = "fsr3_force_unsupported";
     static final String KEY_PRESET = "quality_preset";
+    static final String KEY_TEXT_LANGUAGE = "hd_text_language";
+    static final String KEY_HD_TEXT = "hd_text_overlay";
 
     static final String PRESET_RECOMMENDED = "recommended";
     static final String PRESET_PERFORMANCE = "performance";
@@ -138,6 +142,19 @@ public class LauncherActivity extends Activity {
     private boolean fsr3GpuDepthEnabled;
     private boolean fsr3AsyncEnabled;
     private boolean fsr3DirectOutputEnabled;
+    private String textLanguage;
+    private boolean hdTextEnabled;
+    private Spinner textLanguageSpinner;
+    private CheckBox hdTextToggle;
+
+    private static final String[] TEXT_LANGUAGE_IDS = {
+            "zh-tieba", "en-original", "fr-original", "de-original",
+            "it-original", "ja-original", "ko-original", "es-original"
+    };
+    private static final String[] TEXT_LANGUAGE_LABELS = {
+            "中文-贴吧汉化组", "English-原生 IPA", "Français-原生 IPA", "Deutsch-原生 IPA",
+            "Italiano-原生 IPA", "日本語-原生 IPA（缺失项回退英语）", "한국어-原生 IPA", "Español-原生 IPA"
+    };
 
     @Override
     public void onBackPressed() {
@@ -175,6 +192,8 @@ public class LauncherActivity extends Activity {
         fsr3GpuDepthEnabled = prefs.getBoolean(KEY_FSR3_GPU_DEPTH, false);
         fsr3AsyncEnabled = prefs.getBoolean(KEY_FSR3_ASYNC, false);
         fsr3DirectOutputEnabled = prefs.getBoolean(KEY_FSR3_DIRECT_OUTPUT, false);
+        textLanguage = normalizeTextLanguage(prefs.getString(KEY_TEXT_LANGUAGE, "zh-tieba"));
+        hdTextEnabled = prefs.getBoolean(KEY_HD_TEXT, false);
 
         if (freshInstall) {
             qualityPreset = PRESET_RECOMMENDED;
@@ -390,6 +409,46 @@ public class LauncherActivity extends Activity {
         content.addView(hero, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        addSection(content, "01  /  高清文字组件");
+        LinearLayout textBlock = new LinearLayout(this);
+        textBlock.setOrientation(LinearLayout.VERTICAL);
+        textBlock.setPadding(dp(14), dp(10), dp(14), dp(10));
+        textBlock.setBackground(panelBackground(COLOR_PANEL, COLOR_LINE));
+        TextView textHint = text(
+                "按所选 IPA 语言显示高清叠加文字 / Show HD overlay text in the selected IPA language。"
+                        + "Android 默认关闭 / off by default；开启时对白、章节和目标会使用 CPU 合成，可能降低帧率。",
+                13, COLOR_MUTED, false);
+        textHint.setLineSpacing(0f, 1.08f);
+        textBlock.addView(textHint);
+        hdTextToggle = new CheckBox(this);
+        hdTextToggle.setText("启用多语言高清文字叠加层 / Enable multilingual HD text overlay");
+        hdTextToggle.setTextSize(15);
+        hdTextToggle.setTextColor(COLOR_TEXT);
+        hdTextToggle.setButtonTintList(android.content.res.ColorStateList.valueOf(COLOR_ACCENT));
+        hdTextToggle.setChecked(hdTextEnabled);
+        hdTextToggle.setOnCheckedChangeListener((button, checked) -> {
+            hdTextEnabled = checked;
+            saveCurrentSettings();
+        });
+        textBlock.addView(hdTextToggle);
+        textLanguageSpinner = new Spinner(this);
+        ArrayAdapter<String> languageAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, TEXT_LANGUAGE_LABELS);
+        languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        textLanguageSpinner.setAdapter(languageAdapter);
+        textLanguageSpinner.setSelection(languageIndex(textLanguage));
+        textLanguageSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                textLanguage = TEXT_LANGUAGE_IDS[position];
+                saveCurrentSettings();
+            }
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+        textBlock.addView(textLanguageSpinner, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(50)));
+        content.addView(textBlock, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         LinearLayout qualityBlock = new LinearLayout(this);
         qualityBlock.setOrientation(LinearLayout.VERTICAL);
@@ -1025,6 +1084,8 @@ public class LauncherActivity extends Activity {
                 .putBoolean(KEY_FSR3_ASYNC, fsr3AsyncEnabled)
                 .putBoolean(KEY_FSR3_DIRECT_OUTPUT, fsr3DirectOutputEnabled)
                 .putBoolean(KEY_FSR3_FORCE, fsr3ForceEnabled)
+                .putString(KEY_TEXT_LANGUAGE, textLanguage)
+                .putBoolean(KEY_HD_TEXT, hdTextEnabled)
                 .putString(KEY_PRESET, qualityPreset)
                 .apply();
     }
@@ -1299,6 +1360,8 @@ public class LauncherActivity extends Activity {
         intent.putExtra("fsr3_trace", fsr3Trace);
         intent.putExtra("fsr3_fg_synthetic", fsr3FgSynthetic);
         intent.putExtra("fsr3_fg_probe", fsr3FgProbe);
+        intent.putExtra("hd_text_language", textLanguage);
+        intent.putExtra("hd_text_overlay", hdTextEnabled);
         String diagnosticEnv = getIntent().getStringExtra("diagnostic_env");
         if (diagnosticEnv != null && !diagnosticEnv.trim().isEmpty()) {
             intent.putExtra("diagnostic_env", diagnosticEnv);
@@ -1458,6 +1521,20 @@ public class LauncherActivity extends Activity {
 
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private static String normalizeTextLanguage(String value) {
+        if (value == null) return "zh-tieba";
+        for (String id : TEXT_LANGUAGE_IDS) if (id.equals(value)) return value;
+        return "zh-tieba";
+    }
+
+    private static int languageIndex(String value) {
+        String normalized = normalizeTextLanguage(value);
+        for (int i = 0; i < TEXT_LANGUAGE_IDS.length; i++) {
+            if (TEXT_LANGUAGE_IDS[i].equals(normalized)) return i;
+        }
+        return 0;
     }
 
     @SuppressWarnings("deprecation")

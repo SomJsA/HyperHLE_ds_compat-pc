@@ -578,6 +578,12 @@ impl Font {
     pub fn sans_bold_ja() -> Font {
         Self::from_resource_file("NotoSansJP-Bold.otf")
     }
+    pub fn sans_regular_kr() -> Font {
+        Self::from_resource_file("NotoSansKR-Regular.otf")
+    }
+    pub fn sans_bold_kr() -> Font {
+        Self::from_resource_file("NotoSansKR-Regular.otf")
+    }
     pub fn sans_regular_ar() -> Font {
         Self::from_resource_file("NotoSansArabic-Regular.ttf")
     }
