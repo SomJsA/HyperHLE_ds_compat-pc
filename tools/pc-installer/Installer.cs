@@ -566,7 +566,7 @@ namespace DeadSpaceInstaller
             var state = new Dictionary<string, object>
             {
                 { "schema", 1 },
-                { "distribution", "DEAD SPACE MOBILE R5-dev PC" },
+                { "distribution", "DEAD SPACE MOBILE R6-dev PC" },
                 { "version", version },
                 { "program_root", options.ProgramRoot },
                 { "game_data_root", options.GameDataRoot },

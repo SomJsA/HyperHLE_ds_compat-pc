@@ -42,14 +42,14 @@ namespace DeadSpaceResources
         internal string Describe(bool english)
         {
             string support = Id == "current" ? (english ? "Most fully adapted: 1.3.34." : "开发者推荐：1.3.34 的适配最完整。")
-                : Adapted ? (english ? "Adapted in R4.2; complete opening tested. Legacy editions retain native touch controls and native text." : "已在 R4.2 适配并验证完整开场；旧版沿用原生触摸和原生文字。")
+                : Adapted ? (english ? "Adapted in R6; complete opening tested. Legacy editions use the compatible PC input path and the same multilingual HD text layer." : "已在 R6 适配并验证完整开场；旧版使用兼容 PC 操作路径和同一多语言高清文字叠加层。")
                 : (english ? "Not yet adapted or verified. Experimental native resources only; do not assume this package is supported." : "尚未适配或验证；仅尝试原生资源，不代表此构建已兼容。");
             return Name + "\r\n" + support
                 + "\r\n" + (english ? "Lighting: " : "光影：") + (Lighting ? (english ? "native standard / advanced." : "原生标准 / 高级可切换。") : (english ? "native standard only; advanced unavailable." : "仅原生标准；不开放高级光影。"))
                 + "\r\n" + (english ? "Textures: " : "纹理：") + (Textures ? (english ? "original, or matching marker packs at 2x / 4x / 6x when supplied." : "原版；匹配的 marker 提供时可选 2× / 4× / 6×。") : (english ? "original only; external HD packs are not adapted to this edition." : "仅原版；当前外置高清包未适配此构建。"))
                 + "\r\n" + (english ? "IPA languages: " : "IPA 内置语言：") + (Languages.Count == 0 ? (english ? "not detected." : "未检测到。") : String.Join(", ", Languages.Select(language => language.Display(english)).ToArray()))
                 + "\r\n" + (english ? "Internal / output resolution and MSAA / AF remain host settings; hardware limits apply. Opening validation used internal 2x, MSAA 4x / AF 4x; higher settings are not validated limits." : "内部 / 输出分辨率、MSAA / AF 为宿主设置，受硬件限制；开场实测内部 2×、MSAA 4× / AF 4×，不将更高选项当成已验证上限。")
-                + "\r\n" + (english ? "No external texture pack is required. Developer recommendation: 1.3.34. Other IPA owners are welcome to report issues with version / file fingerprints; arrange sample sharing privately." : "不依赖外置纹理也可运行。开发者推荐 1.3.34；也欢迎携带其他 IPA 的版本和文件指纹提 issue，样本另行私下联系。")
+                + "\r\n" + (english ? "HD text is installed with the PC program and does not require a marker. External texture packs remain edition-specific. Developer recommendation: 1.3.34. Other IPA owners are welcome to report issues with version / file fingerprints; arrange sample sharing privately." : "高清文字组件随 PC 程序安装，不依赖 marker。外置高清纹理仍按 IPA 版本分别适配。开发者推荐 1.3.34；也欢迎携带其他 IPA 的版本和文件指纹提 issue，样本另行私下联系。")
                 + (Id == "current" ? "" : "\r\n" + (english ? "Legacy progress is stored separately from 1.3.34 and is never migrated automatically. Save editing / transfer tools for these editions are not adapted." : "旧包进度与 1.3.34 分开保存，不自动跨版迁移；旧包存档编辑与互导工具尚未适配。"))
                 + "\r\nhttps://github.com/SomJsA/DeadSpaceMobile-Community/issues";
         }
@@ -114,7 +114,11 @@ namespace DeadSpaceResources
                 bool high = known[0] == "current" || known[0] == "ipad-1.0.3";
                 if (high && !zip.Entries.Any(e => e.Length > 0 && e.FullName.StartsWith(prefix + "published_ipad2/", StringComparison.Ordinal))) return profile;
                 profile.Id = known[0]; profile.Name = known[1]; profile.Lighting = high;
-                profile.HdText = profile.Textures = profile.Id == "current";
+                // The PC HD text layer is host-side and is not tied to the
+                // external texture marker. Every known IPA can use it; only
+                // the 1.3.34 profile currently has matching texture packs.
+                profile.HdText = true;
+                profile.Textures = profile.Id == "current";
                 string stringData = prefix + "published/stringdata/";
                 ZipArchiveEntry englishBank = zip.GetEntry(stringData + "ENG_US/deadspace_iphone.bin");
                 long englishBankLength = englishBank == null ? 0 : englishBank.Length;
@@ -211,18 +215,19 @@ namespace DeadSpaceResources
             var p = IpaProfiles.Inspect(Path.Combine(installed, "payload", "DeadSpace.ipa"));
             string selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
             IpaLanguage language = IpaProfiles.FindLanguage(p, selectedLanguage);
+            bool verifiedNativeInput = p.Id == "current";
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 { "ipa", Path.Combine(installed, "payload", "DeadSpace.ipa") }, { "resource_profile", p.Id },
                 { "overlay_enabled", p.HdText && language != null ? "1" : "0" },
                 { "hd_text_language", selectedLanguage }
             };
             if (!p.Lighting) values["advanced_lighting"] = "0";
-            if (!p.HdText) values["native_inputs"] = values["native_hud"] = "0";
+            if (!verifiedNativeInput) values["native_inputs"] = values["native_hud"] = "0";
             if (!p.Textures) values["hd_textures"] = "0";
             if (reset) {
                 values["launch_review_r4_completed"] = "0";
                 values["advanced_lighting"] = p.Lighting ? "1" : "0";
-                values["native_inputs"] = values["native_hud"] = p.HdText ? "1" : "0";
+                values["native_inputs"] = values["native_hud"] = verifiedNativeInput ? "1" : "0";
                 values["hd_textures"] = "0";
                 selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
                 values["hd_text_language"] = selectedLanguage;

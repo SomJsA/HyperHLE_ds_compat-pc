@@ -42,14 +42,16 @@ namespace DeadSpaceBootstrap
             if (reset) {
                 advancedLighting.Checked = resourceProfile.Lighting;
                 overlayEnabled.Checked = resourceProfile.HdText;
-                nativeInputs.Checked = nativeHud.Checked = resourceProfile.HdText;
+                nativeInputs.Checked = nativeHud.Checked = resourceProfile.Id == "current";
                 requestedTextLanguage = resourceProfile.HdText ? "zh-tieba" : "native";
                 launchReviewCompleted = false;
             }
             advancedLighting.Enabled = resourceProfile.Lighting;
             if (!advancedLighting.Enabled) advancedLighting.Checked = false;
-            overlayEnabled.Enabled = nativeInputs.Enabled = nativeHud.Enabled = resourceProfile.HdText;
-            if (!resourceProfile.HdText) overlayEnabled.Checked = nativeInputs.Checked = nativeHud.Checked = false;
+            overlayEnabled.Enabled = resourceProfile.HdText;
+            nativeInputs.Enabled = nativeHud.Enabled = resourceProfile.Id == "current";
+            if (!resourceProfile.HdText) overlayEnabled.Checked = false;
+            if (!nativeInputs.Enabled) nativeInputs.Checked = nativeHud.Checked = false;
             PopulateTextLanguages(requestedTextLanguage);
             hdTextures.Enabled = resourceProfile.Textures;
             if (!resourceProfile.Textures) hdTextures.Checked = false;

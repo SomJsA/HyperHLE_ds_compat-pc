@@ -39,7 +39,7 @@ def main() -> int:
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--implementation-commit", required=True)
-    parser.add_argument("--release-label", default="R5-dev")
+    parser.add_argument("--release-label", default="R6-dev")
     parser.add_argument("--report", required=True, type=Path)
     args = parser.parse_args()
     release_label = args.release_label.strip()
@@ -101,6 +101,10 @@ def main() -> int:
         "resource-tier changes and remains read-only. An existing installation\n"
         "can be upgraded or downgraded using only the new installer EXE;\n"
         "program updates preserve GameData and Documents.\n\n"
+        "The multilingual HD text component, fonts and overlay style are part\n"
+        "of this program payload and are available when an IPA is selected\n"
+        "directly. The marker is only required for edition-specific external\n"
+        "texture tiers.\n\n"
         "3D acceleration mode is enabled by default; disabling it selects CPU-copy\n"
         "compatibility mode. Automatic diagnostics and the performance HUD default\n"
         "to off. Explicit F7 captures remain available without automatic history.\n",
@@ -189,6 +193,9 @@ def main() -> int:
             "src/ds_hud_commands.rs",
             "src/ds_tutorial_text.rs",
             "tools/pc-runtime/Program.cs",
+            "tools/pc-runtime/ResourceProfiles.cs",
+            "tools/pc-runtime/ResourceCompatibility.cs",
+            "tools/pc-runtime/OverlayLanguageBank.cs",
             "tools/pc-runtime/LauncherShell.cs",
             "tools/pc-runtime/StorageControls.cs",
             "tools/pc-runtime/MarkerInstaller.cs",

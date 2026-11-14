@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory=$true)][string]$ProgramDirectory,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
-    [string]$ReleaseLabel = 'R5-dev'
+    [string]$ReleaseLabel = 'R6-dev'
 )
 
 $ErrorActionPreference = 'Stop'

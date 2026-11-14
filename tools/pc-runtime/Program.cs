@@ -760,6 +760,15 @@ namespace DeadSpaceBootstrap
                 skipTriangles);
 
             bool useHdTextOverlay = overlayEnabled.Checked && selectedTextLanguage != null && selectedTextLanguage.HdOverlay;
+            // The 1.0.3 / World binaries do not share 1.3.34's verified
+            // InputRegion/forwarder layout. Keep the newer engine-action E
+            // path for 1.3.34, and use the legacy prompt/colour compatibility
+            // path for the known older fingerprints.
+            bool legacyECompatibility = resourceProfile != null
+                && resourceProfile.Id != "current"
+                && resourceProfile.Id != "unknown";
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_EKEY_TAP", legacyECompatibility ? "1" : null);
+            Environment.SetEnvironmentVariable("TOUCHHLE_DS_EKEY_LEGACY", legacyECompatibility ? "1" : null);
             foreach (string name in new[] { "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY", "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_TUTORIAL_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" })
                 Environment.SetEnvironmentVariable(name, useHdTextOverlay ? "1" : null);
             string localOverlayStyle=ConfigurationFile("overlay-style.json");

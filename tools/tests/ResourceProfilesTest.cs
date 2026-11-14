@@ -23,7 +23,7 @@ internal static class ResourceProfilesTest
             for (int i = 0; i < ids.Length; i++) {
                 var p = IpaProfiles.Inspect(args[i + 1]); Check(p.Id == ids[i], "Real IPA identity " + ids[i]);
                 Check(p.Lighting == (i == 0 || i == 3), "Lighting capability");
-                Check(p.HdText == (i == 3) && p.Textures == (i == 3), "Enhanced components");
+                Check(p.HdText && p.Textures == (i == 3), "HD text / texture components");
                 Check(p.Languages.Count == 8, "IPA embedded language banks " + ids[i]);
                 Check(DeadSpaceResources.IpaProfiles.FindLanguage(p, "zh-tieba") != null && DeadSpaceResources.IpaProfiles.FindLanguage(p, "en-original") != null, "Chinese / English language choices");
                 Check(DeadSpaceResources.IpaProfiles.FindLanguage(p, "zh-tieba").HdOverlay && DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").HdOverlay && DeadSpaceResources.IpaProfiles.FindLanguage(p, "de-original").HdOverlay && !DeadSpaceResources.IpaProfiles.FindLanguage(p, "ja-original").Complete && DeadSpaceResources.IpaProfiles.EffectiveLanguage(p, "ja-original").Id == "en-original" && DeadSpaceResources.IpaProfiles.FindLanguage(p, "fr-original").PreferredLanguages == "fr-FR,fr", "multilingual HD overlay, incomplete Japanese fallback and locale mapping");

@@ -27,8 +27,8 @@ internal static class ResourceUiTest
                         var p = Field(form, "sourceProfile"); Check(p != null, "Profile visible " + i);
                         string id = Convert.ToString(p.GetType().GetField("Id", Hidden).GetValue(p));
                         Check(id == new[] { "ipad-1.0.3", "iphone-1.0.3", "world-1.0.1", "current", "current" }[i], "UI exact profile");
-                        var text = (CheckBox)Field(form, "hdChinesePack"); Check(text.Enabled == (i >= 3), "HD text gating");
-                        var installLanguages = (ComboBox)Field(form, "hdTextLanguage"); Check(installLanguages.Items.Count == (i >= 3 ? 8 : 0), "IPA language dropdown");
+                        var text = (CheckBox)Field(form, "hdChinesePack"); Check(text.Enabled, "HD text available for known IPA");
+                        var installLanguages = (ComboBox)Field(form, "hdTextLanguage"); Check(installLanguages.Items.Count == 8, "IPA language dropdown");
                         foreach (CheckBox tier in (CheckBox[])Field(form, "tiers")) Check(tier.Enabled == (i == 4), "Texture tier availability");
                         string hint = ((Label)Field(form, "sourceHint")).Text;
                         Check(hint.Contains("1.3.34") && hint.Contains(english ? "Lighting:" : "光影："), "Bilingual inline compatibility");
@@ -44,8 +44,8 @@ internal static class ResourceUiTest
                 foreach (int i in new[] { 0, 1, 2, 3, 1, 3 }) {
                     apply.Invoke(form, new object[] { args[3 + i], true });
                     Check(((CheckBox)Field(form, "advancedLighting")).Enabled == (i == 0 || i == 3), "Launcher lighting gating");
-                    Check(((CheckBox)Field(form, "overlayEnabled")).Enabled == (i == 3), "Launcher text gating");
-                    var launcherLanguages = (ComboBox)Field(form, "hdTextLanguage"); Check(launcherLanguages.Items.Count == (i == 3 ? 8 : 0), "Launcher language dropdown");
+                    Check(((CheckBox)Field(form, "overlayEnabled")).Enabled, "Launcher text gating");
+                    var launcherLanguages = (ComboBox)Field(form, "hdTextLanguage"); Check(launcherLanguages.Items.Count == 8, "Launcher language dropdown");
                     if (i == 3)
                     {
                         launcherLanguages.SelectedIndex = 5;

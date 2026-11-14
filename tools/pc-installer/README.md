@@ -29,19 +29,22 @@ registered program and GameData roots, replaces program files, and preserves
 the installed IPA, textures, configuration, saves and unknown files. A marker
 is needed again only when adding or changing resource tiers.
 
-R4.2 identifies applications by the SHA-256 of the uncompressed main executable
+R6 identifies applications by the SHA-256 of the uncompressed main executable
 and Info.plist, plus the required standard / high-tier resource directories.
 The source filename is never used as a version identifier. The installer and
 launcher share `tools/pc-runtime/ResourceProfiles.cs`:
 
 | Recognized application | Native lighting | External HD packs / enhanced text and controls |
 | --- | --- | --- |
-| 1.3.34 | Standard / advanced | Matching marker 2x / 4x / 6x; supported |
-| iPad 1.0.3 | Standard / advanced | Original textures and native text / touch only |
-| iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Original textures and native text / touch only |
+| 1.3.34 | Standard / advanced | Matching marker 2x / 4x / 6x; multilingual HD text and PC input supported |
+| iPad 1.0.3 | Standard / advanced | Multilingual HD text and legacy PC input path; original textures only |
+| iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Multilingual HD text and legacy PC input path; original textures only |
 | Other fingerprints | Unverified native path | Disabled pending adaptation |
 
-All four known applications can use original textures without an external pack.
+All four known applications can use the program-bundled HD text component without
+an external marker. The marker is only needed for edition-specific external
+texture packs. Legacy E interaction uses a compatibility prompt path rather
+than assuming the 1.3.34 action-forwarder layout.
 Resolution, MSAA and AF remain host controls; this is not a claim that every
 hardware / high setting was validated. The recommendation and Community issue
 entry are bilingual. 1.3.34 is the most fully adapted edition.

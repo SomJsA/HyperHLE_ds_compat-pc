@@ -269,7 +269,7 @@ namespace DeadSpaceInstaller
             try {
                 if (path.Length == 0) sourceHint.Text = I("已有资源时可留空，仅更新程序。首次安装请选择 marker 或 IPA。");
                 else if (!File.Exists(path)) sourceHint.Text = I("找不到此资源文件，请检查路径。");
-                else if (Path.GetExtension(path).Equals(".ipa", StringComparison.OrdinalIgnoreCase)) { resourceBytes["ipa"] = new FileInfo(path).Length; sourceHint.Text = I("IPA 仅安装原版资源，不包含高清纹理包。"); }
+                else if (Path.GetExtension(path).Equals(".ipa", StringComparison.OrdinalIgnoreCase)) { resourceBytes["ipa"] = new FileInfo(path).Length; sourceHint.Text = I("IPA 安装原版资源和程序内置高清文字组件；外置高清纹理包仍需匹配 marker。"); }
                 else {
                     using (var archive = ZipFile.OpenRead(path)) {
                         var entry = archive.GetEntry("vandal.json"); if (entry == null) throw new InvalidDataException(I("缺少 vandal.json"));
