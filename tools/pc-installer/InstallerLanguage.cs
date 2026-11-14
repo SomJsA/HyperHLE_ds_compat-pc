@@ -68,7 +68,7 @@ private static readonly Dictionary<string,string> Messages = new Dictionary<stri
 {"高清文字组件","HD text component"},
 {"原生行为","Original language behavior"},
 {"第 01 章\r\n当初善意\r\n“注意你的定位器。它比任何人都了解这个地方。”\r\n\r\nGPU 缓存的中文对话、目标和章节卡片。","Chapter 01\r\nHonorable Intentions\r\n“Watch the locator. It knows this place better than anyone.”\r\n\r\nGPU-cached Chinese dialogue, objective and chapter cards."},
-{"Chapter 01 / 使用游戏原生文字\r\n\r\n不启用高清中文对话字幕和章节层。重新运行安装器即可切换。","Chapter 01 / original game text\r\n\r\nHD Chinese dialogue and chapter overlays are disabled. Re-run this installer to switch."},
+{"Chapter 01 / 使用游戏原生文字\r\n\r\n不启用多语言高清对话字幕和章节层。重新运行安装器即可切换。","Chapter 01 / original game text\r\n\r\nMultilingual HD dialogue and chapter overlays are disabled. Re-run this installer to switch."},
 {"其他语言选项将在后续开放，欢迎通过 GitHub issue 投稿。","More game-language components will be available later. Requests are welcome on GitHub Issues."},
 {"关闭","Close"},
 {"找不到 marker 或 IPA 安装源。","Marker or IPA installation source not found."},

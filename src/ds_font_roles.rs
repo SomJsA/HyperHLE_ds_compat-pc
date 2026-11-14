@@ -5,6 +5,13 @@ use std::collections::HashMap;
 
 pub(crate) const TITLE: &[u8] = include_bytes!("../res/overlay/TitleChinese.ttf");
 pub(crate) const STORY: &[u8] = include_bytes!("../res/overlay/StoryChinese.ttf");
+const LATIN_REGULAR: &[u8] = include_bytes!("../touchHLE_fonts/LiberationSans-Regular.ttf");
+const LATIN_BOLD: &[u8] = include_bytes!("../touchHLE_fonts/LiberationSans-Bold.ttf");
+const CJK_SC_REGULAR: &[u8] = include_bytes!("../touchHLE_fonts/NotoSansSC-Regular.otf");
+const CJK_SC_BOLD: &[u8] = include_bytes!("../touchHLE_fonts/NotoSansSC-Bold.otf");
+const CJK_JP_REGULAR: &[u8] = include_bytes!("../touchHLE_fonts/NotoSansJP-Regular.otf");
+const CJK_JP_BOLD: &[u8] = include_bytes!("../touchHLE_fonts/NotoSansJP-Bold.otf");
+const CJK_KR_REGULAR: &[u8] = include_bytes!("../touchHLE_fonts/NotoSansKR-Regular.otf");
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum Role { Frontend, Story }
@@ -145,12 +152,53 @@ pub(crate) fn native_role(env: &crate::Environment) -> Option<Role> {
 }
 
 pub(crate) fn load(role: Role) -> Font {
-    let (bytes, name) = match role {
-        Role::Frontend => (TITLE, "MStiffHei"),
-        Role::Story => (STORY, "SweiShearSansCJKsc-Regular"),
+    let language = std::env::var("TOUCHHLE_DS_TEXT_LANGUAGE")
+        .unwrap_or_else(|_| "zh-tieba".to_owned())
+        .to_ascii_lowercase();
+    let (bytes, name): (&[u8], &str) = if language.starts_with("ja") {
+        if role == Role::Frontend {
+            (include_bytes!("../touchHLE_fonts/NotoSansJP-Bold.otf"), "NotoSansCJKjp-Bold")
+        } else {
+            (include_bytes!("../touchHLE_fonts/NotoSansJP-Regular.otf"), "NotoSansCJKjp-Regular")
+        }
+    } else if language.starts_with("ko") {
+        (include_bytes!("../touchHLE_fonts/NotoSansKR-Regular.otf"), "NotoSansCJKkr-Regular")
+    } else {
+        match role {
+            Role::Frontend => (TITLE, "MStiffHei"),
+            Role::Story => (STORY, "SweiShearSansCJKsc-Regular"),
+        }
     };
     echo!("[DSfont-role] loaded role={role:?} face={name} bytes={}", bytes.len());
     Font::from_vec(bytes.to_vec()).expect("verified Dead Space role font")
+}
+
+/// Open-font-backed faces used by the host HD layer. Native Chinese role
+/// rendering keeps the existing OFL Swei face; selected non-Chinese scripts
+/// use the matching Noto face and Latin languages use Liberation Sans.
+pub(crate) fn overlay_bytes(role: Role) -> &'static [u8] {
+    let language = std::env::var("TOUCHHLE_DS_TEXT_LANGUAGE")
+        .unwrap_or_else(|_| "zh-tieba".to_owned())
+        .to_ascii_lowercase();
+    let bold = role == Role::Frontend;
+    if language.starts_with("ja") {
+        if bold { CJK_JP_BOLD } else { CJK_JP_REGULAR }
+    } else if language.starts_with("ko") {
+        CJK_KR_REGULAR
+    } else if language.starts_with("zh") {
+        if bold { CJK_SC_BOLD } else { CJK_SC_REGULAR }
+    } else if bold {
+        LATIN_BOLD
+    } else {
+        LATIN_REGULAR
+    }
+}
+
+pub(crate) fn load_overlay(role: Role) -> Font {
+    let bytes = overlay_bytes(role);
+    echo!("[DSfont-overlay] role={role:?} language={} bytes={}",
+        std::env::var("TOUCHHLE_DS_TEXT_LANGUAGE").unwrap_or_else(|_| "zh-tieba".to_owned()), bytes.len());
+    Font::from_vec(bytes.to_vec()).expect("verified HD overlay font")
 }
 
 #[cfg(test)]

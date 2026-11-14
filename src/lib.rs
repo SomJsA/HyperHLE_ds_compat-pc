@@ -46,6 +46,7 @@ mod ds_pointer;
 mod ds_subtitle_overlay;
 mod ds_objective_overlay;
 mod ds_host_overlay;
+mod ds_overlay_language;
 mod ds_text_presentation;
 mod ds_caption_layout;
 mod ds_panel_motion;

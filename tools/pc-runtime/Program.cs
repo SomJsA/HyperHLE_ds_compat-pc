@@ -582,6 +582,12 @@ namespace DeadSpaceBootstrap
             using (var warning = new FlickerWarningForm())
                 if (warning.ShowDialog(this) != DialogResult.OK) return;
             DeadSpaceResources.IpaLanguage selectedTextLanguage = SelectedLaunchTextLanguage();
+            DeadSpaceResources.OverlayLanguageFiles overlayLanguageFiles = null;
+            if (overlayEnabled.Checked && selectedTextLanguage != null)
+            {
+                try { overlayLanguageFiles = DeadSpaceResources.OverlayLanguageBank.Prepare(ipa, selectedTextLanguage, SelectedDataRoot()); }
+                catch (Exception error) { status.Text = "语言叠加层资源准备失败：" + error.Message; return; }
+            }
             try { SaveKeyBindings(); SaveGamepadBindings(); }
             catch (Exception error) { status.Text = error.Message; return; }
             try { SaveStorage.RequireStopped(); SaveStorage.EnsureWritable(SelectedDataRoot()); if(saveMode.SelectedIndex==1)DocumentsSettings.EnsureLayout(SelectedDataRoot()); }
@@ -867,6 +873,8 @@ namespace DeadSpaceBootstrap
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_TEXT_PATCH"] = useHdTextOverlay ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_TEXT_LANGUAGE"] = selectedTextLanguage == null ? "native" : selectedTextLanguage.Id;
+                info.EnvironmentVariables["TOUCHHLE_DS_TEXT_BANK"] = overlayLanguageFiles == null ? null : overlayLanguageFiles.Primary;
+                info.EnvironmentVariables["TOUCHHLE_DS_TEXT_FALLBACK_BANK"] = overlayLanguageFiles == null ? null : overlayLanguageFiles.English;
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_TEXT_FALLBACK"] = overlayEnabled.Checked && selectedTextLanguage != null && !selectedTextLanguage.Complete && !String.IsNullOrEmpty(selectedTextLanguage.FallbackId) ? "1" : null;
                 if (overlayEnabled.Checked && selectedTextLanguage != null)
                 {

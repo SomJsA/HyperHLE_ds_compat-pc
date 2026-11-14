@@ -35,18 +35,31 @@ fn host() -> &'static Mutex<Host> {
     static HOST: OnceLock<Mutex<Host>> = OnceLock::new();
     HOST.get_or_init(|| {
         let map: Value = serde_json::from_str(include_str!("ds_overlay_texts.json")).unwrap();
+        let catalog = crate::ds_overlay_language::catalog();
         let texts = map["entries"]
             .as_array()
             .unwrap()
             .iter()
             .map(|e| {
+                let id = e["id"].as_str().unwrap().to_owned();
+                let static_text = e["text"].as_str().unwrap_or("");
+                let static_english = e["english"].as_str().unwrap_or("");
+                let localized = if catalog.language.to_ascii_lowercase().starts_with("zh") {
+                    static_text.to_owned()
+                } else {
+                    catalog.primary.get(&id)
+                        .filter(|value| !crate::ds_overlay_language::is_placeholder(value))
+                        .or_else(|| catalog.english.get(&id))
+                        .cloned()
+                        .unwrap_or_else(|| static_english.to_owned())
+                };
                 (
-                    e["id"].as_str().unwrap().to_owned(),
-                    e["text"].as_str().unwrap().to_owned(),
+                    id,
+                    localized,
                 )
             })
             .collect();
-        let font = Some(crate::ds_font_roles::load(crate::ds_font_roles::Role::Story));
+        let font = Some(crate::ds_font_roles::load_overlay(crate::ds_font_roles::Role::Story));
         echo!(
             "[DSoverlay-host] CPU composition ready={} entries=995",
             font.is_some()
@@ -54,11 +67,15 @@ fn host() -> &'static Mutex<Host> {
         Mutex::new(Host {
             style: serde_json::from_str(include_str!("ds_overlay_default.json")).unwrap(),
             texts,
-            english:map["entries"].as_array().unwrap().iter().map(|e|(e["id"].as_str().unwrap().to_owned(),e["english"].as_str().unwrap_or("").to_owned())).collect(),
+            english:map["entries"].as_array().unwrap().iter().map(|e| {
+                let id=e["id"].as_str().unwrap().to_owned();
+                let value=catalog.english.get(&id).cloned().unwrap_or_else(||e["english"].as_str().unwrap_or("").to_owned());
+                (id,value)
+            }).collect(),
             started:Instant::now(),
             signal_id:String::new(),
             font,
-            title_font: crate::ds_font_roles::load(crate::ds_font_roles::Role::Frontend),
+            title_font: crate::ds_font_roles::load_overlay(crate::ds_font_roles::Role::Frontend),
             checked: Instant::now() - Duration::from_secs(2),
             stamp: None,
             cache: HashMap::new(),
@@ -571,7 +588,8 @@ fn cards(raw_w: u32, raw_h: u32) -> Vec<Card> {
             let gap = number(&style, "gap", 3.0, 0.0, 15.0) * unit;
             let inner = (width as f32 - 2.0 * pad).max(1.0);
             let line_height = number(&style, "lineHeight", 1.12, 1.0, 2.0);
-            let objective_label = style["label"].as_str().unwrap_or("目标：");
+            let objective_label = style["label"].as_str().filter(|s| *s != "目标：")
+                .unwrap_or(crate::ds_overlay_language::label(&crate::ds_overlay_language::catalog().language));
             let objective_label_size =
                 number(&style, "labelFontSize", 18.0, 3.0, 18.0) * unit / 1.125;
             let objective_label_step = objective_label_size * 1.125 * line_height;

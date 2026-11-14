@@ -85,7 +85,7 @@ namespace DeadSpaceUi
             ,{"切换模式会先完成原生切换，再射击；RT 不会同时强制切副模式。\r\n键鼠空格设置独立，位于02页。", "Mode switching completes natively before firing; RT does not force secondary mode.\r\nKeyboard Space settings are independent on page 02."}
             ,{"游戏文件与存档", "Game Files & Saves"}, {"选择游戏文件和存档位置；迁移不会覆盖已有进度。", "Choose game files and save location; migration never overwrites existing progress."}
             ,{"安装位置", "Install Location"}, {"安装纹理", "Install Textures"}, {"更改 / 升级安装", "Change / Upgrade Install"}, {"选择 vandal.marker", "Choose vandal.marker"}, {"选择目录", "Choose Folder"}
-            ,{"语言组件 / Language mode", "Language components / Language mode"}, {"高清文字组件（对话字幕 + 章节头）", "HD text component (dialogue subtitles + chapter headers)"}, {"高清中文组件（对话字幕 + 章节头）", "HD Chinese component (dialogue subtitles + chapter headers)"}, {"ⓘ 说明", "ⓘ Info"}
+            ,{"语言组件 / Language mode", "Language components / Language mode"}, {"高清文字组件（对话字幕 + 章节头）", "HD text component (dialogue subtitles + chapter headers)"}, {"高清中文组件（对话字幕 + 章节头）", "HD multilingual component (dialogue subtitles + chapter headers)"}, {"ⓘ 说明", "ⓘ Info"}
             ,{"关闭后回归原生语言行为；勾选后可选择 IPA 内置语言，启动时会使用对应语言环境。", "Disable this to restore native language behavior. When enabled, choose an IPA language and the matching language environment is used at launch."}
             ,{"语言模式说明", "Language mode"}
             ,{"编辑所选存档位置的 settings.sb，写入前自动备份。", "Edit settings.sb in the selected save location; a backup is made before writing."}

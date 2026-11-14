@@ -51,7 +51,7 @@ internal static class ResourceUiTest
                         launcherLanguages.SelectedIndex = 5;
                         Check(Convert.ToString(type.GetMethod("SelectedTextLanguageId", Hidden).Invoke(form, null)) == "ja-original", "Japanese selection identity");
                         object language = type.GetMethod("SelectedTextLanguage", Hidden).Invoke(form, null);
-                        Check(!(bool)language.GetType().GetField("HdOverlay", Hidden).GetValue(language), "Native Japanese disables Chinese overlay");
+                        Check((bool)language.GetType().GetField("HdOverlay", Hidden).GetValue(language), "Japanese enables multilingual overlay");
                         object effective = type.GetMethod("EffectiveTextLanguage", Hidden).Invoke(form, null);
                         Check(Convert.ToString(effective.GetType().GetField("Id", Hidden).GetValue(effective)) == "en-original", "Incomplete Japanese falls back to complete English bank");
                         object mixed = type.GetMethod("SelectedLaunchTextLanguage", Hidden).Invoke(form, null);

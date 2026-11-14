@@ -12,6 +12,10 @@ The Noto Sans CJK fonts are taken from the Noto Sans CJK release that was curren
 
 Specifically these are "Region-specific Subset OTFs" for Japan.
 
+The HD multilingual overlay also bundles `NotoSansCJKkr-Regular.otf` from
+the Korean directory of the same repository. It is used only for Korean
+overlay/native CJK text and is covered by the same OFL license.
+
 The Noto Sans Arabic fonts (`NotoSansArabic-Regular.ttf`, `NotoSansArabic-Bold.ttf`) are taken from the Noto fonts project: https://github.com/googlefonts/noto-fonts/tree/main/hinted/ttf/NotoSansArabic
 
 See `LICENSE.noto` for the license details (all of these are licensed under the SIL Open Font License).

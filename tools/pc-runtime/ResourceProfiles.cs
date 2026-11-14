@@ -65,13 +65,13 @@ namespace DeadSpaceResources
         };
         private static readonly IpaLanguage[] LanguageCatalog = {
             new IpaLanguage { Id = "zh-tieba", Directory = "CHS_CN", PreferredLanguages = "zh-Hans,zh", LabelZh = "中文-贴吧汉化组", LabelEn = "Chinese - Tieba Translation Group", HdOverlay = true },
-            new IpaLanguage { Id = "en-original", Directory = "ENG_US", PreferredLanguages = "en-US,en", LabelZh = "English-原生 IPA", LabelEn = "English - Original IPA" },
-            new IpaLanguage { Id = "fr-original", Directory = "FRE_FR", PreferredLanguages = "fr-FR,fr", LabelZh = "Français-原生 IPA", LabelEn = "Français - Original IPA" },
-            new IpaLanguage { Id = "de-original", Directory = "GER_DE", PreferredLanguages = "de-DE,de", LabelZh = "Deutsch-原生 IPA", LabelEn = "Deutsch - Original IPA" },
-            new IpaLanguage { Id = "it-original", Directory = "ITA_IT", PreferredLanguages = "it-IT,it", LabelZh = "Italiano-原生 IPA", LabelEn = "Italiano - Original IPA" },
-            new IpaLanguage { Id = "ja-original", Directory = "JPN_JP", PreferredLanguages = "ja-JP,ja", LabelZh = "日本語-原生 IPA", LabelEn = "日本語 - Original IPA" },
-            new IpaLanguage { Id = "ko-original", Directory = "KOR_KR", PreferredLanguages = "ko-KR,ko", LabelZh = "한국어-原生 IPA", LabelEn = "한국어 - Original IPA" },
-            new IpaLanguage { Id = "es-original", Directory = "SPA_ES", PreferredLanguages = "es-ES,es", LabelZh = "Español-原生 IPA", LabelEn = "Español - Original IPA" }
+            new IpaLanguage { Id = "en-original", Directory = "ENG_US", PreferredLanguages = "en-US,en", LabelZh = "English-原生 IPA", LabelEn = "English - Original IPA", HdOverlay = true },
+            new IpaLanguage { Id = "fr-original", Directory = "FRE_FR", PreferredLanguages = "fr-FR,fr", LabelZh = "Français-原生 IPA", LabelEn = "Français - Original IPA", HdOverlay = true },
+            new IpaLanguage { Id = "de-original", Directory = "GER_DE", PreferredLanguages = "de-DE,de", LabelZh = "Deutsch-原生 IPA", LabelEn = "Deutsch - Original IPA", HdOverlay = true },
+            new IpaLanguage { Id = "it-original", Directory = "ITA_IT", PreferredLanguages = "it-IT,it", LabelZh = "Italiano-原生 IPA", LabelEn = "Italiano - Original IPA", HdOverlay = true },
+            new IpaLanguage { Id = "ja-original", Directory = "JPN_JP", PreferredLanguages = "ja-JP,ja", LabelZh = "日本語-原生 IPA", LabelEn = "日本語 - Original IPA", HdOverlay = true },
+            new IpaLanguage { Id = "ko-original", Directory = "KOR_KR", PreferredLanguages = "ko-KR,ko", LabelZh = "한국어-原生 IPA", LabelEn = "한국어 - Original IPA", HdOverlay = true },
+            new IpaLanguage { Id = "es-original", Directory = "SPA_ES", PreferredLanguages = "es-ES,es", LabelZh = "Español-原生 IPA", LabelEn = "Español - Original IPA", HdOverlay = true }
         };
         internal static string Digest(Stream source)
         { using (var sha = SHA256.Create()) return BitConverter.ToString(sha.ComputeHash(source)).Replace("-", "").ToLowerInvariant(); }

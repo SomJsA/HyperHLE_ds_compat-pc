@@ -12,8 +12,8 @@ pub(crate) struct ChapterFonts { pub chinese: Font<'static>, pub english: Font<'
 pub(crate) fn chapter_fonts() -> &'static ChapterFonts {
     static FONTS: OnceLock<ChapterFonts> = OnceLock::new();
     FONTS.get_or_init(|| ChapterFonts {
-        chinese: Font::try_from_bytes(crate::ds_font_roles::TITLE).expect("chapter MStiffHei Chinese font"),
-        english: Font::try_from_bytes(crate::ds_font_roles::TITLE).expect("chapter MStiffHei English font"),
+        chinese: Font::try_from_bytes(crate::ds_font_roles::overlay_bytes(crate::ds_font_roles::Role::Frontend)).expect("HD chapter font"),
+        english: Font::try_from_bytes(crate::ds_font_roles::overlay_bytes(crate::ds_font_roles::Role::Frontend)).expect("HD chapter font"),
     })
 }
 
@@ -62,11 +62,13 @@ fn draw_line(image:&mut Raster,font:&Font,text:&str,size:f32,top:f32,highlight:b
 }
 fn draw_header(image:&mut Raster,fonts:&ChapterFonts,chapter:usize,size:f32,top:f32) {
     let number=chapter.to_string();let small=size*0.70;
-    let(l,r)=bounds(&fonts.chinese,"第",small,false);let(nl,nr)=bounds(&fonts.english,&number,size,false);
-    let(zl,zr)=bounds(&fonts.chinese,"章",small,false);
+    let language=std::env::var("TOUCHHLE_DS_TEXT_LANGUAGE").unwrap_or_else(|_|"zh-tieba".to_owned()).to_ascii_lowercase();
+    let (before,after)=if language.starts_with("ko") {("제","장")} else if language.starts_with("zh") || language.starts_with("ja") {("第","章")} else {("Chapter ","")};
+    let(l,r)=bounds(&fonts.chinese,before,small,false);let(nl,nr)=bounds(&fonts.english,&number,size,false);
+    let(zl,zr)=bounds(&fonts.chinese,after,small,false);
     let gap=size*0.22;let total=r-l+gap+nr-nl+gap+zr-zl;
     let left=(image.width as f32-total)*0.5;
-    for (font,text,scale,x,y) in [(&fonts.chinese,"第",small,left-l,top+size*0.15),(&fonts.english,number.as_str(),size,left+(r-l)+gap-nl,top),(&fonts.chinese,"章",small,left+r-l+gap+nr-nl+gap-zl,top+size*0.15)] {
+    for (font,text,scale,x,y) in [(&fonts.chinese,before,small,left-l,top+size*0.15),(&fonts.english,number.as_str(),size,left+(r-l)+gap-nl,top),(&fonts.chinese,after,small,left+r-l+gap+nr-nl+gap-zl,top+size*0.15)] {
         let ascent=font.v_metrics(Scale::uniform(scale)).ascent;
         for glyph in font.layout(text,Scale::uniform(scale),point(x,y+ascent)) {
             if let Some(b)=glyph.pixel_bounding_box(){glyph.draw(|gx,gy,a|blend(&mut image.pixels,image.width,image.height,b.min.x+gx as i32,b.min.y+gy as i32,WHITE,a));}
