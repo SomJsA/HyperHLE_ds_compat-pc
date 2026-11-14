@@ -805,8 +805,12 @@ namespace DeadSpaceBootstrap
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_XY", pcMouse.Checked ? aimPoint.Text.Trim() : null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_MOUSE_AIM_MODE", mouseAimMode.SelectedIndex == 1 ? "toggle" : "hold");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_CONTROLLER_AIM_MODE", padAimMode.SelectedIndex == 1 ? "toggle" : "hold");
+            bool verifiedFrontendInputs = resourceProfile != null
+                && (resourceProfile.Id == "current"
+                    || resourceProfile.Id == "ipad-world-1.3.11"
+                    || resourceProfile.Id == "ipad-1.0.3-build-1.3.11");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_NATIVE_INPUTS",
-                resourceProfile != null && resourceProfile.Id == "current" && nativeInputs.Checked ? "1" : "0");
+                verifiedFrontendInputs && nativeInputs.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_WALK", aimedWalk.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_FORWARD_LIMIT", (aimedForwardPercent.Value / 100m).ToString(System.Globalization.CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_KEY_STICK_GAIN", stickGain.Text.Trim());

@@ -7,7 +7,7 @@
 use crate::{abi::GuestFunction, cpu::Cpu, mem::{ConstVoidPtr, MutPtr}, Environment};
 
 const BKPT: u32 = 0xe120_0070;
-const SITES: &[(u32, u32, &str)] = &[
+const CURRENT_SITES: &[(u32, u32, &str)] = &[
     (0x001b_22d4, 0xe92d_40f0, "layout.begin"),
     (0x001b_83d8, 0xe8bd_80f0, "layout.end"),
     (0x002d_a6e8, 0xe92d_4090, "anim.begin"),
@@ -21,6 +21,18 @@ const SITES: &[(u32, u32, &str)] = &[
     // Observe both drawing owners so its native buttons receive input too.
     (0x002c_19f4, 0xe92d_40f0, "widget.draw"),
     (0x0026_af84, 0xe92d_40f0, "loading.draw"),
+];
+
+// The 1.3.11 iPad/world pair has the same frontend object layout as the
+// shipped 1.3.34 build, but its text segment moved. Keep a separate table so
+// a future IPA can never accidentally receive the current breakpoints.
+const IPAD1311_SITES: &[(u32, u32, &str)] = &[
+    // The iPad 1.3.11 layout/animation symbols are mapped, but their
+    // handoff ABI is not yet proven at runtime. Keep those breakpoints out of
+    // the first profile until an A/B trace confirms the stack contract.
+    (0x0019_4ea0, 0xe92d_40f0, "draw"),
+    (0x0019_04e8, 0xe92d_40f0, "state.begin"),
+    (0x002c_b000, 0xe92d_40b0, "difficulty.update"),
 ];
 
 #[derive(Default)]
@@ -44,6 +56,49 @@ fn word(env: &Environment, a: u32) -> Option<u32> {
     Some(u32::from_le_bytes(b.try_into().ok()?))
 }
 
+fn sites(binary: crate::ds_frontend_profile::Binary) -> &'static [(u32, u32, &'static str)] {
+    match binary {
+        crate::ds_frontend_profile::Binary::Current134 => CURRENT_SITES,
+        crate::ds_frontend_profile::Binary::Ipad1311 => IPAD1311_SITES,
+    }
+}
+
+fn preflight(env: &Environment, binary: crate::ds_frontend_profile::Binary) -> bool {
+    let profile_sites = sites(binary);
+    let common = match binary {
+        crate::ds_frontend_profile::Binary::Current134 => [
+            (0x001b_f25c, 0xe92d_40f0),
+            (0x002f_e0f8, 0xe92d_40f0),
+            (0x0019_4158, 0xe92d_40f0),
+            (0x001e_0488, 0xe92d_40f0),
+            (0x001d_0b80, 0xe92d_40f0),
+        ],
+        crate::ds_frontend_profile::Binary::Ipad1311 => [
+            (0x0019_6b60, 0xe92d_40f0),
+            (0x002c_b078, 0xe92d_40f0),
+            (0x0017_13ec, 0xe92d_40f0),
+            (0x001b_6ea0, 0xe92d_40f0),
+            (0x001a_7a08, 0xe92d_40f0),
+        ],
+    };
+    let mut ok = true;
+    for &(a, expected, name) in profile_sites {
+        let actual = word(env, a);
+        if actual != Some(expected) {
+            ok = false;
+            echo!("[DSfrontend] preflight mismatch {} @ {a:#x}: expected {expected:#x}, got {:?}", name, actual);
+        }
+    }
+    for &(a, expected) in &common {
+        let actual = word(env, a);
+        if actual != Some(expected) {
+            ok = false;
+            echo!("[DSfrontend] preflight mismatch common @ {a:#x}: expected {expected:#x}, got {:?}", actual);
+        }
+    }
+    ok
+}
+
 pub(crate) fn prime(env: &mut Environment) {
     if !env.framework_state.opengles.ds_frontend_trace.checked {
         env.framework_state.opengles.ds_frontend_trace.checked = true;
@@ -54,23 +109,27 @@ pub(crate) fn prime(env: &mut Environment) {
         if !trace_enabled && !guard_enabled && !input_enabled {
             return;
         }
-        let known = env.bundle.bundle_identifier() == "com.ea.deadspace.bv"
-            && (!cfg!(target_os="windows") || !input_enabled || crate::ds_frontend_controller::native_difficulty_verified(env))
-            && (!cfg!(target_os="windows") || !input_enabled || crate::ds_frontend_controller::native_modal_verified(env))
-            && (!cfg!(target_os="windows") || word(env,0x0026_b018)==Some(0xeb00_0381))
-            && SITES.iter().all(|&(a, op, _)| word(env, a) == Some(op))
-            && [0x001b_f25c, 0x002f_e0f8, 0x0019_4158, 0x001e_0488, 0x001d_0b80].iter().all(|&a| word(env,a)==Some(0xe92d_40f0));
+        let Some(binary) = crate::ds_frontend_profile::identify(env) else {
+            echo!("[DSfrontend] unsupported binary; trace skipped");
+            return;
+        };
+        let profile_sites = sites(binary);
+        let current = binary == crate::ds_frontend_profile::Binary::Current134;
+        let known = preflight(env, binary)
+            && (!cfg!(target_os="windows") || !input_enabled || !current || crate::ds_frontend_controller::native_difficulty_verified(env))
+            && (!cfg!(target_os="windows") || !input_enabled || !current || crate::ds_frontend_controller::native_modal_verified(env))
+            && (!cfg!(target_os="windows") || !input_enabled || !current || word(env,0x0026_b018)==Some(0xeb00_0381));
         if !known {
             echo!("[DSfrontend] unsupported binary; trace skipped");
             return;
         }
         if input_enabled { crate::ds_frontend_controller::activate(); }
-        for &(a, _, event) in SITES {
+        for &(a, _, event) in profile_sites {
             if matches!(event,"widget.draw"|"loading.draw")&&(!cfg!(target_os="windows")||!input_enabled){continue;}
             env.mem.write(MutPtr::<u32>::from_bits(a), BKPT);
             env.cpu.invalidate_cache_range(a, 4);
         }
-        if cfg!(target_os="windows") && input_enabled {
+        if cfg!(target_os="windows") && input_enabled && current {
             // Replace only the bottom touch-to-continue string with PC input
             // sprites. Keep original loading readiness/continuation unchanged.
             env.mem.write(MutPtr::<u32>::from_bits(0x0026_b018),0xe1a0_0000);
@@ -112,7 +171,9 @@ pub(crate) fn present(env: &mut Environment) {
 pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
     if !env.framework_state.opengles.ds_frontend_trace.armed { return false; }
     let pc = env.cpu.regs()[Cpu::PC];
-    let Some(&(_, original, event)) = SITES.iter().find(|s| s.0 == pc) else { return false; };
+    let Some(binary) = crate::ds_frontend_profile::identify(env) else { return false; };
+    let profile_sites = sites(binary);
+    let Some(&(_, original, event)) = profile_sites.iter().find(|s| s.0 == pc) else { return false; };
     let owner = env.cpu.regs()[0];
     let arg = env.cpu.regs()[1];
     let caller = env.cpu.regs()[Cpu::LR];

@@ -21,10 +21,77 @@ const CARD_PAGE_SIZE: usize = 2;
 const CARD_PAGE_SETTLE_TICKS: u8 = 6;
 const CARD_PAGE_STALE_TICKS: u8 = 24;
 const GET_ACTIVE_RECT: u32 = 0x001e_0488;
-const SET_SELECTED: u32 = 0x001c_da9c;
-const SELECT_DIFFICULTY: u32 = 0x002f_c298;
-const SURVIVAL_ITEM_SEND_ACTION: u32 = 0x001d_66e4;
-const CHAPTER_ITEM_SEND_ACTION: u32 = 0x001d_7200;
+
+fn addresses(env: &Environment) -> Option<crate::ds_frontend_profile::Native> {
+    crate::ds_frontend_profile::native(env)
+}
+
+fn known_button_vtable(env: &Environment, vtable: u32) -> bool {
+    let Some(native) = addresses(env) else { return false; };
+    let Some(action) = word(env, vtable + 0x2c) else { return false; };
+    action == native.layout_button_send_action
+        || action == native.survival_item_send_action
+        || action == native.chapter_item_send_action
+}
+
+// The 1.3.11 LayoutButton rect fields are in the guest's 1024x768 authoring
+// space and are not populated until its renderer pass. Calling the current
+// GetActiveRect path on that pre-render state is unsafe. These are the stable
+// 480x320 frontend slots used by the original iPad layout; native widget
+// activation still goes through the versioned guest methods below.
+fn ipad1311_rect(page: u32, difficulty: bool, id: &str) -> Option<[f32; 4]> {
+    if difficulty {
+        return Some(match id {
+            "BTN_EASY" => [64., 198., 357., 42.],
+            "BTN_NORMAL" => [64., 156., 357., 42.],
+            "BTN_HARD" => [64., 114., 357., 42.],
+            "BTN_NIGHTMARE" => [64., 72., 357., 42.],
+            "BTN_OK" => [391., 271., 60., 49.],
+            _ => return None,
+        });
+    }
+    Some(match page {
+        5 => match id {
+            "BTN_PLAY" => [10., 268., 100., 35.],
+            "BTN_OPTIONS" => [118., 268., 100., 35.],
+            "BTN_EXTRAS" => [225., 268., 100., 35.],
+            "BTN_INFO" => [334., 268., 100., 35.],
+            "BTN_DS" => [374., 37., 92., 31.],
+            _ => return None,
+        },
+        6 => match id {
+            "BTN_PROFILE1" => [17., 70., 142., 158.],
+            "BTN_PROFILE2" => [169., 70., 142., 158.],
+            "BTN_PROFILE3" => [321., 70., 142., 158.],
+            "BTN_BACK" => [30., 271., 60., 49.],
+            "BTN_OK" => [391., 271., 60., 49.],
+            "BTN_DELETE" => [168., 275., 145., 44.],
+            _ => return None,
+        },
+        9 => match id {
+            "BTN_STORY" => [56., 49., 189., 93.],
+            "BTN_CHAPTER" => [237., 49., 189., 93.],
+            "BTN_ENDLESS" => [56., 142., 189., 93.],
+            "BTN_TIMED" => [237., 142., 189., 93.],
+            "BTN_BACK" => [30., 271., 60., 49.],
+            "BTN_OK" => [391., 271., 60., 49.],
+            _ => return None,
+        },
+        12 => {
+            if let Some(index) = id.strip_prefix("CARD_").and_then(|v| v.parse::<usize>().ok()) {
+                if index % 2 == 0 { [90., 58., 155., 170.] } else { [270., 58., 155., 170.] }
+            } else {
+                match id {
+                    "BTN_ARROW_RIGHT" => [418., 122., 45., 75.],
+                    "BTN_BACK" => [30., 271., 60., 49.],
+                    "BTN_HOME" => [210., 271., 60., 49.],
+                    _ => return None,
+                }
+            }
+        }
+        _ => return None,
+    })
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum CardKind {
@@ -47,11 +114,13 @@ impl CardKind {
             _ => None,
         }
     }
-    fn send_action(self) -> u32 {
-        match self {
-            Self::Survival => SURVIVAL_ITEM_SEND_ACTION,
-            Self::Chapter => CHAPTER_ITEM_SEND_ACTION,
+    fn send_action(self, env: &Environment) -> Option<u32> {
+        let native = addresses(env)?;
+        Some(match self {
+            Self::Survival => native.survival_item_send_action,
+            Self::Chapter => native.chapter_item_send_action,
         }
+        )
     }
     fn label(self) -> &'static str {
         match self {
@@ -370,7 +439,7 @@ fn scan_widgets(env: &Environment, handler: u32, page: u32) -> (Vec<Button>, Opt
     let named = named_widgets(env, handler);
     let mut buttons: Vec<Button> = named
         .iter()
-        .filter(|w| w.active && w.id.starts_with("BTN_"))
+        .filter(|w| w.active && w.id.starts_with("BTN_") && known_button_vtable(env, w.vtable))
         .map(|w| Button {
             id: w.id.clone(),
             widget: w.widget,
@@ -548,6 +617,13 @@ pub(super) fn observe(env: &Environment, owner: u32, page: u32, difficulty: bool
     } else {
         (Vec::new(), None)
     };
+    if crate::ds_frontend_profile::is_ipad1311(env) {
+        for button in &mut buttons {
+            if let Some(rect) = ipad1311_rect(page, difficulty, &button.id) {
+                button.rect = rect;
+            }
+        }
+    }
     let mut live = LIVE.lock().unwrap();
     let first_controls=live.buttons.is_empty() && !buttons.is_empty();
     let changed = live.owner != owner || live.page != page || live.difficulty != difficulty;
@@ -803,7 +879,15 @@ fn difficulty_value(id: &str) -> Option<u32> {
 
 pub(super) fn difficulty_verified(env: &Environment) -> bool {
     use sha2::{Digest, Sha256};
-    let Some(code) = env.mem.get_bytes_fallible(ConstVoidPtr::from_bits(SELECT_DIFFICULTY), 0xfb8) else {
+    let Some(native) = addresses(env) else { return false; };
+    if crate::ds_frontend_profile::is_ipad1311(env) {
+        // The full hash is intentionally not shared with 1.3.34. This
+        // prologue check is the reverse-mapped SetDifficulty entry point and
+        // keeps the old iPad 1.0.3 path disabled until its complete callback
+        // table is audited.
+        return word(env, native.select_difficulty) == Some(0xe92d_40f0);
+    }
+    let Some(code) = env.mem.get_bytes_fallible(ConstVoidPtr::from_bits(native.select_difficulty), 0xfb8) else {
         return false;
     };
     format!("{:x}", Sha256::digest(code)) == "1b998a890655d4e7242b19692b852b8aa2fe6bb07e2a7e659aff2369b3058ccd"
@@ -876,6 +960,7 @@ fn take_selection_work(live: &mut Live) -> Option<SelectionWork> {
 }
 
 fn apply_selection(env: &mut Environment, selection: &SelectionWork) {
+    let Some(native) = addresses(env) else { return; };
     // SetSelected only paints a border. Page 9 BTN_OK reads owner+350/+354;
     // profile confirm/delete reads owner+1a8. Both must follow native events.
     // Run the original mode button event once when that native selection differs;
@@ -891,7 +976,7 @@ fn apply_selection(env: &mut Environment, selection: &SelectionWork) {
                         // The touch event treats a second tap on the current
                         // difficulty as confirmation. Its selection helper only
                         // updates difficulty, highlights and description text.
-                        let _: () = GuestFunction::from_addr_and_thumb_flag(SELECT_DIFFICULTY, false)
+                        let _: () = GuestFunction::from_addr_and_thumb_flag(native.select_difficulty, false)
                             .call_from_host(env, (work.owner, value));
                         echo!("[DSfrontendInput] difficulty selected {} value={}", button.id, value);
                     }
@@ -906,13 +991,13 @@ fn apply_selection(env: &mut Environment, selection: &SelectionWork) {
     }
     if let Some((widget, vtable)) = selection.previous {
         if word(env, widget) == Some(vtable) {
-            let _: () = GuestFunction::from_addr_and_thumb_flag(SET_SELECTED, false)
+            let _: () = GuestFunction::from_addr_and_thumb_flag(native.set_selected, false)
                 .call_from_host(env, (widget, false));
         }
     }
     if let Some((widget, vtable)) = selection.selected {
         if word(env, widget) == Some(vtable) {
-            let _: () = GuestFunction::from_addr_and_thumb_flag(SET_SELECTED, false)
+            let _: () = GuestFunction::from_addr_and_thumb_flag(native.set_selected, false)
                 .call_from_host(env, (widget, true));
         }
     }
@@ -943,7 +1028,8 @@ fn activate(env: &mut Environment, work: &MenuWork) {
             echo!("[DSfrontendInput] native page={} {}", work.page, button.id);
         }
         Activation::Card { kind, button } => {
-            let _: () = GuestFunction::from_addr_and_thumb_flag(kind.send_action(), false)
+            let Some(send_action) = kind.send_action(env) else { return; };
+            let _: () = GuestFunction::from_addr_and_thumb_flag(send_action, false)
                 .call_from_host(env, (button.widget,));
             echo!(
                 "[DSfrontendInput] native page={} {} {} card={}",
@@ -965,6 +1051,7 @@ pub(super) fn tick(env: &mut Environment) {
         live.pending = None;
         return;
     }
+    let Some(native) = addresses(env) else { return; };
     let (owner, owner_type, difficulty, page, snapshot) = {
         let live = LIVE.lock().unwrap();
         (
@@ -986,16 +1073,21 @@ pub(super) fn tick(env: &mut Environment) {
     // Resolve geometry on the normal host-call boundary, never inside a breakpoint.
     let rect_buffer = env.mem.alloc(16);
     let mut geometry = Vec::new();
-    for button in snapshot {
+    for button in &snapshot {
         if word(env, button.widget) != Some(button.vtable) {
             continue;
         }
-        let _: () = GuestFunction::from_addr_and_thumb_flag(GET_ACTIVE_RECT, false)
-            .call_from_host(env, (rect_buffer.to_bits(), button.widget));
-        let mut rect = [0.; 4];
-        for i in 0..4 {
-            rect[i] = f32::from_bits(word(env, rect_buffer.to_bits() + i as u32 * 4).unwrap_or(0));
-        }
+        let rect = if crate::ds_frontend_profile::is_ipad1311(env) {
+            snapshot.iter().find(|b| b.widget == button.widget).map(|b| b.rect).unwrap_or([0.; 4])
+        } else {
+            let _: () = GuestFunction::from_addr_and_thumb_flag(native.get_active_rect, false)
+                .call_from_host(env, (rect_buffer.to_bits(), button.widget));
+            let mut rect = [0.; 4];
+            for i in 0..4 {
+                rect[i] = f32::from_bits(word(env, rect_buffer.to_bits() + i as u32 * 4).unwrap_or(0));
+            }
+            rect
+        };
         geometry.push((button.widget, rect));
     }
     env.mem.free(rect_buffer);
@@ -1376,8 +1468,16 @@ mod tests {
         assert_eq!(CardKind::window_name(11), Some("SURVIVAL_ENDLESS_WINDOW"));
         assert_eq!(CardKind::for_page(12), Some(CardKind::Chapter));
         assert_eq!(CardKind::window_name(12), Some("SURVIVAL_CHAPTER_WINDOW"));
-        assert_eq!(CardKind::Survival.send_action(), 0x001d_66e4);
-        assert_eq!(CardKind::Chapter.send_action(), 0x001d_7200);
+        let current = crate::ds_frontend_profile::Native {
+            get_active_rect: 0x001e_0488,
+            layout_button_send_action: 0x001d_0b80,
+            set_selected: 0x001c_da9c,
+            select_difficulty: 0x002f_c298,
+            survival_item_send_action: 0x001d_66e4,
+            chapter_item_send_action: 0x001d_7200,
+        };
+        assert_eq!(current.survival_item_send_action, 0x001d_66e4);
+        assert_eq!(current.chapter_item_send_action, 0x001d_7200);
     }
 
     #[test]

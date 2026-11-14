@@ -886,6 +886,13 @@ fn activate(env: &mut Environment, context: Context, control: Control) {
 }
 
 pub(super) fn tick(env: &mut Environment) {
+    // Popup/pause vtables are only reverse-verified for the 1.3.34 binary.
+    // Do not run the current-build detector against the 1.3.11 iPad object
+    // graph; its stale vtable constants can turn the first frontend frame
+    // into a call through address 0x1000.
+    if !crate::ds_frontend_profile::is_current(env) {
+        return;
+    }
     if !cfg!(target_os = "windows") || TICKING.swap(true, Ordering::Relaxed) {
         return;
     }

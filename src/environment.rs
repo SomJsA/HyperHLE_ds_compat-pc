@@ -267,9 +267,12 @@ impl Environment {
         // Old editions have different functions at those addresses. Retain
         // their original touch UI and rendering instead of calling into an
         // unrelated function just because the desktop controls are enabled.
+        let verified_ipad_1311 = launched_bundle_id == "com.ea.deadspace.ipad.bv"
+            && bundle.bundle_version() == "1.3.11";
         let legacy_deadspace = matches!(launched_bundle_id.as_str(),
             "com.ea.deadspace.bv" | "com.ea.deadspace.inc" | "com.ea.deadspace.ipad.bv")
-            && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34");
+            && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34")
+            && !verified_ipad_1311;
         if legacy_deadspace {
             for name in ["TOUCHHLE_DS_NATIVE_INPUTS", "TOUCHHLE_DS_NATIVE_HUD", "TOUCHHLE_DS_FRONTEND_NAV"] {
                 unsafe { std::env::set_var(name, "0"); }
