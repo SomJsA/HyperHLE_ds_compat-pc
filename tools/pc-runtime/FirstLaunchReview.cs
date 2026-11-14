@@ -16,7 +16,7 @@ namespace DeadSpaceBootstrap
                 int scale=SelectedRenderScale();
                 summary=FirstLaunchReviewForm.Summary(overlayEnabled.Checked,advancedLighting.Checked,
                     PcRenderResolution.Size(scale),SelectedOutputSize());
-                if (resourceProfile != null) summary = resourceProfile.Describe(DeadSpaceUi.UiLanguage.English) + "\r\n\r\n" + summary;
+                if (resourceProfile != null) summary += "\r\n\r\n" + resourceProfile.Describe(DeadSpaceUi.UiLanguage.English);
             } catch (InvalidOperationException error) { status.Text=error.Message; return false; }
             using (var review=new FirstLaunchReviewForm(summary)) {
                 if (review.ShowDialog(this)!=DialogResult.OK) {SelectPage(1);return false;}
