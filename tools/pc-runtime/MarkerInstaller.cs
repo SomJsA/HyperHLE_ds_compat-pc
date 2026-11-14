@@ -159,6 +159,8 @@ namespace DeadSpaceBootstrap
                 if (!File.Exists(installationPath) || !File.Exists(baseFile))
                     throw new InvalidDataException(
                         "已存在的 marker 内容不完整或缺少安装记录。");
+                if (HashFile(baseFile) != marker.Entries.Single(e => e.Path == marker.BasePath && e.Role == "ipa").Sha256)
+                    throw new InvalidDataException("Installed marker IPA fingerprint mismatch.");
                 foreach (string tier in tiers)
                 {
                     string tierPack = System.IO.Path.Combine(destination, "payload", "texture-packs", tier);
@@ -767,6 +769,8 @@ namespace DeadSpaceBootstrap
 
         private void ApplyInstalledMarker(string root)
         {
+            bool changed = !String.Equals(installedMarkerRoot, System.IO.Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase);
+            DeadSpaceResources.ResourceSelection.Activate(InstallRoot(), root);
             installedMarkerRoot = System.IO.Path.GetFullPath(root);
             string ipa = System.IO.Path.Combine(
                 installedMarkerRoot,
@@ -791,6 +795,7 @@ namespace DeadSpaceBootstrap
                 texture2x.Checked = available == "2"; texture4x.Checked = available == "4"; texture6x.Checked = available == "6";
             }
             hdTextures.Checked = hdTextures.Checked && textureRoots.ContainsKey(TextureScale());
+            ApplyResourceCompatibility(ipa, changed && !String.Equals(ipa, loadedResourceIpa, StringComparison.OrdinalIgnoreCase));
             UpdateTextureDescription();
             DirectoryInfo content = Directory.GetParent(installedMarkerRoot);
             if (content != null && content.Name.Equals(
@@ -805,6 +810,8 @@ namespace DeadSpaceBootstrap
         {
             try
             {
+                string active = DeadSpaceResources.ResourceSelection.Read(InstallRoot());
+                if (active != null) return active;
                 string content = System.IO.Path.Combine(
                     InstallRoot(), "marker-content");
                 if (!Directory.Exists(content))

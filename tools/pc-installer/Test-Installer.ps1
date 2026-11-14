@@ -13,11 +13,24 @@ function Hash-File([string]$Path) {
     (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+function New-FixtureIpa {
+    Add-Type -AssemblyName System.IO.Compression
+    $memory = New-Object IO.MemoryStream
+    $archive = New-Object IO.Compression.ZipArchive($memory,[IO.Compression.ZipArchiveMode]::Create,$true)
+    try {
+        foreach ($name in @('Payload/Fixture.app/Info.plist','Payload/Fixture.app/Dead Space','Payload/Fixture.app/published/test')) {
+            $target = $archive.CreateEntry($name).Open()
+            try { $bytes = [Text.Encoding]::UTF8.GetBytes('synthetic fixture, not a game IPA'); $target.Write($bytes,0,$bytes.Length) } finally { $target.Dispose() }
+        }
+    } finally { $archive.Dispose() }
+    try { return ,$memory.ToArray() } finally { $memory.Dispose() }
+}
+
 function New-TestMarker([string]$Path) {
     Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $fixtures = [ordered]@{
-        'payload/DeadSpace.ipa' = [Text.Encoding]::ASCII.GetBytes('fixture original IPA bytes')
+        'payload/DeadSpace.ipa' = (New-FixtureIpa)
         'payload/texture-packs/2/PACK.json' = [Text.Encoding]::UTF8.GetBytes('{"tier":2}')
         'payload/texture-packs/2/fixture.png' = [byte[]](1,2,3,4)
         'payload/texture-packs/4/PACK.json' = [Text.Encoding]::UTF8.GetBytes('{"tier":4}')
@@ -142,7 +155,7 @@ if ([IO.File]::ReadAllText($sentinelProgram) -ne 'keep unknown program file') { 
 if ((Hash-File $marker) -ne $markerHash) { throw 'Marker changed during upgrade.' }
 
 $ipa = Join-Path $output 'fixture.ipa'
-[IO.File]::WriteAllBytes($ipa,[Text.Encoding]::ASCII.GetBytes('direct fixture IPA'))
+[IO.File]::WriteAllBytes($ipa,(New-FixtureIpa))
 $ipaProgram = Join-Path $output 'Program-Ipa'
 $ipaGameData = Join-Path $output 'GameData-Ipa'
 $ipaLog = Join-Path $output 'install-ipa.log'

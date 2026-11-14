@@ -139,6 +139,7 @@ namespace DeadSpaceBootstrap
             DeadSpaceUi.UiLanguage.Apply(this);
             languageToggle.Text = DeadSpaceUi.UiLanguage.ToggleCaption;
             if (aboutPanel != null) aboutPanel.ApplyLanguage();
+            if (resourceProfile != null && File.Exists(loadedResourceIpa)) ApplyResourceCompatibility(loadedResourceIpa, false);
             LayoutLauncher();
         }
 
@@ -229,6 +230,7 @@ namespace DeadSpaceBootstrap
                     ? VandalMarker.InstallSelected(
                         VandalMarker.Read(marker), root, VandalMarker.ParseTiers(tier))
                     : VandalMarker.InstallIpa(ipa, root);
+                DeadSpaceResources.ResourceSelection.Activate(root, installed);
                 string report = result ?? Path.Combine(
                     installed, "installer-result.json");
                 Directory.CreateDirectory(Path.GetDirectoryName(
@@ -406,6 +408,8 @@ namespace DeadSpaceBootstrap
             int walkPercent; if (!Int32.TryParse(Get(values, "aimed_forward_percent", "100"), out walkPercent)) walkPercent = 100;
             aimedForwardPercent.Value = Math.Min(100, Math.Max(5, walkPercent));
             if (values.Count == 0) ApplyDetectedGraphicsDefaults();
+            string resolvedIpa = DistributionLayout.ResolveIpa(baseDir, ipaPath.Text);
+            if (File.Exists(resolvedIpa)) ApplyResourceCompatibility(resolvedIpa, false);
             RefreshRenderResolutionSummary();
         }
 
@@ -563,6 +567,8 @@ namespace DeadSpaceBootstrap
             }
 
             string texturePath;
+            try { ApplyResourceCompatibility(ipa, false); }
+            catch (Exception error) { status.Text = error.Message; return; }
             try { texturePath = SelectedTextureRoot(); }
             catch (Exception error) { status.Text = error.Message; return; }
             if (!ReviewFirstLaunch()) return;

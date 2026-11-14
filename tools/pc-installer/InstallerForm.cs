@@ -36,6 +36,10 @@ namespace DeadSpaceInstaller
         private readonly DeadSpaceUi.ProjectAboutPanel aboutPanel = new DeadSpaceUi.ProjectAboutPanel();
         private bool busy;
         private bool markerSource;
+        private DeadSpaceResources.IpaProfile sourceProfile;
+        private string inspectedSource;
+        private long inspectedLength, inspectedWriteTime;
+        private readonly Button profileInfo = new Button();
         private InstallOptions activeOptions;
 
         internal InstallerForm()
@@ -78,8 +82,8 @@ namespace DeadSpaceInstaller
             shell.Controls.Add(sections,0,1);
             sections.SelectedIndexChanged += delegate { RefreshPrimaryAction(); };
             settings.Dock = DockStyle.Fill; settings.BackColor = BackColor; settings.ForeColor = ForeColor;
-            // The normal 1000x900 layout fits without scrolling; retain an
-            // emergency scroll surface for compact laptop/remote viewports.
+            // Compatibility details can grow for legacy / unknown packages.
+            // Keep the install action fixed while the options can scroll.
             settings.AutoScroll = true;
             installPage.Controls.Add(settings);
             var content = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 1, Padding = new Padding(0, 0, 18, 12), BackColor = BackColor, ForeColor = ForeColor };
@@ -92,6 +96,11 @@ namespace DeadSpaceInstaller
             PathRow(content, I("资源来源 · marker / IPA"), resourcePath, BrowseResource);
             sourceHint.AutoSize = true; sourceHint.Dock = DockStyle.Fill; sourceHint.Margin = new Padding(0, 0, 0, 8);
             content.Controls.Add(sourceHint);
+            profileInfo.AutoSize = true; profileInfo.FlatStyle = FlatStyle.Flat;
+            profileInfo.Click += delegate {
+                if (sourceProfile != null) MessageBox.Show(this, sourceProfile.Describe(DeadSpaceUi.UiLanguage.English), "IPA compatibility / IPA 适配", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+            content.Controls.Add(profileInfo);
 
             Note(content, I("语言组件 / Language mode"), true);
             var languageChoices = Flow();
@@ -134,7 +143,7 @@ namespace DeadSpaceInstaller
             }
             tiers[1].Checked = true;
             var selectAll = new Button { Text = I("全选"), AutoSize = true, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(31, 50, 62), ForeColor = ForeColor }; selectAll.FlatAppearance.BorderColor = Color.FromArgb(98, 218, 232);
-            selectAll.Click += delegate { for (int i = 0; i < tiers.Length; i++) if (!markerSource || resourceBytes.ContainsKey((2 + i * 2).ToString())) tiers[i].Checked = true; };
+            selectAll.Click += delegate { for (int i = 0; i < tiers.Length; i++) if (tiers[i].Enabled && (!markerSource || resourceBytes.ContainsKey((2 + i * 2).ToString()))) tiers[i].Checked = true; };
             choices.Controls.Add(selectAll);
             content.Controls.Add(choices);
             Note(content, I("可同时安装多个档位，在启动器中切换使用。全部取消则只装原版资源；已有纹理不会删除。"), false);
@@ -242,7 +251,7 @@ namespace DeadSpaceInstaller
         }
         private void BrowseFolder(TextBox target) { using (var dialog = new FolderBrowserDialog()) { if (Directory.Exists(target.Text)) dialog.SelectedPath = target.Text; if (dialog.ShowDialog(this) == DialogResult.OK) target.Text = dialog.SelectedPath; } }
         private void BrowseResource(object sender, EventArgs e) { using (var dialog = new OpenFileDialog { Title = I("选择游戏资源"), Filter = I("游戏资源 (*.marker;*.ipa)|*.marker;*.ipa|所有文件 (*.*)|*.*") }) { if (dialog.ShowDialog(this) == DialogResult.OK) resourcePath.Text = dialog.FileName; } }
-        private string Selection() { var selected = new List<string>(); for (int i = 0; i < tiers.Length; i++) if (tiers[i].Checked && (!markerSource || resourceBytes.ContainsKey((2 + i * 2).ToString()))) selected.Add((2 + i * 2).ToString()); return selected.Count == 0 ? "none" : String.Join(",", selected); }
+        private string Selection() { var selected = new List<string>(); for (int i = 0; i < tiers.Length; i++) if (tiers[i].Enabled && tiers[i].Checked && (!markerSource || resourceBytes.ContainsKey((2 + i * 2).ToString()))) selected.Add((2 + i * 2).ToString()); return selected.Count == 0 ? "none" : String.Join(",", selected); }
         private void InspectSource() {
             resourceBytes.Clear(); markerSource = false;
             string path = resourcePath.Text.Trim();
@@ -263,9 +272,24 @@ namespace DeadSpaceInstaller
                     }
                     markerSource = true; sourceHint.Text = I("marker 只读安装。请选择需要保留在电脑上的纹理档位。");
                 }
-            } catch (Exception error) { sourceHint.Text = I("无法读取资源清单：") + error.Message; }
+                if (File.Exists(path)) {
+                    var info = new FileInfo(path);
+                    if (sourceProfile == null || inspectedSource != info.FullName || inspectedLength != info.Length || inspectedWriteTime != info.LastWriteTimeUtc.Ticks) {
+                        sourceProfile = DeadSpaceResources.IpaProfiles.Inspect(path);
+                        inspectedSource = info.FullName; inspectedLength = info.Length; inspectedWriteTime = info.LastWriteTimeUtc.Ticks;
+                    }
+                    string[] summary = sourceProfile.Describe(DeadSpaceUi.UiLanguage.English).Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    sourceHint.Text += "\r\n" + String.Join("\r\n", summary, 0, Math.Min(4, summary.Length));
+                    if (sourceProfile.Id != "current") sourceHint.Text += "\r\n" + (DeadSpaceUi.UiLanguage.English ? "Developer recommendation: 1.3.34. Other IPA reports are welcome on Community issues." : "开发者推荐 1.3.34；欢迎携带其他 IPA 的版本 / 指纹来 Community 提 issue。");
+                    profileInfo.Text = DeadSpaceUi.UiLanguage.English ? "IPA compatibility and graphics limits / issue link" : "查看 IPA 适配、画质范围与 issue 入口";
+                    profileInfo.Visible = true;
+                    hdChinesePack.Enabled = sourceProfile.HdText;
+                    if (!sourceProfile.HdText) hdChinesePack.Checked = false;
+                } else { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = true; }
+            } catch (Exception error) { sourceProfile = null; profileInfo.Visible = false; sourceHint.Text = I("无法读取资源清单：") + error.Message; }
             for (int i = 0; i < tiers.Length; i++) {
-                bool missing = markerSource && !resourceBytes.ContainsKey((2 + i * 2).ToString());
+                bool missing = resourcePath.Text.Trim().Length > 0 && (!markerSource || !resourceBytes.ContainsKey((2 + i * 2).ToString()) || sourceProfile == null || !sourceProfile.Textures);
+                tiers[i].Enabled = !missing;
                 tiers[i].Text = (2 + i * 2) + "×" + (missing ? I("（未提供）") : i == 1 ? I("  推荐") : "");
                 tiers[i].ForeColor = missing ? Color.FromArgb(142, 163, 176) : ForeColor;
                 if (missing) tiers[i].Checked = false;

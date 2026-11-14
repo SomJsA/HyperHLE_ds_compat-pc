@@ -112,6 +112,8 @@ namespace DeadSpaceInstaller
         {
             try
             {
+                string active = DeadSpaceResources.ResourceSelection.Read(gameDataRoot);
+                if (active != null) return active;
                 string content = Path.Combine(gameDataRoot, "marker-content");
                 if (!Directory.Exists(content))
                     return null;
@@ -147,6 +149,7 @@ namespace DeadSpaceInstaller
                     I("找不到 marker 或 IPA 安装源。"), options.ResourcePath);
             bool resourceAlreadyInstalled =
                 HasResourceInstallation(options.GameDataRoot);
+            string previousResource = FindInstalledResource(options.GameDataRoot);
             if (String.IsNullOrWhiteSpace(options.ResourcePath) &&
                 !resourceAlreadyInstalled)
                 throw new InvalidOperationException(
@@ -154,7 +157,6 @@ namespace DeadSpaceInstaller
 
             progress(I("正在解包程序文件..."));
             ExtractProgram(options.ProgramRoot);
-            ApplyLanguageMode(options.ProgramRoot, options.InstallHdChinese, options.RegisterInstallation);
             string launcher = Path.Combine(
                 options.ProgramRoot, "DeadSpace Launcher.exe");
             if (!File.Exists(launcher))
@@ -170,10 +172,20 @@ namespace DeadSpaceInstaller
                     options.ResourcePath,
                     options.GameDataRoot,
                     options.Tier);
+                string selected = DeadSpaceResources.ResourceSelection.Read(options.GameDataRoot);
+                if (selected == null) throw new InvalidDataException("Missing active resource selection.");
+                bool changed = !String.Equals(previousResource, selected, StringComparison.OrdinalIgnoreCase);
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, changed);
+                if (options.RegisterInstallation)
+                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, changed);
+                progress(DeadSpaceResources.IpaProfiles.Inspect(Path.Combine(selected, "payload", "DeadSpace.ipa")).Describe(DeadSpaceUi.UiLanguage.English));
             }
             else
             {
                 progress(I("保留现有 GameData，正在更新程序..."));
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, false);
+                if (options.RegisterInstallation)
+                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, false);
             }
 
             WriteInstallerState(options, launcher);
@@ -532,7 +544,7 @@ namespace DeadSpaceInstaller
             var state = new Dictionary<string, object>
             {
                 { "schema", 1 },
-                { "distribution", "DEAD SPACE MOBILE R2 PC" },
+                { "distribution", "DEAD SPACE MOBILE R4.1 PC" },
                 { "version", version },
                 { "program_root", options.ProgramRoot },
                 { "game_data_root", options.GameDataRoot },

@@ -171,6 +171,7 @@ namespace DeadSpaceBootstrap
             browse.Click += delegate { BrowseIpa(); }; library.Controls.Add(browse);
             BuildMarkerControls(library);
             BuildStorageControls(library);
+            BuildResourceCompatibility(library);
 
             var defaults = restoreDefaults; defaults.Text = "恢复默认"; defaults.Size = new Size(106, 42);
             defaults.Click += delegate { if (IsSaveEditorPage) { UndoSaveChanges(); return; } ApplyDefaults(); status.Text = "已恢复默认；启动时保存。"; }; Controls.Add(defaults);

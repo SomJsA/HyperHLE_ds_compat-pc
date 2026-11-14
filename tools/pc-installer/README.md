@@ -29,6 +29,35 @@ registered program and GameData roots, replaces program files, and preserves
 the installed IPA, textures, configuration, saves and unknown files. A marker
 is needed again only when adding or changing resource tiers.
 
+R4.1 identifies applications by the SHA-256 of the uncompressed main executable
+and Info.plist, plus the required standard / high-tier resource directories.
+The source filename is never used as a version identifier. The installer and
+launcher share `tools/pc-runtime/ResourceProfiles.cs`:
+
+| Recognized application | Native lighting | External HD packs / enhanced text and controls |
+| --- | --- | --- |
+| 1.3.34 | Standard / advanced | Matching marker 2x / 4x / 6x; supported |
+| iPad 1.0.3 | Standard / advanced | Original textures and native text / touch only |
+| iPhone 1.0.3 (build 1.3.8), World 1.0.1 | Standard only | Original textures and native text / touch only |
+| Other fingerprints | Unverified native path | Disabled pending adaptation |
+
+All four known applications can use original textures without an external pack.
+Resolution, MSAA and AF remain host controls; this is not a claim that every
+hardware / high setting was validated. The recommendation and Community issue
+entry are bilingual. 1.3.34 is the most fully adapted edition.
+
+Selecting a different IPA or marker completely switches the active resource
+selection and its graphics configuration. `GameData/active-resource.json` records
+the selection explicitly, so reinstalling a previously cached marker works even
+when another content directory has a newer timestamp. Failed selection keeps the
+old pointer; invalid or escaping pointers do not fall back to another edition.
+Old texture paths are replaced, unsupported components are disabled, and the
+first-launch graphics review is reset on a resource change. Existing source
+IPAs, markers, cached generations, personal bindings and saves are preserved.
+This is an installation record, not a new marker format. A program-only upgrade
+keeps the selected resources. `--no-register` updates isolated defaults only and
+never the real user's Documents configuration.
+
 Build:
 
 ```powershell

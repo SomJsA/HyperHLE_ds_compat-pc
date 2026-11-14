@@ -16,6 +16,7 @@ namespace DeadSpaceBootstrap
                 int scale=SelectedRenderScale();
                 summary=FirstLaunchReviewForm.Summary(overlayEnabled.Checked,advancedLighting.Checked,
                     PcRenderResolution.Size(scale),SelectedOutputSize());
+                if (resourceProfile != null) summary = resourceProfile.Describe(DeadSpaceUi.UiLanguage.English) + "\r\n\r\n" + summary;
             } catch (InvalidOperationException error) { status.Text=error.Message; return false; }
             using (var review=new FirstLaunchReviewForm(summary)) {
                 if (review.ShowDialog(this)!=DialogResult.OK) {SelectPage(1);return false;}
@@ -39,8 +40,8 @@ namespace DeadSpaceBootstrap
                 +"\r\n"+T("高级光影：","Advanced lighting: ")+(lighting?on:off)
                 +"\r\n"+T("内部分辨率：","Internal resolution: ")+render
                 +"\r\n"+T("输出分辨率：","Output resolution: ")+output
-                +"\r\n\r\n"+T("高级光影在PC默认开启，恢复护甲与环境反光、动态灯光等原生高档效果。",
-                    "Advanced lighting is on by default on PC. It restores native high-tier effects, including armor and environment reflections and dynamic lights.")
+                +"\r\n\r\n"+T("支持高级光影的 IPA 在 PC 默认开启此项，用于原生高档反光和灯光；实际可用项以本次 IPA 适配说明为准。",
+                    "Advanced lighting is on by default on PC for supported IPAs, enabling native high-tier reflections and lights. Available features are listed in this IPA's compatibility summary.")
                 +"\r\n\r\n"+T("旧版IPA按其自带资源与渲染能力运行，可不安装外置高清纹理。1.0.3/1.0.1沿用原生触摸界面，1.3.34专用的增强操控和高清文字不适用于旧版。高级光影开关不会为旧包补入缺少的高档渲染资源。",
                     "Legacy IPAs use their own resources and renderer; external HD textures are optional. Editions 1.0.3/1.0.1 retain the original touch UI. The enhanced controls and HD text for 1.3.34 do not apply to these editions. Advanced lighting cannot add high-tier content missing from an older IPA.")
                 +"\r\n\r\n"+T("高清文字目前为中文。可关闭高清中文组件，使用游戏原生文字与语言设置。欢迎多语言用户投稿；若暂无投稿，我们计划在R8之前支持其他语言的高清文字组件。",

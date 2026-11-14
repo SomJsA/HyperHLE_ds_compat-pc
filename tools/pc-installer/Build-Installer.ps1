@@ -59,6 +59,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Uninstaller compilation failed.' }
     (Join-Path $PSScriptRoot 'Installer.cs') `
     (Join-Path $PSScriptRoot 'InstallerForm.cs') `
     (Join-Path $PSScriptRoot 'InstallerLanguage.cs') `
+    (Join-Path $PSScriptRoot '../pc-runtime/ResourceProfiles.cs') `
     (Join-Path $PSScriptRoot 'InstallerAssemblyInfo.cs') `
     (Join-Path $PSScriptRoot '../pc-runtime/ReleaseUi.cs') `
     (Join-Path $PSScriptRoot '../pc-runtime/UiLanguage.cs')
