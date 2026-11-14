@@ -188,9 +188,10 @@ namespace DeadSpaceInstaller
             else
             {
                 progress(I("保留现有 GameData，正在更新程序..."));
-                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese ? options.HdTextLanguage : "native", true);
+                string preservedLanguage = options.InstallHdChinese ? ExistingTextLanguage(options.HdTextLanguage) : "native";
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, preservedLanguage, true);
                 if (options.RegisterInstallation)
-                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese ? options.HdTextLanguage : "native", false);
+                    DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), previousResource, preservedLanguage, false);
             }
 
             WriteInstallerState(options, launcher);
@@ -203,6 +204,21 @@ namespace DeadSpaceInstaller
                 WriteRegistry(options, launcher);
             progress(I("安装完成。"));
             return FindInstalledResource(options.GameDataRoot);
+        }
+
+        private static string ExistingTextLanguage(string fallback)
+        {
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini");
+            try
+            {
+                if (File.Exists(path))
+                    foreach (string line in File.ReadAllLines(path, Encoding.UTF8))
+                        if (line.StartsWith("hd_text_language=", StringComparison.OrdinalIgnoreCase))
+                            return line.Substring("hd_text_language=".Length).Trim();
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            return fallback;
         }
 
         internal static void Launch(string programRoot)
