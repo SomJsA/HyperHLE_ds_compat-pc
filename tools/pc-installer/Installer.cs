@@ -177,7 +177,9 @@ namespace DeadSpaceInstaller
                 string selected = DeadSpaceResources.ResourceSelection.Read(options.GameDataRoot);
                 if (selected == null) throw new InvalidDataException("Missing active resource selection.");
                 bool changed = !String.Equals(previousResource, selected, StringComparison.OrdinalIgnoreCase);
-                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, changed);
+                // Defaults was freshly extracted from the program payload, even
+                // when this resource generation already existed in the cache.
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, true);
                 if (options.RegisterInstallation)
                     DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), selected, options.InstallHdChinese, changed);
                 progress(DeadSpaceResources.IpaProfiles.Inspect(Path.Combine(selected, "payload", "DeadSpace.ipa")).Describe(DeadSpaceUi.UiLanguage.English));
@@ -185,7 +187,7 @@ namespace DeadSpaceInstaller
             else
             {
                 progress(I("保留现有 GameData，正在更新程序..."));
-                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, false);
+                DeadSpaceResources.ResourceSelection.Configure(Path.Combine(options.ProgramRoot, "Defaults", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, true);
                 if (options.RegisterInstallation)
                     DeadSpaceResources.ResourceSelection.Configure(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DeadSpaceLegacy", "config", "pc", "DeadSpace-Launcher.ini"), previousResource, options.InstallHdChinese, false);
             }
