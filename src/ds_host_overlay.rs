@@ -432,14 +432,16 @@ fn pause_hint_card(raw_w:u32,raw_h:u32)->Option<Card>{
 fn contribution_card(raw_w:u32,raw_h:u32)->Option<Card>{
     if !crate::ds_frontend_controller::pause_menu(){return None;}
     let (fw,fh)=(raw_h,raw_w);let unit=fh as f32/320.0;
-    let width=(360.0*unit).ceil().min(fw as f32).max(1.0) as u32;
-    let height=(178.0*unit).ceil().min(fh as f32).max(1.0) as u32;
+    let width=(320.0*unit).ceil().min(fw as f32).max(1.0) as u32;
+    let height=(150.0*unit).ceil().min(fh as f32).max(1.0) as u32;
     let key=format!("frontend-credits:{width}:{height}");
     let mut h=host().lock().ok()?;
     if !h.cache.contains_key(&key){
         let font=h.font.as_ref()?;let mut pixels=vec![0u8;width as usize*height as usize*4];
         for p in pixels.chunks_exact_mut(4){p.copy_from_slice(&[5,17,23,245]);}
-        let lines=[
+        let chinese=std::env::var("TOUCHHLE_DS_TEXT_LANGUAGE")
+            .unwrap_or_else(|_|"zh-tieba".to_owned()).to_ascii_lowercase().starts_with("zh");
+        let lines:Vec<&str>=if chinese { vec![
             "死亡空间移动版（IOS端高清移植）",
             "基于 touchHLE 与 HyperHLE",
             "项目链接可能暂时处于私有状态",
@@ -449,9 +451,19 @@ fn contribution_card(raw_w:u32,raw_h:u32)->Option<Card>{
             "贴吧汉化组：https://tieba.baidu.com/wxf/341915?kw=死亡空间&fr=sharewise",
             "Bilibili：https://space.bilibili.com/34237026",
             "反馈：https://github.com/SomJsA/DeadSpaceMobile-Community/issues",
-        ];
+        ] } else { vec![
+            "Dead Space Mobile (iOS HD Port)",
+            "Based on touchHLE and HyperHLE",
+            "Project links may be private",
+            "Developed by SomJs",
+            "Special thanks: lxyun_2 · MisakaCharlotte",
+            "Trock Lockless · Tianlei · Dousha Bao",
+            "Tieba: https://tieba.baidu.com/wxf/341915",
+            "Bilibili: https://space.bilibili.com/34237026",
+            "Issues: https://github.com/SomJsA/DeadSpaceMobile-Community/issues",
+        ] };
         for (index,line) in lines.iter().enumerate(){
-            draw_text_centered(&mut pixels,width,height,font,(if index==0{6.4}else{5.2})*unit,line,(7.0+index as f32*18.0)*unit,[220,248,255]);
+            draw_text_centered(&mut pixels,width,height,font,(if index==0{5.8}else{4.3})*unit,line,(6.0+index as f32*15.5)*unit,[220,248,255]);
         }
         h.cache.insert(key.clone(),Arc::new(CachedCard::new(width,height,0.0,&pixels)));
     }
