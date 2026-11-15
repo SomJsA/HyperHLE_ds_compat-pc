@@ -4663,6 +4663,16 @@ impl Window {
     /// visible.
     pub fn virtual_cursor_visible_at(&self) -> Option<(f32, f32, bool)> {
         if let Some(point) = crate::ds_frontend_controller::menu_cursor() {
+            // Native PC input uses the real Windows pointer for mouse/keyboard
+            // menu navigation. Returning the focused native button here
+            // unconditionally hid the OS cursor on the initial page until a
+            // focus transition or a window switch refreshed SDL's cursor state.
+            if ds_native_pointer_enabled() && !self.ds_cursor_mode_active() {
+                if !self.ds_mouse_capture.captured {
+                    unsafe { sdl2_sys::SDL_ShowCursor(1); }
+                }
+                return None;
+            }
             let (x,y,w,h) = self.viewport();
             return Some((x as f32+point.x*w as f32/480.0,y as f32+point.y*h as f32/320.0,false));
         }
