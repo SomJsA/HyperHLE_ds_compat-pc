@@ -144,15 +144,20 @@ pub(crate) fn native_text_in_story() -> bool {
     enabled() && STORY_TEXT.load(Ordering::Relaxed)
 }
 pub(crate) fn capture_menu() -> bool {
+    // A station modal (store/bench/popup/transition) owns input even though
+    // the HUD still reports live gameplay.  GAMEPLAY_READY is deliberately
+    // sticky across this transition so it must not short-circuit modal input.
+    if loading::active() || native::modal_active() {
+        return true;
+    }
     if GAMEPLAY_READY.load(Ordering::Relaxed) {
         return false;
     }
-    loading::active() || native::modal_active()
-        || (state() != UNKNOWN
-            && menu_recent(
-                SCENE_DIALOG_FRAME.load(Ordering::Relaxed),
-                MENU_FRAME.load(Ordering::Relaxed),
-            ))
+    state() != UNKNOWN
+        && menu_recent(
+            SCENE_DIALOG_FRAME.load(Ordering::Relaxed),
+            MENU_FRAME.load(Ordering::Relaxed),
+        )
 }
 pub(crate) fn observe_ui_handler(env: &crate::Environment, handler: u32) {
     native::observe_handler(env, handler);
