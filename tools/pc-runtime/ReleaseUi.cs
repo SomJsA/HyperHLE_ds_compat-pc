@@ -17,7 +17,7 @@ namespace DeadSpaceUi
         internal const string ProjectUrl = "https://github.com/" + Repository;
         internal const string ReleaseUrl = ProjectUrl + "/releases/latest";
         internal const string ApiUrl = "https://api.github.com/repos/" + Repository + "/releases/latest";
-        internal const string CurrentTag = "20261112-r6-dev";
+        internal const string CurrentTag = "20261115-r4.9-pre";
 
         internal sealed class Result { internal string State, Tag; }
         private static Result FromTag(string tag)
@@ -149,6 +149,22 @@ namespace DeadSpaceUi
             Add("原版 credits_list 制作名单保留。Dead Space 与游戏素材归 Electronic Arts 所有；各组件按各自许可证提供。", "The original credits_list is retained. Dead Space and its game assets belong to Electronic Arts; each component retains its own license.", 9, false);
             Add("检查 GitHub 更新", "GitHub updates", 13, true);
             Add("当前版本："+ReleaseChannel.CurrentTag, "Current version: "+ReleaseChannel.CurrentTag, 10, false);
+            Add("R4.9 预发布 · IPA 适配表 / R4.9 prerelease · IPA compatibility matrix", "R4.9 预发布 · IPA 适配表 / R4.9 prerelease · IPA compatibility matrix", 12, true);
+            Add(
+                "推荐版本：1.3.34（已深度验证：第12章、移动、E交互、F念力箱、瞄准、开火、静滞）。\r\n"+
+                "iPad World 1.3.11：已识别 ARMv7；开场、菜单、章节选择通过；第12章仍停在 HUD+4 world=0，局内操作未验收。\r\n"+
+                "iPad 1.0.3 / build 1.3.11：同一旧 iPad profile；菜单通过，章节加载/存档入口未验收。\r\n"+
+                "iPad 1.0.3 iOS 3.2：首帧、菜单、8×分辨率、资源识别通过；第12章深度操作未单独验收。\r\n"+
+                "iPhone 1.0.3 / build 1.3.8：ARMv6、开场、菜单、E 输入队列和叠加层接通；第12章瞄准、开火、念力未实机验收。\r\n"+
+                "World 1.0.1：可到首帧，但旧二进制记录约 707,185 次 UndefinedInstruction，判定为不稳定旧构建。\r\n"+
+                "以上旧版本在全适配完成前仅建议用于测试；遇到问题请提交版本和文件指纹。",
+                "Recommended: 1.3.34 (deeply verified: chapter 12, movement, E interaction, F kinesis box, aim, fire and stasis).\r\n"+
+                "iPad World 1.3.11: ARMv7 profile recognized; opening, menu and chapter selection pass; chapter 12 still stops at HUD+4 world=0, so gameplay input is not accepted.\r\n"+
+                "iPad 1.0.3 / build 1.3.11: shares the legacy iPad profile; menu passes, chapter loading/save entry is not accepted.\r\n"+
+                "iPad 1.0.3 iOS 3.2: first frame, menu, 8x resolution and resource detection pass; chapter-12 deep input is not separately accepted.\r\n"+
+                "iPhone 1.0.3 / build 1.3.8: ARMv6, opening, menu, E input queue and overlay path are connected; chapter-12 aim, fire and kinesis are not device-accepted.\r\n"+
+                "World 1.0.1: reaches the first frame, but the old binary records about 707,185 UndefinedInstruction events and is considered unstable.\r\n"+
+                "Use legacy editions for testing until full adaptation is complete; include the version and file fingerprints when reporting an issue.", 9, false);
             updateStatus.AutoSize = true; updateStatus.Dock = DockStyle.Top; updateStatus.Margin = new Padding(0,6,0,8); content.Controls.Add(updateStatus);
             check.AutoSize = true; check.MinimumSize = new Size(140,36); check.FlatStyle = FlatStyle.Flat; check.Click += delegate { CheckUpdates(); }; content.Controls.Add(check);
             AddLink("查看发布页 / Open releases", ReleaseChannel.ReleaseUrl);

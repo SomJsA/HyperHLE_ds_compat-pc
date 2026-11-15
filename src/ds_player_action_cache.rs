@@ -11,12 +11,18 @@ pub struct Snapshot {
     pub owner_vptr: u32,
 }
 impl Snapshot {
+    pub fn belongs_to_profile(self, owner: u32, code: u32, forwarder_vptr: u32, player_vptr: u32) -> bool {
+        owner != 0 && self.vptr == forwarder_vptr && self.owner == owner
+            && self.owner_vptr == player_vptr && self.code == code
+    }
+    pub fn enabled_for_profile(self, owner: u32, code: u32, forwarder_vptr: u32, player_vptr: u32) -> bool {
+        self.belongs_to_profile(owner, code, forwarder_vptr, player_vptr) && self.enabled != 0
+    }
     pub fn belongs_to(self, owner: u32, code: u32) -> bool {
-        owner != 0 && self.vptr == FORWARDER_VPTR && self.owner == owner
-            && self.owner_vptr == PLAYER_VPTR && self.code == code
+        self.belongs_to_profile(owner, code, FORWARDER_VPTR, PLAYER_VPTR)
     }
     pub fn enabled_for(self, owner: u32, code: u32) -> bool {
-        self.belongs_to(owner, code) && self.enabled != 0
+        self.enabled_for_profile(owner, code, FORWARDER_VPTR, PLAYER_VPTR)
     }
 }
 #[derive(Default)]

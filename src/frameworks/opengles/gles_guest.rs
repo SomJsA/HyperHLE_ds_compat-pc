@@ -117,7 +117,8 @@ fn ds_refresh_action_forwarders(env: &mut Environment, min_frame_gap: u64) -> bo
     }
     LAST.store(now.max(1), Ordering::Relaxed);
 
-    let objects = ds_sweep_vptr(env, 0x00a7d1e8);
+    let Some(profile) = ds_native_profile(env) else { return false; };
+    let objects = ds_sweep_vptr(env, profile.action_forwarder_vptr);
     if objects.is_empty() {
         return false;
     }
@@ -315,6 +316,7 @@ fn ds_live_region_bounds(env: &Environment, region: u32) -> Option<(i32, i32, i3
 }
 
 pub(crate) fn ds_live_regions(env: &mut Environment) -> Vec<(u32, u32, i32, i32, i32, i32)> {
+    let Some(profile) = ds_native_profile(env) else { return Vec::new(); };
     let fwds: Vec<u32> = match ekey_fwds().lock() {
         Ok(v) => v.clone(),
         Err(_) => Vec::new(),
@@ -322,7 +324,7 @@ pub(crate) fn ds_live_regions(env: &mut Environment) -> Vec<(u32, u32, i32, i32,
     let mut out = Vec::new();
     for f in fwds {
         let vp: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(f));
-        if vp != 0x00a7d1e8 {
+        if vp != profile.action_forwarder_vptr {
             continue;
         }
         let code: u32 = env
@@ -391,7 +393,8 @@ fn ds_action_gauges_enabled() -> bool {
 }
 
 pub(crate) fn ds_send_action(env: &mut Environment, code: u32) -> Option<u32> {
-    let objs = ds_sweep_vptr(env, 0x00a7d1e8);
+    let profile = ds_native_profile(env)?;
+    let objs = ds_sweep_vptr(env, profile.action_forwarder_vptr);
     let mut pick: Option<u32> = None;
     for a in objs {
         let vp: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(a));
@@ -410,7 +413,7 @@ pub(crate) fn ds_send_action(env: &mut Environment, code: u32) -> Option<u32> {
             continue;
         }
         let tv: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(target));
-        if tv == 0x00a7a4f8 {
+        if tv == profile.player_vptr {
             // GameObjectPlayable: this is the player's own button.
             pick = Some(a);
             break;
@@ -428,8 +431,32 @@ fn ds_dispatch_action_forwarder(env: &mut Environment, a: u32, code: u32) -> Opt
     if ds_action_gauges_enabled() {
         ds_log_player_gauges(env, tgt, &format!("before code={code:#x}"));
     }
-    let send = crate::abi::GuestFunction::from_addr_and_thumb_flag(0x000e55cc, false);
-    let _: () = send.call_from_host(env, (a,));
+    let profile = ds_native_profile(env)?;
+    let target = target_of(env, a);
+    if target < 0x1000 {
+        return None;
+    }
+    // This is the same 0x3f0 ActionEvent built by the original
+    // InputForwarderTapToAction::SendAction.  The old iPad/iPhone builds do
+    // not export that helper, so construct the borrowed event and invoke the
+    // target's virtual OnEvent slot directly.  The event vtable is profile
+    // specific and must never be shared across IPA layouts.
+    let event = env.mem.alloc(16);
+    for (i, word) in [profile.action_event_vptr, 0x3f0, code, 0u32]
+        .into_iter()
+        .enumerate()
+    {
+        env.mem.write(crate::mem::MutPtr::<u32>::from_bits(event.to_bits() + i as u32 * 4), word);
+    }
+    let target_vptr = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(target));
+    let on_event = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(target_vptr + 8));
+    if !(0x1000..0x0100_0000).contains(&on_event) {
+        env.mem.free(event);
+        return None;
+    }
+    let call = crate::abi::GuestFunction::from_addr_with_thumb_bit(on_event);
+    let _: () = call.call_from_host(env, (target, event.to_bits()));
+    env.mem.free(event);
     if ds_action_gauges_enabled() {
         ds_log_player_gauges(env, tgt, &format!("after  code={code:#x}"));
     }
@@ -465,9 +492,10 @@ fn ds_send_player_fire_action(env: &mut Environment, player: u32) -> Option<u32>
     static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
     let enabled = *ENABLED.get_or_init(|| std::env::var("TOUCHHLE_DS_PLAYER_ACTION_CACHE").as_deref() != Ok("0"));
     if !enabled { return ds_send_action(env, 6); }
+    let profile = ds_native_profile(env)?;
     let candidate = env.framework_state.opengles.ds_player_action_cache.candidate(player);
     if let Some(address) = candidate {
-        if ds_read_player_action(env, address).is_some_and(|snapshot| snapshot.enabled_for(player, 6)) {
+        if ds_read_player_action(env, address).is_some_and(|snapshot| snapshot.enabled_for_profile(player, 6, profile.action_forwarder_vptr, profile.player_vptr)) {
             if crate::ds_stutter_probe::enabled() { crate::ds_diagnostics::event("probe_player_action_cache", [1, crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed), 0, 0]); }
             return ds_dispatch_action_forwarder(env, address, 6);
         }
@@ -475,7 +503,7 @@ fn ds_send_player_fire_action(env: &mut Environment, player: u32) -> Option<u32>
     }
     if crate::ds_stutter_probe::enabled() { crate::ds_diagnostics::event("probe_player_action_cache", [0, crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed), 0, 0]); }
     let address = ds_send_action(env, 6)?;
-    if ds_read_player_action(env, address).is_some_and(|snapshot| snapshot.belongs_to(player, 6)) {
+    if ds_read_player_action(env, address).is_some_and(|snapshot| snapshot.belongs_to_profile(player, 6, profile.action_forwarder_vptr, profile.player_vptr)) {
         env.framework_state.opengles.ds_player_action_cache.remember(player, address);
     }
     Some(address)
@@ -528,10 +556,11 @@ fn ds_press_action(env: &mut Environment, code: u32) -> String {
 /// game's `GameObjectPlayable::StartTelekinesis(GameObjectInteractive*)`.
 fn ds_start_nearest_kinesis_target(env: &mut Environment) -> Option<(u32, f32)> {
     let (_hud, player) = ds_current_hud_player(env)?;
+    let profile = ds_native_profile(env)?;
     if ekey_fwds().lock().map(|v| v.is_empty()).unwrap_or(true) {
         ds_refresh_action_forwarders(env, 0);
     }
-    let can_telekinesis = GuestFunction::from_addr_and_thumb_flag(0x0003b058, false);
+    let can_telekinesis = GuestFunction::from_addr_and_thumb_flag(profile.can_telekinesis, false);
     let can: u32 = can_telekinesis.call_from_host(env, (player,));
     if can == 0 {
         return None;
@@ -589,7 +618,7 @@ fn ds_start_nearest_kinesis_target(env: &mut Environment) -> Option<(u32, f32)> 
     }
     candidates.sort_by(|a, b| a.0.total_cmp(&b.0));
     let (distance, target, is_tk_fn) = *candidates.first()?;
-    let start = GuestFunction::from_addr_and_thumb_flag(0x0004ae88, false);
+    let start = GuestFunction::from_addr_and_thumb_flag(profile.start_telekinesis, false);
     let _: () = start.call_from_host(env, (player, target));
     echo!(
         "[DSf] direct kinesis target={:#010x} is_tk_fn={:#010x} distance2={:.4}",
@@ -619,6 +648,7 @@ fn ds_press_scene_action(
     if ekey_fwds().lock().map(|v| v.is_empty()).unwrap_or(true) {
         ds_refresh_action_forwarders(env, 0);
     }
+    let profile = ds_native_profile(env)?;
     let fwds: Vec<u32> = match ekey_fwds().lock() {
         Ok(v) => v.clone(),
         Err(_) => Vec::new(),
@@ -628,7 +658,7 @@ fn ds_press_scene_action(
     for f in fwds {
         // Cached addresses can be freed/reused during level transitions.
         let vptr: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(f));
-        if vptr != 0x00a7d1e8 {
+        if vptr != profile.action_forwarder_vptr {
             continue;
         }
         let c: u32 = env
@@ -647,7 +677,7 @@ fn ds_press_scene_action(
             continue;
         }
         let owner_vptr: u32 = env.mem.read(ConstPtr::from_bits(obj));
-        let pickup = owner_vptr == ds_interaction_policy::PICKUP_VPTR;
+        let pickup = owner_vptr == profile.pickup_vptr;
         let telekinetic = {
             let owner_vptr: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(obj));
             if !(0x1000..0x0100_0000).contains(&owner_vptr) {
@@ -726,7 +756,7 @@ fn ds_press_scene_action(
     }
     let (f, obj, rect) = best?;
     let pickup = !telekinesis_only
-        && env.mem.read(ConstPtr::<u32>::from_bits(obj)) == ds_interaction_policy::PICKUP_VPTR;
+        && env.mem.read(ConstPtr::<u32>::from_bits(obj)) == profile.pickup_vptr;
     let before = if pickup {
         Some((
             env.mem.read(ConstPtr::<u32>::from_bits(obj + 0x1dc)),
@@ -735,11 +765,10 @@ fn ds_press_scene_action(
     } else {
         None
     };
-    let send = crate::abi::GuestFunction::from_addr_and_thumb_flag(0x000e55cc, false);
-    let _: () = send.call_from_host(env, (f,));
+    let _ = ds_dispatch_action_forwarder(env, f, code);
     if let Some((item_type, quantity)) = before {
         // Only examine fields if the object still has the same runtime type.
-        if env.mem.read(ConstPtr::<u32>::from_bits(obj)) == ds_interaction_policy::PICKUP_VPTR {
+        if env.mem.read(ConstPtr::<u32>::from_bits(obj)) == profile.pickup_vptr {
             let after_quantity = env.mem.read(ConstPtr::<u32>::from_bits(obj + 0x1e0));
             let after_state = env.mem.read(ConstPtr::<u32>::from_bits(obj + 0x1d0));
             if ds_interaction_policy::pickup_failed(quantity, after_quantity, after_state) {
@@ -1226,30 +1255,162 @@ fn ds_hud_player_cache_report(hit: bool) {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+struct DsNativeProfile {
+    name: &'static str,
+    get_hud: u32,
+    get_hud_sig: [u32; 7],
+    player_vptr: u32,
+    action_forwarder_vptr: u32,
+    pickup_vptr: u32,
+    vector_event_vptr: u32,
+    vector_guard_addr: Option<u32>,
+    vector_guard_value: Option<u32>,
+    action_event_vptr: u32,
+    can_telekinesis: u32,
+    start_telekinesis: u32,
+}
+
+fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
+    let get_hud = *env.bins[0].exported_symbols.get("__ZN10GameObject6GetHudEv")?;
+    let player_on_event = *env
+        .bins[0]
+        .exported_symbols
+        .get("__ZN18GameObjectPlayable7OnEventERKN2im5EventE")?;
+    let bundle = env.bundle.bundle_identifier();
+    match (bundle, get_hud, player_on_event) {
+        // 1.3.34 ARMv7.  This is the original profile used by the PC path.
+        ("com.ea.deadspace.bv", 0x0003_0474, 0x0005_3dc8) => Some(DsNativeProfile {
+            name: "current-1.3.34",
+            get_hud,
+            get_hud_sig: [
+                0xe92d_4080,
+                0xe1a0_700d,
+                0xebff_6c81,
+                0xebff_4da5,
+                0xe590_0000,
+                0xe280_0e25,
+                0xe8bd_8080,
+            ],
+            player_vptr: 0x00a7_a4f8,
+            action_forwarder_vptr: 0x00a7_d1e8,
+            pickup_vptr: 0x00a7_e158,
+            vector_event_vptr: 0x00a6_2e18,
+            vector_guard_addr: Some(0x00a6_2e14),
+            vector_guard_value: Some(0x00a6_1e98),
+            action_event_vptr: 0x00a6_2dd8,
+            can_telekinesis: 0x0003_b058,
+            start_telekinesis: 0x0004_ae88,
+        }),
+        // Both known iPad ARMv7 builds share this exact native code layout;
+        // their IPA versions/resources differ, but the gameplay ABI does not.
+        ("com.ea.deadspace.ipad.bv", 0x0002_1f18, 0x0004_5118) => Some(DsNativeProfile {
+            name: "ipad-armv7-1.0.3/1.3.11",
+            get_hud,
+            get_hud_sig: [
+                0xe92d_4080,
+                0xe1a0_700d,
+                0xeb08_0fc2,
+                0xeb07_f22e,
+                0xe590_0000,
+                0xe280_0e25,
+                0xe8bd_8080,
+            ],
+            player_vptr: 0x0077_0328,
+            action_forwarder_vptr: 0x0077_3018,
+            pickup_vptr: 0x0077_3f88,
+            vector_event_vptr: 0x0075_b4b8,
+            vector_guard_addr: Some(0x0075_b4b4),
+            vector_guard_value: Some(0x0075_a658),
+            action_event_vptr: 0x0075_b478,
+            can_telekinesis: 0x0002_c78c,
+            start_telekinesis: 0x0003_c244,
+        }),
+        // The iPhone 1.0.3 ARMv6 binary has the same object field layout but a
+        // separate code/vtable image. Its event RTTI slot is zero, so the
+        // profile is verified by GetHud and the exported player handler.
+        ("com.ea.deadspace.inc", 0x0002_a1dc, 0x0004_c810) => Some(DsNativeProfile {
+            name: "iphone-armv6-1.0.3",
+            get_hud,
+            get_hud_sig: [
+                0xe92d_4080,
+                0xe1a0_700d,
+                0xebff_807d,
+                0xebff_640f,
+                0xe590_0000,
+                0xe280_0e25,
+                0xe8bd_8080,
+            ],
+            player_vptr: 0x0074_b908,
+            action_forwarder_vptr: 0x0074_e5f8,
+            pickup_vptr: 0x0074_f568,
+            vector_event_vptr: 0x0072_e988,
+            vector_guard_addr: None,
+            vector_guard_value: None,
+            action_event_vptr: 0x0072_e948,
+            can_telekinesis: 0x0003_4770,
+            start_telekinesis: 0x0004_3c24,
+        }),
+        _ => None,
+    }
+}
+
 fn ds_native_hud_layout_verified(env: &mut Environment) -> bool {
     if let Some(verified) = env.framework_state.opengles.ds_native_hud_layout_verified {
         return verified;
     }
-    const GET_HUD: [u32; 7] = [
-        0xe92d_4080, 0xe1a0_700d, 0xebff_6c81, 0xebff_4da5,
-        0xe590_0000, 0xe280_0e25, 0xe8bd_8080,
-    ];
-    let verified = env.bundle.bundle_identifier() == "com.ea.deadspace.bv"
-        && env.bundle.bundle_version() == "1.3.34"
-        && env.bins[0].exported_symbols.get("__ZN10GameObject6GetHudEv") == Some(&0x0003_0474)
-        && GET_HUD.iter().enumerate().all(|(i, expected)| {
-            ds_read_aim_word(env, 0x0003_0474 + i as u32 * 4) == Some(*expected)
-        });
+    let verified = ds_native_profile(env).is_some_and(|profile| {
+        profile
+            .get_hud_sig
+            .iter()
+            .enumerate()
+            .all(|(i, expected)| ds_read_aim_word(env, profile.get_hud + i as u32 * 4) == Some(*expected))
+    });
     env.framework_state.opengles.ds_native_hud_layout_verified = Some(verified);
     if !verified {
         echo!("[DSnative-layout] unsupported GetHud layout; native PC calls withheld");
+    } else if let Some(profile) = ds_native_profile(env) {
+        echo!("[DSnative-layout] verified profile={}", profile.name);
     }
     verified
 }
 
 fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
     if !ds_native_hud_layout_verified(env) { return None; }
+    let profile = ds_native_profile(env)?;
     if crate::ds_frontend_controller::capture_menu() {
+        // The loading confirmation and the original frontend can overlap for
+        // a few frames after a chapter is released.  During that window the
+        // frontend controller still reports menu ownership even though the
+        // game has already created a player-owned action forwarder.  Prefer a
+        // verified live player in that case so movement/aim/kinesis are not
+        // dropped at the gameplay boundary.  The fallback is deliberately
+        // gated by both the profile player vptr and HUD->world->player
+        // identity; a stale menu object cannot satisfy it.
+        if let Some(player) = ds_find_player(env) {
+            let hud: u32 = GuestFunction::from_addr_and_thumb_flag(profile.get_hud, false)
+                .call_from_host(env, ());
+            let world = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
+            let hud_player = if world == 0 {
+                0
+            } else {
+                env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(world + 0xe0))
+            };
+            if hud != 0 && hud_player == player {
+                let hud_state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
+                crate::ds_frontend_controller::set_hud_state(hud_state);
+                if hud_state == 0 {
+                    crate::window::DS_GAMEPLAY_ACTIVE.store(
+                        true,
+                        std::sync::atomic::Ordering::Relaxed,
+                    );
+                }
+                if std::env::var_os("TOUCHHLE_DS_NATIVE_LAYOUT_TRACE").is_some() {
+                    echo!("[DSnative-layout] gameplay fallback released menu capture hud={:#x} player={:#x} state={}", hud, player, hud_state);
+                }
+                return Some((hud, player));
+            }
+        }
         if ds_hud_player_cache_enabled() {
             let state = &mut env.framework_state.opengles;
             state.ds_hud_player_cache_frame = crate::window::DS_FRAME_COUNTER
@@ -1285,9 +1446,12 @@ fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
     if cache_enabled {
         ds_hud_player_cache_report(false);
     }
-    let get_hud = GuestFunction::from_addr_and_thumb_flag(0x00030474, false);
+    let get_hud = GuestFunction::from_addr_and_thumb_flag(profile.get_hud, false);
     let hud: u32 = get_hud.call_from_host(env, ());
     let result = if hud == 0 {
+        if std::env::var_os("TOUCHHLE_DS_NATIVE_LAYOUT_TRACE").is_some() {
+            echo!("[DSnative-layout-trace] profile={} GetHud returned 0", profile.name);
+        }
         None
     } else {
         let world = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
@@ -1301,7 +1465,12 @@ fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
         } else {
             env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player))
         };
-        (player != 0 && player_vt == 0x00a7a4f8).then(|| {
+        if std::env::var_os("TOUCHHLE_DS_NATIVE_LAYOUT_TRACE").is_some()
+            && (world == 0 || player == 0 || player_vt != profile.player_vptr)
+        {
+            echo!("[DSnative-layout-trace] profile={} hud={:#x} world={:#x} player={:#x} player_vptr={:#x} expected={:#x}", profile.name, hud, world, player, player_vt, profile.player_vptr);
+        }
+        (player != 0 && player_vt == profile.player_vptr).then(|| {
             let hud_state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
             (hud, player, hud_state)
         })
@@ -1326,11 +1495,12 @@ fn ds_current_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
 // modal, so use this narrow verified lookup for BTN_PLAY_PAUSE only.
 fn ds_pause_hud_player(env: &mut Environment) -> Option<(u32, u32)> {
     if !ds_native_hud_layout_verified(env) { return None; }
-    let hud: u32 = GuestFunction::from_addr_and_thumb_flag(0x0003_0474, false).call_from_host(env, ());
+    let profile = ds_native_profile(env)?;
+    let hud: u32 = GuestFunction::from_addr_and_thumb_flag(profile.get_hud, false).call_from_host(env, ());
     let world = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 4));
     if hud < 0x1000 || world < 0x1000 { return None; }
     let player = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(world + 0xe0));
-    if player < 0x1000 || env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player)) != 0x00a7_a4f8 { return None; }
+    if player < 0x1000 || env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player)) != profile.player_vptr { return None; }
     let state = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
     crate::ds_frontend_controller::set_hud_state(state);
     Some((hud, player))
@@ -1517,12 +1687,32 @@ fn ds_call_gamepad_combat(env: &mut Environment, label: &str, addr: u32) {
 fn ds_native_vector(env: &mut Environment, player: u32, kind: u32, x: f32, y: f32, sprint: bool) -> bool {
     // Exact class layout captured from original SendDPadEvent, including RTTI.
     // Only synchronous OnEvent receives this borrowed POD event; no destructor.
-    if ds_read_aim_word(env,0x00a62e14)!=Some(0x00a61e98) || !x.is_finite() || !y.is_finite() { return false; }
+    let Some(profile) = ds_native_profile(env) else { return false; };
+    if profile.vector_guard_addr
+        .zip(profile.vector_guard_value)
+        .is_some_and(|(address, expected)| ds_read_aim_word(env, address) != Some(expected))
+        || !x.is_finite()
+        || !y.is_finite()
+    {
+        return false;
+    }
     let event=env.mem.alloc(24);
-    for (i,word) in crate::window::ds_pc_input::vector_event(kind,x,y,sprint).into_iter().enumerate() {
+    let mut words = crate::window::ds_pc_input::vector_event(kind,x,y,sprint);
+    words[0] = profile.vector_event_vptr;
+    for (i,word) in words.into_iter().enumerate() {
         env.mem.write(crate::mem::MutPtr::<u32>::from_bits(event.to_bits()+i as u32*4),word);
     }
-    let _:u32=GuestFunction::from_addr_and_thumb_flag(0x00053dc8,false).call_from_host(env,(player,event.to_bits()));
+    let player_vptr = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player));
+    if player_vptr != profile.player_vptr {
+        env.mem.free(event);
+        return false;
+    }
+    let on_event = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player_vptr + 8));
+    if !(0x1000..0x0100_0000).contains(&on_event) {
+        env.mem.free(event);
+        return false;
+    }
+    let _:u32=GuestFunction::from_addr_with_thumb_bit(on_event).call_from_host(env,(player,event.to_bits()));
     env.mem.free(event);true
 }
 
@@ -1954,13 +2144,14 @@ fn ds_gamepad_release_fire(env: &mut Environment) {
 /// The player object: the dispatch target of any player-owned action forwarder
 /// (`InputSchemeBasic` hands the `GameObjectPlayable` pointer to each button).
 fn ds_find_player(env: &mut Environment) -> Option<u32> {
-    for a in ds_sweep_vptr(env, 0x00a7d1e8) {
+    let profile = ds_native_profile(env)?;
+    for a in ds_sweep_vptr(env, profile.action_forwarder_vptr) {
         let t = target_of(env, a);
         if t == 0 {
             continue;
         }
         let vt: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(t));
-        if vt == 0x00a7a4f8 {
+        if vt == profile.player_vptr {
             return Some(t);
         }
     }
@@ -1979,14 +2170,16 @@ fn ds_publish_aim_flag(env: &mut Environment) {
     use std::sync::atomic::{AtomicU32, Ordering};
     static PLAYER: AtomicU32 = AtomicU32::new(0);
     static LAST_SWEEP: AtomicU32 = AtomicU32::new(0);
+    let Some(profile) = ds_native_profile(env) else { return; };
     let mut p = if crate::window::ds_native_inputs() {
-        if ds_read_aim_word(env,0x00a62e14)!=Some(0x00a61e98) { return; }
+        if profile.vector_guard_addr.zip(profile.vector_guard_value)
+            .is_some_and(|(address, expected)| ds_read_aim_word(env,address) != Some(expected)) { return; }
         let p=ds_current_hud_player(env).map(|(_,p)|p).unwrap_or(0);PLAYER.store(p,Ordering::Relaxed);
         if p==0 { crate::window::DS_AIM_ACTIVE.store(false,Ordering::Relaxed);return; } p
     } else {PLAYER.load(Ordering::Relaxed)};
     if p != 0 {
         let vt: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(p));
-        if vt != 0x00a7a4f8 {
+        if vt != profile.player_vptr {
             PLAYER.store(0, Ordering::Relaxed);
             p = 0;
         }
@@ -2059,7 +2252,8 @@ fn ds_log_player_gauges(env: &mut Environment, player: u32, tag: &str) {
         return;
     }
     let vt: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player));
-    if vt != 0x00a7a4f8 {
+    let Some(profile) = ds_native_profile(env) else { return; };
+    if vt != profile.player_vptr {
         echo!(
             "[DSgauge] {} target={:#010x} vptr={:#010x} (not GameObjectPlayable)",
             tag,
@@ -5196,7 +5390,9 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                 // The list is filled by the E key's own sweep; do that sweep here
                 // (every 30 frames) so the census does not need an E press.
                 if fnow_now % 30 == 0 && ekey_fwds().lock().map(|v| v.is_empty()).unwrap_or(false) {
-                    let objs = ds_sweep_vptr(env, 0x00a7d1e8);
+                    let objs = ds_native_profile(env)
+                        .map(|profile| ds_sweep_vptr(env, profile.action_forwarder_vptr))
+                        .unwrap_or_default();
                     if !objs.is_empty() {
                         echo!("[DSfwd] sweep found {} forwarder(s)", objs.len());
                         if let Ok(mut o) = ekey_fwds().lock() {
@@ -5253,7 +5449,7 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                         // The player's own five buttons carry no live rectangle
                         // outside aim mode; dump their words so any embedded name
                         // string can be resolved offline.
-                        if o_vptr == 0x00a7a4f8 {
+                        if ds_native_profile(env).is_some_and(|profile| o_vptr == profile.player_vptr) {
                             let mut w = String::new();
                             for i in 0..24 {
                                 let a: u32 = env
@@ -5785,7 +5981,9 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                             >= 30
                     {
                         LAST_SWEEP.store(now_f, std::sync::atomic::Ordering::Relaxed);
-                        let objs = ds_sweep_vptr(env, 0x00a7d1e8);
+                        let objs = ds_native_profile(env)
+                            .map(|profile| ds_sweep_vptr(env, profile.action_forwarder_vptr))
+                            .unwrap_or_default();
                         if !objs.is_empty() {
                             log!("[DSe] found {} action forwarder(s) by sweep", objs.len());
                             if let Ok(mut o) = ekey_fwds().lock() {
@@ -6052,7 +6250,11 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                         let how = ds_press_action(env, 0x06);
                         echo!("[DSf] held-object action: {}", how);
                     } else {
-                        let can_tk = GuestFunction::from_addr_and_thumb_flag(0x0003b058, false);
+                        let Some(profile) = ds_native_profile(env) else {
+                            echo!("[DSf] unsupported IPA profile; kinesis withheld");
+                            return;
+                        };
+                        let can_tk = GuestFunction::from_addr_and_thumb_flag(profile.can_telekinesis, false);
                         let allowed: u32 = can_tk.call_from_host(env, (player,));
                         if allowed == 0 {
                             echo!(
@@ -6083,7 +6285,9 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
             // stays as the fallback. `TOUCHHLE_DS_CODE_F` overrides the code.
             let data_hit: Option<(f64, f64, u32, Option<(f32, f32)>, (f64, f64))> = {
                 if ekey_fwds().lock().map(|v| v.is_empty()).unwrap_or(false) {
-                    let objs = ds_sweep_vptr(env, 0x00a7d1e8);
+                    let objs = ds_native_profile(env)
+                        .map(|profile| ds_sweep_vptr(env, profile.action_forwarder_vptr))
+                        .unwrap_or_default();
                     if let Ok(mut o) = ekey_fwds().lock() {
                         for a in objs {
                             if !o.contains(&a) {

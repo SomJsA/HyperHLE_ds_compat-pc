@@ -72,8 +72,12 @@ impl Inbox {
                 Command::TestPadAxis(args[0].into(),value)
             }
             "key" if args.len()==2 && ["down","up"].contains(&args[0]) => {
-                let slot=["W","A","S","D","UP","LEFT","DOWN","RIGHT","SPACE","E","G","B","LCTRL","RCTRL","Z"].iter().position(|key|*key==args[1]).ok_or("unsupported test key")?;
-                Command::DirectionKey {slot,down:args[0]=="down"}
+                if args[1] == "F" {
+                    Command::Action("kinesis".into())
+                } else {
+                    let slot=["W","A","S","D","UP","LEFT","DOWN","RIGHT","SPACE","E","G","B","LCTRL","RCTRL","Z"].iter().position(|key|*key==args[1]).ok_or("unsupported test key")?;
+                    Command::DirectionKey {slot,down:args[0]=="down"}
+                }
             }
             "tap-unit" | "down-unit" | "move-unit" | "up-unit" if args.len() == 2 => {
                 let x = args[0].parse::<f32>().map_err(|_| "invalid coordinate")?;
@@ -324,6 +328,8 @@ mod tests {
         for text in ["1 key down F8","1 key down ALT","1 key down W up A","1 key repeat A","1 key down A\n2 key up D"] {assert!(i.accept(text).is_err());}
         assert_eq!(i.accept("1 key down D").unwrap(),Some((1,Command::DirectionKey{slot:3,down:true})));
         assert_eq!(i.accept("2 key up LEFT").unwrap(),Some((2,Command::DirectionKey{slot:5,down:false})));
+        assert_eq!(i.accept("3 key down F").unwrap(),Some((3,Command::Action("kinesis".into()))));
+        assert_eq!(i.accept("4 key up F").unwrap(),Some((4,Command::Action("kinesis".into()))));
     }
 
     #[test]

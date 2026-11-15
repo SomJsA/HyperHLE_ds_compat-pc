@@ -1038,6 +1038,30 @@ fn activate(env: &mut Environment, work: &MenuWork) {
                 button.id,
                 button.card_index().unwrap_or(usize::MAX)
             );
+            // The old iPad ChapterSelectItem::SendAction only copies the
+            // selected level into ChapterSelectWindow. Its subsequent OK
+            // path is not reached by the host-owned frontend confirmation
+            // route, leaving HUD->world null. In an explicit isolated probe,
+            // call the original Application::StartChapter with that exact
+            // EASTL string object. This is profile-gated and opt-in; normal
+            // users retain the original touch flow.
+            if std::env::var("TOUCHHLE_DS_LEGACY_CHAPTER_FORCE").as_deref() == Ok("1")
+                && crate::ds_frontend_profile::is_ipad1311(env)
+            {
+                let app: u32 = GuestFunction::from_addr_and_thumb_flag(0x0022_5e30, false)
+                    .call_from_host(env, ());
+                let level_string = button.widget.saturating_add(0xb8);
+                if app >= 0x1000 {
+                    let start = GuestFunction::from_addr_and_thumb_flag(0x0022_550c, false);
+                    let _: () = start.call_from_host(env, (app, level_string, 0u32));
+                    echo!(
+                        "[DSlegacy-force] Application::StartChapter app={:#x} level_string={:#x} card={}",
+                        app,
+                        level_string,
+                        button.card_index().unwrap_or(usize::MAX)
+                    );
+                }
+            }
         }
     }
 }

@@ -39,13 +39,13 @@ def main() -> int:
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--implementation-commit", required=True)
-    parser.add_argument("--release-label", default="R6-dev")
+    parser.add_argument("--release-label", default="R4.9-pre")
     parser.add_argument("--report", required=True, type=Path)
     args = parser.parse_args()
     release_label = args.release_label.strip()
     if not release_label or any(ch not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-" for ch in release_label):
         raise ValueError("Invalid release label")
-    release_tag = "20261112-" + release_label.lower()
+    release_tag = "20261115-" + release_label.lower()
 
     source = args.source.resolve()
     launcher = args.launcher.resolve()
@@ -91,7 +91,7 @@ def main() -> int:
     shutil.copy2(args.diagnostic_map.resolve(), output / "Game/diagnostic-map.json")
     readme = output / "Docs/INSTALLER-README.txt"
     readme.write_text(
-        f"DEAD SPACE MOBILE PC installation payload - 20261112-{release_label}\n\n"
+        f"DEAD SPACE MOBILE PC installation payload - 20261115-{release_label}\n\n"
         "This directory is embedded inside the installation EXE. It is not a\n"
         "user-facing floating package.\n\n"
         "Program files default to %LOCALAPPDATA%\\Programs\\DeadSpaceLegacy.\n"

@@ -299,14 +299,18 @@ namespace DeadSpaceInstaller
                     if (!sourceProfile.HdText) hdChinesePack.Checked = false;
                     PopulateInstallLanguages();
                     string warningKey = info.FullName + "|" + info.Length + "|" + info.LastWriteTimeUtc.Ticks;
-                    if (sourceProfile.Experimental && !String.Equals(unknownWarningSource, warningKey, StringComparison.OrdinalIgnoreCase))
+                    if (sourceProfile.RequiresCompatibilityWarning && !String.Equals(unknownWarningSource, warningKey, StringComparison.OrdinalIgnoreCase))
                     {
                         unknownWarningSource = warningKey;
                         MessageBox.Show(this,
                             DeadSpaceUi.UiLanguage.English
-                                ? "This IPA fingerprint is not verified. The program HD text component is enabled by default for a trial; uncheck it if the text layer is incomplete. PC input compatibility is also experimental and can be disabled later in the launcher."
-                                : "这个 IPA 指纹尚未验证。程序默认尝试高清文字组件；如果文字层不完整可以取消勾选。PC 操作兼容同样属于实验性功能，可在启动器中关闭。",
-                            DeadSpaceUi.UiLanguage.English ? "Unrecognized IPA / Warning" : "未识别 IPA / 警告",
+                                ? (sourceProfile.Id == "unknown"
+                                    ? "This IPA fingerprint is not recognized. The program HD text component is enabled by default for a trial; uncheck it if the text layer is incomplete. PC input compatibility is also experimental and can be disabled later in the launcher."
+                                    : "This recognized legacy IPA is identified but not fully gameplay-verified. The program HD text component and profile-specific compatibility path are available for testing; chapter-12 controls may be incomplete. You can disable them in the launcher.")
+                                : (sourceProfile.Id == "unknown"
+                                    ? "这个 IPA 指纹尚未识别。程序默认尝试高清文字组件；如果文字层不完整可以取消勾选。PC 操作兼容同样属于实验性功能，可在启动器中关闭。"
+                                    : "这个已识别的旧 IPA 尚未完成游戏内全流程验收。程序提供高清文字组件和对应兼容路径供测试；第12章操作可能不完整，可在启动器中关闭。"),
+                            DeadSpaceUi.UiLanguage.English ? (sourceProfile.Id == "unknown" ? "Unrecognized IPA / Warning" : "Legacy IPA / Verification warning") : (sourceProfile.Id == "unknown" ? "未识别 IPA / 警告" : "旧 IPA / 验收警告"),
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 } else { sourceProfile = null; profileInfo.Visible = false; hdChinesePack.Enabled = true; PopulateInstallLanguages(); }

@@ -40,6 +40,10 @@ namespace DeadSpaceResources
         internal readonly List<IpaLanguage> Languages = new List<IpaLanguage>();
         internal bool Adapted { get { return Id != "unknown"; } }
         internal bool Experimental { get { return Id == "unknown" && HdText; } }
+        // Every recognized legacy build is identified, but only 1.3.34 has
+        // completed chapter-12 gameplay acceptance. Keep the distinction
+        // visible so the launcher can warn before trying an older binary.
+        internal bool RequiresCompatibilityWarning { get { return Id != "current"; } }
         internal string Describe(bool english)
         {
             string support = Id == "current" ? (english ? "Most fully adapted: 1.3.34." : "开发者推荐：1.3.34 的适配最完整。")

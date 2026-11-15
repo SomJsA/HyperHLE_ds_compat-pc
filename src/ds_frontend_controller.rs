@@ -10,6 +10,11 @@ static STATE: AtomicU32 = AtomicU32::new(UNKNOWN);
 static SUPPORTED: AtomicBool = AtomicBool::new(false);
 static MENU_FRAME: AtomicU64 = AtomicU64::new(u64::MAX);
 static HUD_STATE: AtomicU32 = AtomicU32::new(UNKNOWN);
+// A chapter can finish its loading confirmation while the last frontend
+// widget is still being observed.  Once a verified HUD reports live gameplay,
+// input ownership must follow the game even if the frontend page state has not
+// been cleared yet.
+static GAMEPLAY_READY: AtomicBool = AtomicBool::new(false);
 // Input ownership may deliberately hide the HUD while a pause/modal handler
 // draws. That transient absence must not turn in-game text into frontend text.
 static STORY_TEXT: AtomicBool = AtomicBool::new(false);
@@ -68,6 +73,7 @@ pub(crate) fn deactivate() {
     STATE.store(UNKNOWN, Ordering::Relaxed);
     MENU_FRAME.store(u64::MAX, Ordering::Relaxed);
     HUD_STATE.store(UNKNOWN, Ordering::Relaxed);
+    GAMEPLAY_READY.store(false, Ordering::Relaxed);
     STORY_TEXT.store(false, Ordering::Relaxed);
     HUD_FRAME.store(u64::MAX, Ordering::Relaxed);
     PAUSE_PENDING.store(false, Ordering::Relaxed);
@@ -138,6 +144,9 @@ pub(crate) fn native_text_in_story() -> bool {
     enabled() && STORY_TEXT.load(Ordering::Relaxed)
 }
 pub(crate) fn capture_menu() -> bool {
+    if GAMEPLAY_READY.load(Ordering::Relaxed) {
+        return false;
+    }
     loading::active() || native::modal_active()
         || (state() != UNKNOWN
             && menu_recent(
@@ -154,8 +163,11 @@ pub(crate) fn set_hud_state(state: u32) {
     // do not keep the menu capture alive merely because no new menu draw
     // occurred.
     if matches!(state, 0 | 1) {
+        GAMEPLAY_READY.store(true, Ordering::Relaxed);
         STATE.store(UNKNOWN, Ordering::Relaxed);
         STORY_TEXT.store(true, Ordering::Relaxed);
+    } else if state != UNKNOWN {
+        GAMEPLAY_READY.store(false, Ordering::Relaxed);
     }
     if previous != state && std::env::var("TOUCHHLE_DS_FRONTEND_TRACE").as_deref() == Ok("1") {
         echo!("[DShudState] state={state}");

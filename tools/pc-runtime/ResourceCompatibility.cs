@@ -40,7 +40,7 @@ namespace DeadSpaceBootstrap
                 resourceProfile = IpaProfiles.Inspect(file.FullName);
                 loadedResourceIpa = file.FullName; resourceLength = file.Length; resourceWriteTime = file.LastWriteTimeUtc.Ticks;
                 if (hadSelection) launchReviewCompleted = false;
-                unknownCompatibilityReviewPending = resourceProfile.Experimental;
+                unknownCompatibilityReviewPending = resourceProfile.RequiresCompatibilityWarning;
                 // A resource switch starts legacy editions in the automatic
                 // screen-matched mode. The full 8x option remains available
                 // for an explicit manual choice after the review.
@@ -57,7 +57,10 @@ namespace DeadSpaceBootstrap
             advancedLighting.Enabled = resourceProfile.Lighting;
             if (!advancedLighting.Enabled) advancedLighting.Checked = false;
             overlayEnabled.Enabled = resourceProfile.HdText;
-            nativeInputs.Enabled = resourceProfile.Id == "current" || resourceProfile.Experimental;
+            // Known legacy profiles have their own native input layout. Keep
+            // the control available so the warning dialog can let the user
+            // opt into that profile instead of silently disabling it.
+            nativeInputs.Enabled = resourceProfile.Id != "unknown" || resourceProfile.Experimental;
             nativeHud.Enabled = resourceProfile.Id == "current";
             if (!resourceProfile.HdText) overlayEnabled.Checked = false;
             if (!nativeInputs.Enabled) nativeInputs.Checked = nativeHud.Checked = false;
@@ -79,13 +82,17 @@ namespace DeadSpaceBootstrap
 
         private void ReviewUnknownCompatibility()
         {
-            if (!unknownCompatibilityReviewPending || unknownCompatibilityReviewShown || resourceProfile == null || !resourceProfile.Experimental) return;
+            if (!unknownCompatibilityReviewPending || unknownCompatibilityReviewShown || resourceProfile == null || !resourceProfile.RequiresCompatibilityWarning) return;
             unknownCompatibilityReviewPending = false;
             unknownCompatibilityReviewShown = true;
             string message = DeadSpaceUi.UiLanguage.English
-                ? "This IPA version is not in the verified compatibility list.\r\n\r\nThe launcher will try the program HD text layer and the experimental PC input compatibility path by default. They may be incomplete for this version.\r\n\r\nChoose Yes to try them now, or No to disable both. You can change these options later and submit the IPA fingerprint to Community issues."
-                : "这个 IPA 版本不在已验证兼容清单中。\r\n\r\n启动器默认尝试程序内置高清文字组件和实验性 PC 操作兼容路径；该版本可能存在不完整行为。\r\n\r\n选择“是”立即尝试，选择“否”关闭这两项。之后仍可在启动器修改，并携带 IPA 指纹到 Community 提 issue。";
-            DialogResult choice = MessageBox.Show(this, message, DeadSpaceUi.UiLanguage.English ? "Unrecognized IPA / Experimental compatibility" : "未识别 IPA / 实验性兼容", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                ? (resourceProfile.Id == "unknown"
+                    ? "This IPA fingerprint is not recognized.\r\n\r\nThe launcher will try the program HD text layer and the experimental PC input compatibility path by default. They may be incomplete for this version.\r\n\r\nChoose Yes to try them now, or No to disable both. You can change these options later and submit the IPA fingerprint to Community issues."
+                    : "This recognized legacy IPA is not fully gameplay-verified.\r\n\r\nThe launcher will try its identified compatibility profile and the program HD text layer. Chapter-12 controls may still be incomplete for this binary.\r\n\r\nChoose Yes to try them now, or No to disable the compatibility path. You can change these options later and submit the IPA fingerprint to Community issues.")
+                : (resourceProfile.Id == "unknown"
+                    ? "这个 IPA 指纹尚未识别。\r\n\r\n启动器默认尝试程序内置高清文字组件和实验性 PC 操作兼容路径；该版本可能存在不完整行为。\r\n\r\n选择“是”立即尝试，选择“否”关闭这两项。之后仍可在启动器修改，并携带 IPA 指纹到 Community 提 issue。"
+                    : "这个已识别的旧 IPA 尚未完成游戏内全流程验收。\r\n\r\n启动器会使用已识别的兼容 profile 和程序内置高清文字组件，但该二进制的第12章操作仍可能不完整。\r\n\r\n选择“是”立即尝试，选择“否”关闭兼容路径。之后仍可在启动器修改，并携带 IPA 指纹到 Community 提 issue。");
+            DialogResult choice = MessageBox.Show(this, message, DeadSpaceUi.UiLanguage.English ? (resourceProfile.Id == "unknown" ? "Unrecognized IPA / Experimental compatibility" : "Legacy IPA / Verification warning") : (resourceProfile.Id == "unknown" ? "未识别 IPA / 实验性兼容" : "旧 IPA / 验收警告"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
             bool enabled = choice == DialogResult.Yes;
             overlayEnabled.Checked = enabled;
             nativeInputs.Checked = enabled;

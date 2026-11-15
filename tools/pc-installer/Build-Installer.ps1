@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory=$true)][string]$ProgramDirectory,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
-    [string]$ReleaseLabel = 'R6-dev'
+    [string]$ReleaseLabel = 'R4.9-pre'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,7 +29,7 @@ if (Test-Path -LiteralPath (Join-Path $programDirectory 'Assets/texture-packs'))
 New-Item -ItemType Directory -Path $outputDirectory | Out-Null
 $programZip = Join-Path $outputDirectory 'program-payload.zip'
 $uninstaller = Join-Path $outputDirectory 'DeadSpace-Uninstall.exe'
-$installer = Join-Path $outputDirectory ("DEAD-SPACE-MOBILE-PC-Installer-20261112-" + $ReleaseLabel + ".exe")
+$installer = Join-Path $outputDirectory ("DEAD-SPACE-MOBILE-PC-Installer-20261115-" + $ReleaseLabel + ".exe")
 
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem

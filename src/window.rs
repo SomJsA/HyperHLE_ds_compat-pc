@@ -1555,8 +1555,10 @@ impl Window {
     fn ds_sample_native_inputs(&mut self, options: &Options, focused: bool) {
         let now=Instant::now();let dt=now.saturating_duration_since(self.ds_native_input_tick).as_secs_f32().min(0.05);self.ds_native_input_tick=now;
         let background=ds_background_test();
+        let gameplay_ready = DS_GAMEPLAY_ACTIVE.load(std::sync::atomic::Ordering::Relaxed);
         let blocked=(!background && (!focused || self.ds_capture_suspended || self.ds_mouse_capture.forced_off || self.ds_alt_released || self.ds_gamepad_cursor_mode))
-            || crate::ds_frontend_controller::capture_menu() || crate::ds_frontend_controller::capture_scene_dialog();
+            || (!gameplay_ready && crate::ds_frontend_controller::capture_menu())
+            || (!gameplay_ready && crate::ds_frontend_controller::capture_scene_dialog());
         let mut x=0.0;let mut y=0.0;let mut pad_x=0.0;let mut pad_y=0.0;
         if !blocked {
             let gain: f32=std::env::var("TOUCHHLE_DS_KEY_STICK_GAIN").ok().and_then(|v|v.parse().ok()).unwrap_or(2.0);
@@ -1584,8 +1586,9 @@ impl Window {
         // and UI ownership still cancel everything; only NEW inbox commands
         // can start background movement, and cannot operate behind a modal.
         let diagnostic=self.ds_control_inbox.configured()
-            && !crate::ds_frontend_controller::capture_menu()
-            && !crate::ds_frontend_controller::capture_scene_dialog();
+            && (gameplay_ready
+                || (!crate::ds_frontend_controller::capture_menu()
+                    && !crate::ds_frontend_controller::capture_scene_dialog()));
         if diagnostic {if let Some(raw)=self.ds_diag_native_stick {x=raw.0;y=raw.1;}}
         let mut pending=DS_PC_INPUT.lock().unwrap();pending.x=x;pending.y=y;
         if !blocked {pending.look_x+=self.ds_look_accum.0+pad_x;pending.look_y+=self.ds_look_accum.1+pad_y;}
