@@ -4667,14 +4667,13 @@ impl Window {
             // menu navigation. Returning the focused native button here
             // unconditionally hid the OS cursor on the initial page until a
             // focus transition or a window switch refreshed SDL's cursor state.
-            if ds_native_pointer_enabled() && !self.ds_cursor_mode_active() {
-                if !self.ds_mouse_capture.captured {
-                    unsafe { sdl2_sys::SDL_ShowCursor(1); }
-                }
-                return None;
+            if !(ds_native_pointer_enabled() && !self.ds_cursor_mode_active()) {
+                let (x,y,w,h) = self.viewport();
+                return Some((x as f32+point.x*w as f32/480.0,y as f32+point.y*h as f32/320.0,false));
             }
-            let (x,y,w,h) = self.viewport();
-            return Some((x as f32+point.x*w as f32/480.0,y as f32+point.y*h as f32/320.0,false));
+            // Mouse/keyboard mode falls through to the native-pointer path
+            // below so it draws the internal blue pointer at the actual SDL
+            // mouse position instead of returning the focused button center.
         }
         // Native camera look must not also draw the legacy 20px touch cursor.
         // It remains available in explicit gamepad/click cursor mode.
