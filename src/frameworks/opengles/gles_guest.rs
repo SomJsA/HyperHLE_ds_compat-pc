@@ -306,17 +306,30 @@ pub(crate) fn ds_dump_presented_frame(env: &mut Environment, marked: bool) {
 // OnUpdatePostCamera computes leaf enablement using the target interaction
 // node's transform (including the kinesis offset), then projects its region.
 // Do not re-run CanInteract with a player transform: that is a different input.
-fn ds_live_region_bounds(env: &Environment, region: u32) -> Option<(i32, i32, i32, i32)> {
-    if region == 0 || env.mem.read(ConstPtr::<u8>::from_bits(region + 8)) == 0 {
+fn ds_live_region_bounds(
+    env: &Environment,
+    region: u32,
+    layout: ds_input_region::Layout,
+) -> Option<(i32, i32, i32, i32)> {
+    if region == 0 {
         return None;
     }
-    ds_input_region::visible_bounds(|offset| {
-        env.mem.read(ConstPtr::<u32>::from_bits(region + offset))
+    let flag = region.checked_add(8)?;
+    let enabled = env
+        .mem
+        .get_bytes_fallible(ConstVoidPtr::from_bits(flag), 1)?
+        .first()?;
+    if *enabled == 0 {
+        return None;
+    }
+    ds_input_region::visible_bounds(layout, |offset| {
+        ds_read_aim_word(env, region.checked_add(offset)?)
     })
 }
 
 pub(crate) fn ds_live_regions(env: &mut Environment) -> Vec<(u32, u32, i32, i32, i32, i32)> {
     let Some(profile) = ds_native_profile(env) else { return Vec::new(); };
+    let Some(layout) = profile.input_region_layout else { return Vec::new(); };
     let fwds: Vec<u32> = match ekey_fwds().lock() {
         Ok(v) => v.clone(),
         Err(_) => Vec::new(),
@@ -358,7 +371,7 @@ pub(crate) fn ds_live_regions(env: &mut Environment) -> Vec<(u32, u32, i32, i32,
             let r: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(
                 begin + (i as u32) * 8,
             ));
-            let Some((x, y, w, h)) = ds_live_region_bounds(env, r) else {
+            let Some((x, y, w, h)) = ds_live_region_bounds(env, r, layout) else {
                 continue;
             };
             out.push((code, owner, x, y, w, h));
@@ -649,6 +662,7 @@ fn ds_press_scene_action(
         ds_refresh_action_forwarders(env, 0);
     }
     let profile = ds_native_profile(env)?;
+    let layout = profile.input_region_layout?;
     let fwds: Vec<u32> = match ekey_fwds().lock() {
         Ok(v) => v.clone(),
         Err(_) => Vec::new(),
@@ -739,7 +753,7 @@ fn ds_press_scene_action(
             let r: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(
                 begin + (i as u32) * 8,
             ));
-            let Some((x, y, w, h)) = ds_live_region_bounds(env, r) else {
+            let Some((x, y, w, h)) = ds_live_region_bounds(env, r, layout) else {
                 continue;
             };
             let dx = (x + w / 2 - 240) as i64;
@@ -1263,6 +1277,7 @@ struct DsNativeProfile {
     player_vptr: u32,
     action_forwarder_vptr: u32,
     pickup_vptr: u32,
+    input_region_layout: Option<ds_input_region::Layout>,
     vector_event_vptr: u32,
     vector_guard_addr: Option<u32>,
     vector_guard_value: Option<u32>,
@@ -1295,6 +1310,11 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             player_vptr: 0x00a7_a4f8,
             action_forwarder_vptr: 0x00a7_d1e8,
             pickup_vptr: 0x00a7_e158,
+            input_region_layout: Some(ds_input_region::Layout {
+                circle: 0x00a6_2ca8,
+                rectangle: 0x00a6_3278,
+                extent: [480, 320],
+            }),
             vector_event_vptr: 0x00a6_2e18,
             vector_guard_addr: Some(0x00a6_2e14),
             vector_guard_value: Some(0x00a6_1e98),
@@ -1319,6 +1339,11 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             player_vptr: 0x0077_0328,
             action_forwarder_vptr: 0x0077_3018,
             pickup_vptr: 0x0077_3f88,
+            input_region_layout: Some(ds_input_region::Layout {
+                circle: 0x0075_b368,
+                rectangle: 0x0075_b918,
+                extent: [1024, 768],
+            }),
             vector_event_vptr: 0x0075_b4b8,
             vector_guard_addr: Some(0x0075_b4b4),
             vector_guard_value: Some(0x0075_a658),
@@ -1344,6 +1369,7 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             player_vptr: 0x0074_b908,
             action_forwarder_vptr: 0x0074_e5f8,
             pickup_vptr: 0x0074_f568,
+            input_region_layout: None,
             vector_event_vptr: 0x0072_e988,
             vector_guard_addr: None,
             vector_guard_value: None,
@@ -1378,6 +1404,11 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
                 player_vptr: 0x0075_8308,
                 action_forwarder_vptr: 0x0075_aff8,
                 pickup_vptr: 0x0075_bf68,
+                input_region_layout: Some(ds_input_region::Layout {
+                    circle: 0x0074_36e8,
+                    rectangle: 0x0074_3c98,
+                    extent: [480, 320],
+                }),
                 vector_event_vptr: 0x0074_3838,
                 vector_guard_addr: None,
                 vector_guard_value: None,
@@ -6151,7 +6182,9 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                     Ok(v) => v.clone(),
                     Err(_) => Vec::new(),
                 };
+                let region_layout = ds_native_profile(env).and_then(|profile| profile.input_region_layout);
                 'outer: for o in &objs {
+                    let Some(layout) = region_layout else { break; };
                     let live: u8 = env
                         .mem
                         .read(crate::mem::ConstPtr::<u8>::from_bits(*o + 0x164));
@@ -6194,7 +6227,7 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
                             let r: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(
                                 begin + (i as u32) * 8,
                             ));
-                            let Some((x, y, w, h)) = ds_live_region_bounds(env, r) else {
+                            let Some((x, y, w, h)) = ds_live_region_bounds(env, r, layout) else {
                                 continue;
                             };
                             let px = x as f64 + w as f64 / 2.0;
