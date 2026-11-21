@@ -53,6 +53,23 @@ recursive decrement yields, the waiter becomes owner exactly once, disabled
 immediate reacquisition remains possible, and errors/uncontended release do not
 yield. No new API, unsafe scheduling primitive or forced lock ownership is used.
 
+## R6 legacy shutdown verification
+
+On iPad World 1.3.11, the same runtime and original IPA were tested paused in
+player state 9 in `01_survival`. With the handoff disabled, the render thread
+reacquired mutex 6 while the resign callback waited 17.082 seconds. With the
+handoff enabled, the callback completed in 24 ms after the first contended
+release. Whole-window shutdown took 17.422 and 0.312 seconds respectively.
+Both runs completed the original callbacks and notifications and exited with
+code 0.
+
+The `R6-test-33e87014` installer packages runtime commit `33e87014`. Fresh
+isolated installs used the existing `vandal.marker` and the original World
+1.0.1 and iPhone 1.0.3 IPAs. The installed iPhone and 1.3.34 marker runtimes
+both resumed a copied checkpoint, paused, resumed, moved, and closed through
+the complete native lifecycle. Installer regression also verified upgrading
+an existing GameData directory without reselecting a resource file.
+
 ## Finite quiet-runner cleanup
 
 `tools/pc-runtime/Start-QuietPerfRun.py` now requests native window close for its
