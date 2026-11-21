@@ -274,10 +274,26 @@ impl Environment {
             && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34")
             && !verified_ipad_1311;
         if legacy_deadspace {
-            for name in ["TOUCHHLE_DS_NATIVE_INPUTS", "TOUCHHLE_DS_NATIVE_HUD", "TOUCHHLE_DS_FRONTEND_NAV"] {
-                unsafe { std::env::set_var(name, "0"); }
+            let probe_iphone_gameplay = cfg!(all(windows, target_arch = "x86_64"))
+                && launched_bundle_id == "com.ea.deadspace.inc"
+                && bundle.bundle_version() == "1.3.8" // displayed as 1.0.3
+                && window::ds_background_test()
+                && window::ds_native_inputs();
+            // The isolated gameplay probe still requires the loaded ARMv7
+            // fingerprint and a verified HUD/player before dispatching input.
+            // Its frontend and HUD continue to use the game's touch path.
+            unsafe {
+                if !probe_iphone_gameplay {
+                    std::env::set_var("TOUCHHLE_DS_NATIVE_INPUTS", "0");
+                }
+                std::env::set_var("TOUCHHLE_DS_NATIVE_HUD", "0");
+                std::env::set_var("TOUCHHLE_DS_FRONTEND_NAV", "0");
             }
-            echo!("[DSlegacy] original touch controls retained; 1.3.34 native PC enhancements are unavailable for this edition");
+            if probe_iphone_gameplay {
+                echo!("[DSlegacy] isolated iPhone 1.0.3 native gameplay probe requested");
+            } else {
+                echo!("[DSlegacy] original touch controls retained; 1.3.34 native PC enhancements are unavailable for this edition");
+            }
             // The tablet edition declares landscape-right interface content,
             // opposite to the phone edition's device rotation. The PC launcher
             // supplies --landscape-right for phones; honour the tablet plist

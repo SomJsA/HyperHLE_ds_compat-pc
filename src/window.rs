@@ -1366,7 +1366,7 @@ pub struct Window {
 
 // Shared contract with translation branch a2af13e: hidden at creation only
 // for an explicit private control-inbox test; ordinary launches are unchanged.
-fn ds_background_test() -> bool {
+pub(crate) fn ds_background_test() -> bool {
     static ENABLED:std::sync::OnceLock<bool>=std::sync::OnceLock::new();
     *ENABLED.get_or_init(||cfg!(target_os="windows")
         && std::env::var("TOUCHHLE_DS_BACKGROUND_TEST").as_deref()==Ok("1")

@@ -1351,6 +1351,41 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             can_telekinesis: 0x0003_4770,
             start_telekinesis: 0x0004_3c24,
         }),
+        // This is the ARMv7 slice selected from the iPhone 1.0.3 fat image.
+        // Its player/HUD layout matches the newer iPad images, but its native
+        // calls and event vtables are at different addresses from ARMv6.
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        ("com.ea.deadspace.inc", 0x0002_a73c, 0x0004_d93c)
+            if env.bins[0].executable_sha256 == Some([
+                0x88, 0x4d, 0x4c, 0x2c, 0x6d, 0xfa, 0x86, 0xcb,
+                0x34, 0x35, 0x7b, 0x00, 0xd7, 0x1f, 0xd6, 0x41,
+                0xdd, 0xdf, 0xf2, 0x6f, 0x1a, 0x9a, 0xfb, 0x82,
+                0xa8, 0x4c, 0xb9, 0x7e, 0x46, 0x8b, 0x93, 0xf8,
+            ]) =>
+        {
+            Some(DsNativeProfile {
+                name: "iphone-armv7-1.0.3",
+                get_hud,
+                get_hud_sig: [
+                    0xe92d_4080,
+                    0xe1a0_700d,
+                    0xebff_7ec1,
+                    0xebff_625b,
+                    0xe590_0000,
+                    0xe280_0e25,
+                    0xe8bd_8080,
+                ],
+                player_vptr: 0x0075_8308,
+                action_forwarder_vptr: 0x0075_aff8,
+                pickup_vptr: 0x0075_bf68,
+                vector_event_vptr: 0x0074_3838,
+                vector_guard_addr: None,
+                vector_guard_value: None,
+                action_event_vptr: 0x0074_37f8,
+                can_telekinesis: 0x0003_4fb0,
+                start_telekinesis: 0x0004_4a68,
+            })
+        }
         _ => None,
     }
 }
