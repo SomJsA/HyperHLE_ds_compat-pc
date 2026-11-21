@@ -1948,7 +1948,30 @@ fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) -> bool {
             return false;
         }
     } else {
-        let set_aiming = GuestFunction::from_addr_and_thumb_flag(0x0003f884, false);
+        // The verified legacy player layouts share the aim flag offset with
+        // 1.3.34, but SetAiming itself is at a different address in each image.
+        // Read the selected Mach-O's symbol and verify its ARM body prefix.
+        let Some(&address) = env.bins[0]
+            .exported_symbols
+            .get("__ZN18GameObjectPlayable9SetAimingEb")
+        else {
+            return false;
+        };
+        const SET_AIMING_PREFIX: [u32; 7] = [
+            0xe92d_40f0, 0xe28d_700c, 0xe52d_8004, 0xe5d0_21e1,
+            0xe152_0001, 0x0a00_004f, 0xe1a0_5000,
+        ];
+        if address & 3 != 0
+            || !SET_AIMING_PREFIX.iter().enumerate().all(|(index, word)| {
+                address
+                    .checked_add(index as u32 * 4)
+                    .and_then(|offset| ds_read_aim_word(env, offset))
+                    == Some(*word)
+            })
+        {
+            return false;
+        }
+        let set_aiming = GuestFunction::from_addr_and_thumb_flag(address, false);
         let _: () = set_aiming.call_from_host(env, (player, 0u32));
     }
     let after: u8 = env
