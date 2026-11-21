@@ -2600,14 +2600,6 @@ fn ds_publish_aim_flag(env: &mut Environment) {
 /// in `ds_send_action` logs one `before`/`after` pair, which is how the
 /// unmapped codes in DECOMPILE.md D-034 get pinned down.
 fn ds_log_player_gauges(env: &mut Environment, player: u32, tag: &str) {
-    if crate::window::ds_native_inputs() && player!=0 {
-        let pitch:f32=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1a8));
-        let x:f32=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1b0));
-        let z:f32=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1b8));
-        let running:u8=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1e0));
-        echo!("[DSpcProbe] {} pitch={:.4} move=({:.4},{:.4}) running={}",tag,pitch,x,z,running);
-    }
-
     if player == 0 {
         return;
     }
@@ -2619,6 +2611,27 @@ fn ds_log_player_gauges(env: &mut Environment, player: u32, tag: &str) {
             tag,
             player,
             vt
+        );
+        return;
+    }
+    if crate::window::ds_native_inputs() {
+        let pitch:f32=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1a8));
+        let x:f32=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1b0));
+        let z:f32=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1b8));
+        let running:u8=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1e0));
+        echo!("[DSpcProbe] {} pitch={:.4} move=({:.4},{:.4}) running={}",tag,pitch,x,z,running);
+    }
+    if profile.name != "current-1.3.34" {
+        let aiming: u8 = env.mem.read(crate::mem::ConstPtr::from_bits(player + 0x1e1));
+        let state = ds_read_aim_word(env, player + 0x208);
+        let selected = profile.combat
+            .and_then(|layout| ds_selected_fire_weapon(env, player, layout));
+        // Weapon::GetAmmoInClip is a load from +0x168 in every mapped profile.
+        let clip = selected.and_then(|(_, weapon, _)| ds_read_aim_word(env, weapon + 0x168));
+        echo!(
+            "[DSgauge] {tag} profile={} aiming={aiming} state={state:?} selected={:?} clip={clip:?}",
+            profile.name,
+            selected.map(|(index, _, _)| index),
         );
         return;
     }
@@ -6727,7 +6740,9 @@ fn glClear(env: &mut Environment, mask: GLbitfield) {
             // (`Weapon::SetAmmo(0)`, slot 111 / 0x000701d8) so the *next* R press
             // has something to reload - that turns "R works" into the numeric
             // criterion `clip 0/N -> N/N` in `[DSgauge]`.
-            if std::env::var_os("TOUCHHLE_DS_EMPTY_CLIP").is_some() {
+            if std::env::var_os("TOUCHHLE_DS_EMPTY_CLIP").is_some()
+                && ds_native_profile(env).is_some_and(|profile| profile.name == "current-1.3.34")
+            {
                 static EMPTIED: std::sync::atomic::AtomicBool =
                     std::sync::atomic::AtomicBool::new(false);
                 if !EMPTIED.swap(true, std::sync::atomic::Ordering::Relaxed) {
