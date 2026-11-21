@@ -3,7 +3,10 @@
 //! These are the original game's actions, including its animation, busy-state
 //! guards and tutorial flags. Never replace them with camera rotation, guessed
 //! double taps, or writes to the player's/tutorial's state.
-use super::{ds_current_hud_player, ds_native_profile, ds_refresh_action_forwarders, ekey_fwds};
+use super::{
+    ds_current_hud_player, ds_dispatch_action_forwarder, ds_native_profile,
+    ds_refresh_action_forwarders, ekey_fwds, DsNativeProfile,
+};
 use crate::abi::{CallFromHost, GuestFunction};
 use crate::mem::ConstVoidPtr;
 use crate::Environment;
@@ -148,11 +151,11 @@ fn reset_target_popup(env: &mut Environment, hud: u32, reset_popup: u32) -> bool
     true
 }
 
-fn turn_forwarder(env: &mut Environment, player: u32) -> Option<u32> {
+fn turn_forwarder(env: &mut Environment, player: u32, action_forwarder_vptr: u32) -> Option<u32> {
     static CACHED: AtomicU64 = AtomicU64::new(0);
     let valid = |env: &Environment, fwd: u32| {
         fwd != 0
-            && word(env, fwd) == Some(0x00a7_d1e8)
+            && word(env, fwd) == Some(action_forwarder_vptr)
             && word(env, fwd + 0x1c) == Some(8)
             && word(env, fwd + 8) == Some(player)
             && env
@@ -182,8 +185,42 @@ fn turn_forwarder(env: &mut Environment, player: u32) -> Option<u32> {
     None
 }
 
+fn legacy_turn_supported(env: &Environment, profile: DsNativeProfile) -> bool {
+    // The older ARMv7 handlers inline the turn preconditions in action 8.
+    // Validate its jump-table entry and the instructions writing state 2 and
+    // the tutorial flag. These profiles already verify the loaded executable.
+    if profile.combat.is_none() {
+        return false;
+    }
+    let (slot, destination, transition, signature) = match profile.player_on_event {
+        0x0004_d93c => (0x0004_dd18, 0x0000_0410, 0x0004_e25c,
+                        [0xe596_4204, 0xe3a0_1002, 0xe384_4a01, 0xe586_4204]),
+        0x0004_5118 => (0x0004_54f4, 0x0000_0410, 0x0004_5a38,
+                        [0xe596_4204, 0xe3a0_1002, 0xe384_4a01, 0xe586_4204]),
+        0x0006_d700 => (0x0006_d840, 0xea00_017b, 0x0006_def0,
+                        [0xe596_2204, 0xe3a0_1002, 0xe382_0a01, 0xe586_0204]),
+        0x0009_3020 => (0x0009_3160, 0x0009_3714, 0x0009_3834,
+                        [0xe596_1204, 0xe381_0a01, 0xe3a0_1002, 0xe586_0204]),
+        _ => return false,
+    };
+    word(env, slot) == Some(destination)
+        && signature.iter().enumerate().all(|(i, &expected)| {
+            word(env, transition + i as u32 * 4) == Some(expected)
+        })
+}
+
 fn quick_turn(env: &mut Environment) {
-    let Some((hud, player)) = supported(env).then(|| live_player(env)).flatten() else {
+    let Some(profile) = ds_native_profile(env) else {
+        echo!("[DSshortcut] quick-turn ignored: unsupported native layout");
+        return;
+    };
+    let current = profile.get_hud == 0x0003_0474;
+    let has_turn = if current { supported(env) } else { legacy_turn_supported(env, profile) };
+    if !has_turn {
+        echo!("[DSshortcut] quick-turn ignored: unsupported native layout");
+        return;
+    }
+    let Some((hud, player)) = live_player(env) else {
         echo!("[DSshortcut] quick-turn ignored: no active gameplay player");
         return;
     };
@@ -192,21 +229,27 @@ fn quick_turn(env: &mut Environment) {
         echo!("[DSshortcut] quick-turn ignored: player state={before}");
         return;
     }
-    let allowed: u32 =
-        GuestFunction::from_addr_and_thumb_flag(0x0003_aee8, false).call_from_host(env, (player,));
-    if allowed == 0 {
-        echo!("[DSshortcut] quick-turn ignored: CanQuickTurn rejected");
-        return;
+    if current {
+        let allowed: u32 =
+            GuestFunction::from_addr_and_thumb_flag(0x0003_aee8, false).call_from_host(env, (player,));
+        if allowed == 0 {
+            echo!("[DSshortcut] quick-turn ignored: CanQuickTurn rejected");
+            return;
+        }
     }
-    let Some(fwd) = turn_forwarder(env, player) else {
+    let Some(fwd) = turn_forwarder(env, player, profile.action_forwarder_vptr) else {
         echo!("[DSshortcut] quick-turn ignored: no enabled current-player action-8 forwarder");
         return;
     };
-    // The real forwarder constructs and dispatches the original C++ event.
-    // OnEvent enters native state 2 and sets action flag 0x1000, which
-    // TutorialAnim::OnUpdateQuickTurnTutorial tests at ARM 0x002cb320.
-    let _: () =
-        GuestFunction::from_addr_and_thumb_flag(0x000e_55cc, false).call_from_host(env, (fwd,));
+    // OnEvent enters native state 2 and sets the action flag checked by the
+    // quick-turn tutorial. Only the current image exports the sender.
+    if current {
+        let _: () =
+            GuestFunction::from_addr_and_thumb_flag(0x000e_55cc, false).call_from_host(env, (fwd,));
+    } else if ds_dispatch_action_forwarder(env, fwd, 8).is_none() {
+        echo!("[DSshortcut] quick-turn ignored: native action dispatch rejected");
+        return;
+    }
     echo!(
         "[DSshortcut] quick-turn native player={:#x} fwd={:#x} state={}->{} flags={:#x} hud={}",
         player,
