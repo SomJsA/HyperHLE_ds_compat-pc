@@ -1308,6 +1308,7 @@ struct DsNativeProfile {
     name: &'static str,
     get_hud: u32,
     get_hud_sig: [u32; 7],
+    player_on_event: u32,
     player_vptr: u32,
     action_forwarder_vptr: u32,
     pickup_vptr: u32,
@@ -1322,17 +1323,27 @@ struct DsNativeProfile {
 }
 
 fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
-    let get_hud = *env.bins[0].exported_symbols.get("__ZN10GameObject6GetHudEv")?;
-    let player_on_event = *env
-        .bins[0]
-        .exported_symbols
-        .get("__ZN18GameObjectPlayable7OnEventERKN2im5EventE")?;
     let bundle = env.bundle.bundle_identifier();
+    let symbols = &env.bins[0].exported_symbols;
+    let (get_hud, player_on_event) = if bundle == "com.ea.deadspace.bv"
+        && env.bundle.bundle_version() == "1.0.1"
+    {
+        (
+            *symbols.get("__ZN10GameObject6getHudEv")?,
+            *symbols.get("__ZN18GameObjectPlayable7onEventERKN2im5EventE")?,
+        )
+    } else {
+        (
+            *symbols.get("__ZN10GameObject6GetHudEv")?,
+            *symbols.get("__ZN18GameObjectPlayable7OnEventERKN2im5EventE")?,
+        )
+    };
     match (bundle, get_hud, player_on_event) {
         // 1.3.34 ARMv7.  This is the original profile used by the PC path.
         ("com.ea.deadspace.bv", 0x0003_0474, 0x0005_3dc8) => Some(DsNativeProfile {
             name: "current-1.3.34",
             get_hud,
+            player_on_event,
             get_hud_sig: [
                 0xe92d_4080,
                 0xe1a0_700d,
@@ -1371,6 +1382,7 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
         ("com.ea.deadspace.ipad.bv", 0x0002_1f18, 0x0004_5118) => Some(DsNativeProfile {
             name: "ipad-armv7-1.0.3/1.3.11",
             get_hud,
+            player_on_event,
             get_hud_sig: [
                 0xe92d_4080,
                 0xe1a0_700d,
@@ -1399,12 +1411,65 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             can_telekinesis: 0x0002_c78c,
             start_telekinesis: 0x0003_c244,
         }),
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        ("com.ea.deadspace.ipad.bv", 0x0003_62f0, 0x0006_d700)
+            if crate::window::ds_background_test() && crate::window::ds_native_inputs()
+                && env.bins[0].executable_sha256 == Some([
+                    0x28, 0x88, 0x8b, 0x16, 0xcf, 0x63, 0xe7, 0xb5,
+                    0x48, 0xf1, 0x97, 0xd0, 0x46, 0xf7, 0x1b, 0xb6,
+                    0x58, 0xa0, 0xba, 0x05, 0xdd, 0x3f, 0xb3, 0x3d,
+                    0x01, 0x5f, 0x64, 0xc8, 0x20, 0x02, 0x2d, 0x2f,
+                ]) => Some(DsNativeProfile {
+            name: "ipad-armv7-early-1.0.3",
+            get_hud,
+            player_on_event,
+            get_hud_sig: [0xe92d_4080, 0xe28d_7000, 0xeb0a_1a14, 0xeb0a_151f, 0xe590_0000, 0xe280_0e25, 0xe8bd_8080],
+            player_vptr: 0x007a_38ec,
+            action_forwarder_vptr: 0x007a_73b4,
+            pickup_vptr: 0x007a_8884,
+            input_region_layout: None,
+            combat: None,
+            vector_event_vptr: 0x007a_704c,
+            vector_guard_addr: Some(0x007a_7048),
+            vector_guard_value: Some(0x007a_3c54),
+            action_event_vptr: 0x007a_6f98,
+            can_telekinesis: 0x0004_96a0,
+            start_telekinesis: 0x0005_ee10,
+        }),
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        ("com.ea.deadspace.bv", 0x0006_1fa0, 0x0009_3020)
+            if crate::window::ds_background_test() && crate::window::ds_native_inputs()
+                && env.bins[0].executable_sha256 == Some([
+                    0x53, 0x95, 0xdb, 0x93, 0x1d, 0x69, 0xe7, 0xec,
+                    0x97, 0x87, 0xf2, 0x3b, 0x71, 0x2d, 0x80, 0x2e,
+                    0x86, 0xc5, 0xf6, 0x60, 0xc8, 0x86, 0x37, 0x63,
+                    0x1d, 0xf4, 0x8b, 0xa1, 0x20, 0xc8, 0x07, 0x3e,
+                ]) => Some(DsNativeProfile {
+            name: "world-armv7-1.0.1",
+            get_hud,
+            player_on_event,
+            get_hud_sig: [0xe92d_4080, 0xe28d_7000, 0xebff_138c, 0xebff_0ddb, 0xe590_0000, 0xe280_0d09, 0xe8bd_8080],
+            player_vptr: 0x006e_068c,
+            action_forwarder_vptr: 0x006e_3fb8,
+            pickup_vptr: 0x006e_542c,
+            input_region_layout: None,
+            combat: None,
+            vector_event_vptr: 0x006e_3c50,
+            // RTTI is bound at load time in this image. Check the original
+            // vector event's local virtual method instead of the disk RTTI slot.
+            vector_guard_addr: Some(0x006e_3c58),
+            vector_guard_value: Some(0x0012_c650),
+            action_event_vptr: 0x006e_3bb4,
+            can_telekinesis: 0x0007_37d0,
+            start_telekinesis: 0x0008_5310,
+        }),
         // The iPhone 1.0.3 ARMv6 binary has the same object field layout but a
         // separate code/vtable image. Its event RTTI slot is zero, so the
         // profile is verified by GetHud and the exported player handler.
         ("com.ea.deadspace.inc", 0x0002_a1dc, 0x0004_c810) => Some(DsNativeProfile {
             name: "iphone-armv6-1.0.3",
             get_hud,
+            player_on_event,
             get_hud_sig: [
                 0xe92d_4080,
                 0xe1a0_700d,
@@ -1441,6 +1506,7 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             Some(DsNativeProfile {
                 name: "iphone-armv7-1.0.3",
                 get_hud,
+                player_on_event,
                 get_hud_sig: [
                     0xe92d_4080,
                     0xe1a0_700d,
@@ -1832,7 +1898,7 @@ fn ds_native_vector(env: &mut Environment, player: u32, kind: u32, x: f32, y: f3
         return false;
     }
     let on_event = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(player_vptr + 8));
-    if !(0x1000..0x0100_0000).contains(&on_event) {
+    if on_event != profile.player_on_event {
         env.mem.free(event);
         return false;
     }
@@ -2088,18 +2154,28 @@ fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) -> bool {
         // The verified legacy player layouts share the aim flag offset with
         // 1.3.34, but SetAiming itself is at a different address in each image.
         // Read the selected Mach-O's symbol and verify its ARM body prefix.
-        let Some(&address) = env.bins[0]
-            .exported_symbols
-            .get("__ZN18GameObjectPlayable9SetAimingEb")
-        else {
+        let Some(profile) = ds_native_profile(env) else {
             return false;
         };
-        const SET_AIMING_PREFIX: [u32; 7] = [
-            0xe92d_40f0, 0xe28d_700c, 0xe52d_8004, 0xe5d0_21e1,
-            0xe152_0001, 0x0a00_004f, 0xe1a0_5000,
-        ];
+        let (symbol, prefix) = match profile.get_hud {
+            0x0003_62f0 => (
+                "__ZN18GameObjectPlayable9SetAimingEb",
+                [0xe92d_40f0, 0xe28d_700c, 0xe52d_8004, 0xe5d0_31e1, 0xe6ef_6071, 0xe1a0_4000, 0xe153_0006],
+            ),
+            0x0006_1fa0 => (
+                "__ZN18GameObjectPlayable9setAimingEb",
+                [0xe92d_40f0, 0xe28d_700c, 0xe52d_8004, 0xe5d0_31e1, 0xe6ef_5071, 0xe1a0_4000, 0xe153_0005],
+            ),
+            _ => (
+                "__ZN18GameObjectPlayable9SetAimingEb",
+                [0xe92d_40f0, 0xe28d_700c, 0xe52d_8004, 0xe5d0_21e1, 0xe152_0001, 0x0a00_004f, 0xe1a0_5000],
+            ),
+        };
+        let Some(&address) = env.bins[0].exported_symbols.get(symbol) else {
+            return false;
+        };
         if address & 3 != 0
-            || !SET_AIMING_PREFIX.iter().enumerate().all(|(index, word)| {
+            || !prefix.iter().enumerate().all(|(index, word)| {
                 address
                     .checked_add(index as u32 * 4)
                     .and_then(|offset| ds_read_aim_word(env, offset))

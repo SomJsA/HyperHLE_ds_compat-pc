@@ -274,23 +274,27 @@ impl Environment {
             && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34")
             && !verified_ipad_1311;
         if legacy_deadspace {
-            let probe_iphone_gameplay = cfg!(all(windows, target_arch = "x86_64"))
-                && launched_bundle_id == "com.ea.deadspace.inc"
-                && bundle.bundle_version() == "1.3.8" // displayed as 1.0.3
+            let probe_legacy_gameplay = cfg!(all(windows, target_arch = "x86_64"))
+                && matches!(
+                    (launched_bundle_id.as_str(), bundle.bundle_version()),
+                    ("com.ea.deadspace.inc", "1.3.8") // displayed as 1.0.3
+                    | ("com.ea.deadspace.ipad.bv", "1.0.3")
+                    | ("com.ea.deadspace.bv", "1.0.1")
+                )
                 && window::ds_background_test()
                 && window::ds_native_inputs();
-            // The isolated gameplay probe still requires the loaded ARMv7
-            // fingerprint and a verified HUD/player before dispatching input.
+            // Isolated gameplay still requires the loaded ARMv7 fingerprint
+            // and a verified HUD/player before dispatching input.
             // Its frontend and HUD continue to use the game's touch path.
             unsafe {
-                if !probe_iphone_gameplay {
+                if !probe_legacy_gameplay {
                     std::env::set_var("TOUCHHLE_DS_NATIVE_INPUTS", "0");
                 }
                 std::env::set_var("TOUCHHLE_DS_NATIVE_HUD", "0");
                 std::env::set_var("TOUCHHLE_DS_FRONTEND_NAV", "0");
             }
-            if probe_iphone_gameplay {
-                echo!("[DSlegacy] isolated iPhone 1.0.3 native gameplay probe requested");
+            if probe_legacy_gameplay {
+                echo!("[DSlegacy] isolated native gameplay probe requested for {} build {}", launched_bundle_id, bundle.bundle_version());
             } else {
                 echo!("[DSlegacy] original touch controls retained; 1.3.34 native PC enhancements are unavailable for this edition");
             }
