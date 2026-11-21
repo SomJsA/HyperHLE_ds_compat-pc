@@ -1270,6 +1270,40 @@ fn ds_hud_player_cache_report(hit: bool) {
 }
 
 #[derive(Clone, Copy, Debug)]
+struct DsCombatLayout {
+    plasma_cutter: u32,
+    weapons_with_busy_state: [u32; 3],
+    burst_rifle: u32,
+    plasma_filter_target: u32,
+    plasma_filter_value: u32,
+    aim_timeout_load: u32,
+    tweaks_get: u32,
+}
+
+const DS_IPAD_COMBAT: DsCombatLayout = DsCombatLayout {
+    plasma_cutter: 0x0077_0b18,
+    weapons_with_busy_state: [0x0077_1828, 0x0077_1ff8, 0x0077_3cd8],
+    burst_rifle: 0x0078_0028,
+    plasma_filter_target: 0x0004_e708,
+    plasma_filter_value: 0x0004_e798,
+    aim_timeout_load: 0x0004_6838,
+    tweaks_get: 0x0006_d3c8,
+};
+
+const DS_IPAD_COMBAT_IMAGES: [[u8; 32]; 2] = [
+    [
+        0x4b, 0xe1, 0xa4, 0x81, 0xca, 0x91, 0x27, 0xdd, 0x11, 0x8a, 0x70, 0x88, 0xb2, 0x81,
+        0x0f, 0xb1, 0xfd, 0x86, 0xe6, 0x92, 0x10, 0xd9, 0x52, 0xf2, 0x48, 0x33, 0x5b, 0x9a,
+        0x07, 0xb7, 0x97, 0xa6,
+    ],
+    [
+        0xdf, 0xaf, 0x97, 0x9d, 0x07, 0x26, 0xde, 0x92, 0x5d, 0x80, 0x3c, 0x4b, 0xaa, 0x91,
+        0x08, 0xac, 0xf7, 0xfd, 0xbf, 0xae, 0x22, 0x16, 0x18, 0xb1, 0x1e, 0xc1, 0xb3, 0x15,
+        0xe9, 0xc9, 0x30, 0x5b,
+    ],
+];
+
+#[derive(Clone, Copy, Debug)]
 struct DsNativeProfile {
     name: &'static str,
     get_hud: u32,
@@ -1278,6 +1312,7 @@ struct DsNativeProfile {
     action_forwarder_vptr: u32,
     pickup_vptr: u32,
     input_region_layout: Option<ds_input_region::Layout>,
+    combat: Option<DsCombatLayout>,
     vector_event_vptr: u32,
     vector_guard_addr: Option<u32>,
     vector_guard_value: Option<u32>,
@@ -1315,6 +1350,15 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
                 rectangle: 0x00a6_3278,
                 extent: [480, 320],
             }),
+            combat: Some(DsCombatLayout {
+                plasma_cutter: 0x00a7_ace8,
+                weapons_with_busy_state: [0x00a7_b9f8, 0x00a7_c1c8, 0x00a7_dea8],
+                burst_rifle: 0x00a8_a498,
+                plasma_filter_target: 0x0005_d520,
+                plasma_filter_value: 0x0005_d660,
+                aim_timeout_load: 0x0005_5518,
+                tweaks_get: 0x0007_e448,
+            }),
             vector_event_vptr: 0x00a6_2e18,
             vector_guard_addr: Some(0x00a6_2e14),
             vector_guard_value: Some(0x00a6_1e98),
@@ -1344,6 +1388,10 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
                 rectangle: 0x0075_b918,
                 extent: [1024, 768],
             }),
+            combat: env.bins[0]
+                .executable_sha256
+                .filter(|digest| DS_IPAD_COMBAT_IMAGES.contains(digest))
+                .map(|_| DS_IPAD_COMBAT),
             vector_event_vptr: 0x0075_b4b8,
             vector_guard_addr: Some(0x0075_b4b4),
             vector_guard_value: Some(0x0075_a658),
@@ -1370,6 +1418,7 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
             action_forwarder_vptr: 0x0074_e5f8,
             pickup_vptr: 0x0074_f568,
             input_region_layout: None,
+            combat: None,
             vector_event_vptr: 0x0072_e988,
             vector_guard_addr: None,
             vector_guard_value: None,
@@ -1408,6 +1457,15 @@ fn ds_native_profile(env: &Environment) -> Option<DsNativeProfile> {
                     circle: 0x0074_36e8,
                     rectangle: 0x0074_3c98,
                     extent: [480, 320],
+                }),
+                combat: Some(DsCombatLayout {
+                    plasma_cutter: 0x0075_8af8,
+                    weapons_with_busy_state: [0x0075_9808, 0x0075_9fd8, 0x0075_bcb8],
+                    burst_rifle: 0x0076_7f08,
+                    plasma_filter_target: 0x0005_6cec,
+                    plasma_filter_value: 0x0005_6d7c,
+                    aim_timeout_load: 0x0004_f05c,
+                    tweaks_get: 0x0007_59ac,
                 }),
                 vector_event_vptr: 0x0074_3838,
                 vector_guard_addr: None,
@@ -1849,10 +1907,14 @@ fn ds_apply_pc_inputs(env:&mut Environment) {
     crate::window::DS_AIM_ACTIVE.store(after!=0,std::sync::atomic::Ordering::Relaxed);
 }
 
-fn ds_pc_fire_current_mode(env:&mut Environment) {
-    let Some((hud,player))=ds_current_hud_player(env) else{return;};
-    let state:u32=env.mem.read(crate::mem::ConstPtr::from_bits(hud+0x234));
-    if state==0 {let result=ds_send_player_fire_action(env,player);echo!("[DSpc] native tap/fire current mode dispatched={}",result.is_some());}
+fn ds_pc_fire_current_mode(env: &mut Environment, expected_player: u32) -> bool {
+    let Some((hud, player)) = ds_current_hud_player(env) else { return false; };
+    if player != expected_player || ds_read_aim_word(env, hud + 0x234) != Some(0) {
+        return false;
+    }
+    let dispatched = ds_send_player_fire_action(env, player).is_some();
+    echo!("[DSpc] native tap/fire current mode dispatched={dispatched}");
+    dispatched
 }
 
 const DS_HELD_AIM_TIMEOUT: u32 = 0x7fff_ffff;
@@ -1916,12 +1978,21 @@ fn ds_update_aim_timeout(env: &mut Environment) {
     // Exact original OnUpdate instruction: ldr r0,[r0,#0x1bc] after Tweaks::get.
     // Only the idle timeout is leased. Sprint/damage/reload/QTE can still lower
     // the weapon; this never re-enters aim after a native cancellation.
-    if ds_read_aim_word(env, 0x00055518) != Some(0xe59001bc) {
+    let Some(combat) = ds_native_profile(env).and_then(|profile| profile.combat) else {
+        env.framework_state.opengles.ds_aim_hold_requested = false;
+        return;
+    };
+    let displacement = (combat.tweaks_get.wrapping_sub(combat.aim_timeout_load + 4) >> 2)
+        & 0x00ff_ffff;
+    if ds_read_aim_word(env, combat.aim_timeout_load - 4) != Some(0xeb00_0000 | displacement)
+        || ds_read_aim_word(env, combat.aim_timeout_load) != Some(0xe590_01bc)
+    {
         env.framework_state.opengles.ds_aim_hold_requested = false;
         echo!("[DSaimControl] hold timeout disabled: executable signature mismatch");
         return;
     }
-    let tweaks: u32 = GuestFunction::from_addr_and_thumb_flag(0x0007e448, false).call_from_host(env, ());
+    let tweaks: u32 =
+        GuestFunction::from_addr_and_thumb_flag(combat.tweaks_get, false).call_from_host(env, ());
     let Some(address) = tweaks.checked_add(0x1bc).filter(|_| tweaks != 0) else { return; };
     let Some(original) = ds_read_aim_word(env, address).filter(|v| (1..=600_000).contains(v)) else {
         env.framework_state.opengles.ds_aim_hold_requested = false;
@@ -2140,29 +2211,67 @@ fn ds_gamepad_context_combat(env: &mut Environment) {
     ds_call_gamepad_combat(env, label, addr);
 }
 
-fn ds_fire_snapshot(env:&mut Environment)->Option<crate::window::ds_fire_control::Snapshot> {
-    let (hud,player)=ds_current_hud_player(env)?;
-    if ds_read_aim_word(env,hud+0x234)!=Some(0){return None;}
-    let index=ds_read_aim_word(env,player+0x2ec)?;if index>5{return None;}
-    let weapon=ds_read_aim_word(env,player+0x2d4+index*4)?;if weapon<0x1000{return None;}
-    let vt=ds_read_aim_word(env,weapon)?;
-    let has_mode=matches!(vt,0x00a7_ace8|0x00a7_b9f8|0x00a7_c1c8|0x00a7_dea8);
-    if !has_mode && vt!=0x00a8_a498{return None;}
-    let is_alt=ds_read_aim_word(env,vt+0x19c)?;
-    let alt:u32=GuestFunction::from_addr_with_thumb_bit(is_alt).call_from_host(env,(weapon,));
-    let aiming:u8=env.mem.read(crate::mem::ConstPtr::from_bits(player+0x1e1));
-    let idle=if matches!(vt,0x00a7_b9f8|0x00a7_c1c8|0x00a7_dea8){ds_read_aim_word(env,weapon+0x23c)==Some(0)}else{true};
-    let settled=if vt==0x00a7_ace8 {
+fn ds_selected_fire_weapon(
+    env: &Environment,
+    player: u32,
+    layout: DsCombatLayout,
+) -> Option<(u32, u32, u32)> {
+    let index = ds_read_aim_word(env, player + 0x2ec)?;
+    if index > 5 {
+        return None;
+    }
+    let weapon = ds_read_aim_word(env, player + 0x2d4 + index * 4)?;
+    if weapon < 0x1000 {
+        return None;
+    }
+    let vptr = ds_read_aim_word(env, weapon)?;
+    (vptr == layout.plasma_cutter
+        || vptr == layout.burst_rifle
+        || layout.weapons_with_busy_state.contains(&vptr))
+        .then_some((index, weapon, vptr))
+}
+
+fn ds_fire_snapshot(env: &mut Environment) -> Option<crate::window::ds_fire_control::Snapshot> {
+    let (hud, player) = ds_current_hud_player(env)?;
+    if ds_read_aim_word(env, hud + 0x234) != Some(0) {
+        return None;
+    }
+    let layout = ds_native_profile(env)?.combat?;
+    let (_, weapon, vptr) = ds_selected_fire_weapon(env, player, layout)?;
+    // These verified 1.3.11/1.3.34/1.3.8 layouts share the virtual
+    // method slots. Their method addresses and vtables are image-specific.
+    let is_alt = ds_read_aim_word(env, vptr + 0x19c).filter(|&addr| addr != 0)?;
+    let alt: u32 = GuestFunction::from_addr_with_thumb_bit(is_alt).call_from_host(env, (weapon,));
+    let aiming: u8 = env.mem.read(crate::mem::ConstPtr::from_bits(player + 0x1e1));
+    let idle = !layout.weapons_with_busy_state.contains(&vptr)
+        || ds_read_aim_word(env, weapon + 0x23c) == Some(0);
+    let settled = if vptr == layout.plasma_cutter {
         // SetAltMode snaps this filter and skips the native rotate/audio path.
         // OnTilt sets its target; allow the actual model to reach that target
         // before dispatching the first shot, rather than selecting and firing
         // in the same glClear callback.
-        let target:u32=GuestFunction::from_addr_and_thumb_flag(0x0005_d520,false).call_from_host(env,(weapon+0x244,));
-        let current:u32=GuestFunction::from_addr_and_thumb_flag(0x0005_d660,false).call_from_host(env,(weapon+0x244,));
-        let (target,current)=(f32::from_bits(target),f32::from_bits(current));
-        target.is_finite()&&current.is_finite()&&(target-current).abs()<=0.5
-    }else{true};
-    Some(crate::window::ds_fire_control::Snapshot{player,weapon,alt:alt!=0,has_mode,can_tilt:aiming!=0&&idle,can_fire:aiming!=0&&idle&&settled})
+        let target: u32 = GuestFunction::from_addr_and_thumb_flag(layout.plasma_filter_target, false)
+            .call_from_host(env, (weapon + 0x244,));
+        let current: u32 = GuestFunction::from_addr_and_thumb_flag(layout.plasma_filter_value, false)
+            .call_from_host(env, (weapon + 0x244,));
+        let (target, current) = (f32::from_bits(target), f32::from_bits(current));
+        target.is_finite() && current.is_finite() && (target - current).abs() <= 0.5
+    } else {
+        true
+    };
+    Some(crate::window::ds_fire_control::Snapshot {
+        player,
+        weapon,
+        alt: alt != 0,
+        has_mode: vptr != layout.burst_rifle,
+        can_tilt: aiming != 0 && idle,
+        can_fire: aiming != 0 && idle && settled,
+    })
+}
+
+fn ds_fire_trace_enabled() -> bool {
+    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ENABLED.get_or_init(|| std::env::var("TOUCHHLE_DS_FIRE_TRACE").as_deref() == Ok("1"))
 }
 fn ds_tick_fire_control(env:&mut Environment){
     use crate::window::ds_fire_control::{self,Effect,Input,Source};
@@ -2179,55 +2288,69 @@ fn ds_tick_fire_control(env:&mut Environment){
     }
     let snapshot=ds_fire_snapshot(env);
     let effects=ds_fire_control::tick(snapshot,crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed));
-    for effect in effects {match effect {
-        Effect::Stop=>ds_gamepad_release_fire(env),
-        Effect::Tilt=>if let Some(before)=snapshot {
-            let vt=ds_read_aim_word(env,before.weapon).unwrap_or(0);
-            if let Some(call)=ds_read_aim_word(env,vt+0x180){
-                let _:()=GuestFunction::from_addr_with_thumb_bit(call).call_from_host(env,(before.weapon,));
-                echo!("[DSfire] native OnTilt weapon={:#x} alt_before={} frame={}",before.weapon,before.alt,crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed));
+    let Some(snapshot) = snapshot else { return; };
+    for effect in effects {
+        match effect {
+            Effect::Stop => ds_gamepad_release_fire(env, snapshot.weapon),
+            Effect::Tilt => {
+                let Some(layout) = ds_native_profile(env).and_then(|profile| profile.combat) else { continue; };
+                let Some((_, weapon, vptr)) = ds_selected_fire_weapon(env, snapshot.player, layout) else { continue; };
+                if weapon != snapshot.weapon { continue; }
+                let Some(call) = ds_read_aim_word(env, vptr + 0x180).filter(|&addr| addr != 0) else { continue; };
+                let _: () = GuestFunction::from_addr_with_thumb_bit(call)
+                    .call_from_host(env, (weapon,));
+                echo!("[DSfire] native OnTilt weapon={weapon:#x} alt_before={} frame={}",snapshot.alt,crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed));
             }
-        },
-        Effect::Fire=>{ds_pc_fire_current_mode(env);if let Some(s)=snapshot {echo!("[DSfire] native fire weapon={:#x} alt={} frame={}",s.weapon,s.alt,crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed));}},
-    }}
+            Effect::Fire => {
+                let trace = ds_fire_trace_enabled();
+                // Weapon::GetAmmoInClip reads this field in all three layouts.
+                let clip_before = trace.then(|| ds_read_aim_word(env, snapshot.weapon + 0x168));
+                let dispatched = ds_pc_fire_current_mode(env, snapshot.player);
+                if dispatched {
+                    echo!("[DSfire] native fire weapon={:#x} alt={} frame={}",snapshot.weapon,snapshot.alt,crate::window::DS_FRAME_COUNTER.load(std::sync::atomic::Ordering::Relaxed));
+                }
+                if let Some(clip_before) = clip_before {
+                    let vptr = ds_read_aim_word(env, snapshot.weapon).unwrap_or(0);
+                    let clip_after = ds_read_aim_word(env, snapshot.weapon + 0x168);
+                    echo!("[DSfireTrace] vptr={vptr:#x} alt={} dispatched={dispatched} clip={clip_before:?}->{clip_after:?}",snapshot.alt);
+                }
+            }
+        }
+    }
 }
 
-fn ds_gamepad_release_fire(env: &mut Environment) {
+fn ds_gamepad_release_fire(env: &mut Environment, expected_weapon: u32) {
     let Some((_hud, player)) = ds_current_hud_player(env) else {
         echo!("[DSpad] fire release ignored: no player");
         return;
     };
-    let index: u32 = env
-        .mem
-        .read(crate::mem::ConstPtr::<u32>::from_bits(player + 0x2ec));
-    if index > 5 {
+    let Some(layout) = ds_native_profile(env).and_then(|profile| profile.combat) else {
+        return;
+    };
+    let Some((index, weapon, vtable)) = ds_selected_fire_weapon(env, player, layout) else {
+        return;
+    };
+    if weapon != expected_weapon {
         return;
     }
-    let weapon: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(
-        player + 0x2d4 + index * 4,
-    ));
-    if weapon == 0 {
+    let (Some(is_holding_addr), Some(on_abort_addr)) = (
+        ds_read_aim_word(env, vtable + 0x190).filter(|&addr| addr != 0),
+        ds_read_aim_word(env, vtable + 0x188).filter(|&addr| addr != 0),
+    ) else {
         return;
-    }
-    let vtable: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(weapon));
-    let is_holding_addr: u32 = env
-        .mem
-        .read(crate::mem::ConstPtr::<u32>::from_bits(vtable + 0x190));
-    let on_abort_addr: u32 = env
-        .mem
-        .read(crate::mem::ConstPtr::<u32>::from_bits(vtable + 0x188));
-    if is_holding_addr == 0 || on_abort_addr == 0 {
-        return;
-    }
-    let is_holding =
-        GuestFunction::from_addr_and_thumb_flag(is_holding_addr, is_holding_addr & 1 != 0);
+    };
+    let is_holding = GuestFunction::from_addr_with_thumb_bit(is_holding_addr);
     let holding: u32 = is_holding.call_from_host(env, (weapon,));
     if holding == 0 {
         return;
     }
-    let on_abort = GuestFunction::from_addr_and_thumb_flag(on_abort_addr, on_abort_addr & 1 != 0);
+    let on_abort = GuestFunction::from_addr_with_thumb_bit(on_abort_addr);
     let _: () = on_abort.call_from_host(env, (weapon,));
     echo!("[DSpad] weapon {index} fire released -> native OnAbort");
+    if ds_fire_trace_enabled() && ds_read_aim_word(env, weapon) == Some(vtable) {
+        let after: u32 = is_holding.call_from_host(env, (weapon,));
+        echo!("[DSfireTrace] vptr={vtable:#x} holding={holding}->{after} after OnAbort");
+    }
 }
 
 /// The player object: the dispatch target of any player-owned action forwarder
