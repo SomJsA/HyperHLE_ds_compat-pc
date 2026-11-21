@@ -15,7 +15,13 @@ const ENTITIES: [[(usize, u32); 5]; 2] = [
     [(135080, 2319), (135120, 2320), (135440, 2328), (135160, 2321), (135680, 2334)],
 ];
 
-pub(super) fn patch(original: &[u8]) -> Option<Vec<u8>> {
+struct LayoutSections {
+    data: std::ops::Range<usize>,
+    data_checksum: usize,
+    objects: std::ops::Range<usize>,
+}
+
+fn layout_sections(original: &[u8]) -> Option<LayoutSections> {
     if original.get(..8)? != b"SBIN\x02\0\0\0" { return None; }
     let mut cursor = 8usize;
     let (mut data, mut objects) = (None, None);
@@ -34,6 +40,24 @@ pub(super) fn patch(original: &[u8]) -> Option<Vec<u8>> {
     if cursor != original.len() { return None; }
     let (begin, end, checksum) = data?;
     let (table, table_end) = objects?;
+    Some(LayoutSections { data: begin..end, data_checksum: checksum, objects: table..table_end })
+}
+
+fn apply_geometry(original: &[u8], sections: &LayoutSections, edits: Vec<(usize, f32)>) -> Vec<u8> {
+    let mut output = original.to_vec();
+    for (at, value) in edits {
+        output[at..at + 4].copy_from_slice(&value.to_le_bytes());
+    }
+    let hash = fnv1(&output[sections.data.clone()]);
+    let checksum = sections.data_checksum;
+    output[checksum..checksum + 4].copy_from_slice(&hash.to_le_bytes());
+    output
+}
+
+pub(super) fn patch(original: &[u8]) -> Option<Vec<u8>> {
+    let sections = layout_sections(original)?;
+    let (begin, end) = (sections.data.start, sections.data.end);
+    let (table, table_end) = (sections.objects.start, sections.objects.end);
     let mut edits = Vec::new();
     for layout in ENTITIES {
         for (slot, (entity, reference)) in layout.into_iter().enumerate() {
@@ -72,9 +96,42 @@ pub(super) fn patch(original: &[u8]) -> Option<Vec<u8>> {
             edits.push((at, x));
         }
     }
-    let mut output = original.to_vec();
-    for (at, value) in edits { output[at..at + 4].copy_from_slice(&value.to_le_bytes()); }
-    let hash = fnv1(&output[begin..end]);
-    output[checksum..checksum + 4].copy_from_slice(&hash.to_le_bytes());
-    Some(output)
+    Some(apply_geometry(original, &sections, edits))
+}
+
+// World 1.0.1's HUD_TUTORIAL_SLIDE_TEXT_BG is used by the native tutorial
+// layouts. Extend the four lower vertices to enclose three lines of text.
+pub(super) fn patch_world_tutorial(original: &[u8]) -> Option<Vec<u8>> {
+    const BORDER: [(usize, u32, u32, f32); 4] = [
+        (86472, 1077, 1456, 62.0), // BG_LINES_LEFT
+        (86512, 1079, 1457, 62.0), // BG_LINES_RIGHT
+        (86552, 287, 1458, 63.0),  // ARM_LEFT
+        (86592, 289, 1459, 63.0),  // ARM_RIGHT
+    ];
+    let sections = layout_sections(original)?;
+    let data = original.get(sections.data.clone())?;
+    let objects = original.get(sections.objects.clone())?;
+    let mut edits = Vec::with_capacity(BORDER.len());
+    for (entity, name, reference, bottom) in BORDER {
+        // The first two u16 fields identify the named STRETCH entity.
+        if u32_at(data, entity)? != ((64 << 16) | name)
+            || u32_at(data, entity + 36)? != reference
+        {
+            return None;
+        }
+        let entry = u32_at(objects, reference as usize * 4)?;
+        if entry & 7 != 2 {
+            return None;
+        }
+        let vertices = (entry >> 3) as usize;
+        if u32_at(data, vertices)? != 0x0005_0010 || u32_at(data, vertices + 4)? != 2 {
+            return None;
+        }
+        let y = vertices + 8 + 16 + 4;
+        if f32::from_bits(u32_at(data, y)?) != bottom {
+            return None;
+        }
+        edits.push((sections.data.start + y, bottom + 14.0));
+    }
+    Some(apply_geometry(original, &sections, edits))
 }
