@@ -349,10 +349,6 @@ impl Font {
         if end <= start || glyf.len() < end || end - start < 10 {
             return None;
         }
-        let n_contours = i16::from_be_bytes([glyf[start], glyf[start + 1]]);
-        if n_contours < 0 {
-            return None;
-        }
         let x_min = i16::from_be_bytes([glyf[start + 2], glyf[start + 3]]) as f32;
         let y_min = i16::from_be_bytes([glyf[start + 4], glyf[start + 5]]) as f32;
         let x_max = i16::from_be_bytes([glyf[start + 6], glyf[start + 7]]) as f32;
