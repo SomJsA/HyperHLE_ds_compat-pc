@@ -3156,12 +3156,14 @@ impl Window {
                     }
                     if button == sdl2::controller::Button::Start {
                         if semantic_down {
-                            self.ds_gamepad_start_down = Some(Instant::now());
                             self.ds_gamepad_start_long = false;
                             if crate::ds_frontend_controller::pause_menu() {
+                                self.ds_gamepad_start_down = None;
                                 self.ds_gamepad_resume_latched = Some(button);
                                 crate::ds_frontend_controller::request_native_resume();
                                 echo!("[DSpad] Start down -> native resume");
+                            } else {
+                                self.ds_gamepad_start_down = Some(Instant::now());
                             }
                         } else if self.ds_gamepad_start_down.take().is_some() {
                             let long = self.ds_gamepad_start_long;
