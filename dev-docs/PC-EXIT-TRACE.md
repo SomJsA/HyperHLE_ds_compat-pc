@@ -44,6 +44,10 @@ native close-path evidence, not gameplay performance or long-session acceptance.
 
 The Windows Dead Space close path now enables handoff by default;
 `TOUCHHLE_DS_EXIT_MUTEX_HANDOFF=0` retains the old behavior for comparison.
+The lifecycle observer and handoff use the same bundle scope. It includes
+`com.ea.deadspace.bv`, `com.ea.deadspace.ipad.bv`, and `com.ea.deadspace.inc`.
+The latter two are the bundle IDs of the supported iPad editions and the
+early iPhone edition. Compare their native close paths independently.
 Coroutine tests exercise the real unlock and round-robin relock: only the final
 recursive decrement yields, the waiter becomes owner exactly once, disabled
 immediate reacquisition remains possible, and errors/uncontended release do not

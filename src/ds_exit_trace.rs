@@ -18,8 +18,15 @@ pub(crate) fn configured() -> bool {
         std::env::var("TOUCHHLE_DS_LIFECYCLE_TRACE").as_deref()==Ok("1"))
 }
 
+pub(crate) fn supports_bundle(bundle_id: &str) -> bool {
+    matches!(
+        bundle_id,
+        "com.ea.deadspace.bv" | "com.ea.deadspace.ipad.bv" | "com.ea.deadspace.inc"
+    )
+}
+
 pub(crate) fn point(env: &mut Environment, stage: &'static str) {
-    if stage=="begin" && configured() && env.bundle.bundle_identifier()=="com.ea.deadspace.bv" {
+    if stage == "begin" && configured() && supports_bundle(env.bundle.bundle_identifier()) {
         let now=Instant::now();
         env.framework_state.exit_trace_state().trace=Some(Trace {
             started:now,last_report:now,stage,points:0,reports:0,

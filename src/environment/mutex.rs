@@ -134,7 +134,9 @@ impl Environment {
     /// Prevent cooperative mutex starvation during the native close
     /// callbacks. No callback is bypassed and no mutex ownership is forged.
     pub(crate) fn begin_pc_exit_mutex_handoff(&mut self) {
-        if !cfg!(target_os = "windows") || self.bundle.bundle_identifier() != "com.ea.deadspace.bv" {
+        if !cfg!(target_os = "windows")
+            || !crate::ds_exit_trace::supports_bundle(self.bundle.bundle_identifier())
+        {
             return;
         }
         self.mutex_state.exit_handoff =
