@@ -294,7 +294,7 @@ pub(crate) fn queue_menu_action(action: Action) {
 }
 pub(crate) fn tick_native(env: &mut crate::Environment) {
     loading::tick(env);
-    if !loading::active() {native::tick(env);}
+    if enabled() && !loading::active() {native::tick(env);}
 }
 pub(crate) fn menu_cursor() -> Option<Point> {
     if loading::active(){return None;}
@@ -359,6 +359,9 @@ pub(crate) fn overlay() -> Vec<([f32; 12], [f32; 4])> {
 }
 
 pub(crate) fn observe_loading(env:&crate::Environment, owner:u32){loading::observe(env,owner);}
+pub(super) use loading::DRAW_PUSH as LOADING_DRAW_PUSH;
+pub(crate) fn legacy_loading_draw_site(env:&crate::Environment)->Option<u32> {loading::legacy_draw_site(env)}
+pub(crate) fn loading_active()->bool {loading::active()}
 pub(crate) fn loading_ready()->bool {loading::ready()}
 pub(crate) fn cancel_loading_input(){loading::cancel();}
 

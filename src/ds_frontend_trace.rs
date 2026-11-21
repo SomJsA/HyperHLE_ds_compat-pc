@@ -40,6 +40,7 @@ const IPAD1311_SITES: &[(u32, u32, &str)] = &[
 pub(crate) struct State {
     checked: bool,
     armed: bool,
+    legacy_loading_draw: Option<u32>,
     trace_enabled: bool,
     trace_draw: bool,
     guard_enabled: bool,
@@ -111,6 +112,13 @@ pub(crate) fn prime(env: &mut Environment) {
             return;
         }
         let Some(binary) = crate::ds_frontend_profile::identify(env) else {
+            if let Some(draw) = crate::ds_frontend_controller::legacy_loading_draw_site(env) {
+                env.mem.write(MutPtr::<u32>::from_bits(draw), BKPT);
+                env.cpu.invalidate_cache_range(draw, 4);
+                env.framework_state.opengles.ds_frontend_trace.legacy_loading_draw = Some(draw);
+                echo!("[DSloadingUI] legacy input armed at {draw:#x}");
+                return;
+            }
             echo!("[DSfrontend] unsupported binary; trace skipped");
             return;
         };
@@ -161,7 +169,7 @@ pub(crate) fn present(env: &mut Environment) {
     prime(env);
     let state = &mut env.framework_state.opengles.ds_frontend_trace;
     if state.armed { state.frame += 1; }
-    if crate::ds_frontend_controller::enabled() {
+    if crate::ds_frontend_controller::enabled() || crate::ds_frontend_controller::loading_active() {
         // This is the one per-frame boundary that is present even when a
         // menu does not issue a color-buffer clear. Drain queued focus changes
         // and page requests here.
@@ -170,8 +178,14 @@ pub(crate) fn present(env: &mut Environment) {
 }
 
 pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
-    if !env.framework_state.opengles.ds_frontend_trace.armed { return false; }
     let pc = env.cpu.regs()[Cpu::PC];
+    let state = &env.framework_state.opengles.ds_frontend_trace;
+    if state.legacy_loading_draw == Some(pc) {
+        crate::ds_frontend_controller::observe_loading(env, env.cpu.regs()[0]);
+        replay_stack_instruction(env, pc, crate::ds_frontend_controller::LOADING_DRAW_PUSH);
+        return true;
+    }
+    if !state.armed { return false; }
     let Some(binary) = crate::ds_frontend_profile::identify(env) else { return false; };
     let profile_sites = sites(binary);
     let Some(&(_, original, event)) = profile_sites.iter().find(|s| s.0 == pc) else { return false; };
@@ -245,6 +259,11 @@ pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
         "state.begin" => crate::ds_frontend_controller::set_state(arg),
         _ => (),
     }
+    replay_stack_instruction(env, pc, original);
+    true
+}
+
+fn replay_stack_instruction(env: &mut Environment, pc: u32, original: u32) {
     // The intercepted instructions have no flag side effects. Preserve every
     // register and the ARM full-descending stack, including POP's PC exchange.
     let mask = original & 0xffff;
@@ -274,5 +293,4 @@ pub(crate) fn handle_breakpoint(env: &mut Environment) -> bool {
         env.cpu.regs_mut()[Cpu::SP] = address;
         env.cpu.branch(GuestFunction::from_addr_with_thumb_bit(return_to));
     }
-    true
 }
