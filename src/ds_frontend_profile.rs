@@ -13,6 +13,15 @@ pub(crate) enum Binary {
     Ipad1311,
 }
 
+impl Binary {
+    pub(crate) fn loading_wait_vptr(self) -> u32 {
+        match self {
+            Self::Current134 => 0x00a8_73b8,
+            Self::Ipad1311 => 0x0077_d0d8,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Native {
     pub get_active_rect: u32,

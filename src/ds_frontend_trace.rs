@@ -33,6 +33,7 @@ const IPAD1311_SITES: &[(u32, u32, &str)] = &[
     (0x0019_4ea0, 0xe92d_40f0, "draw"),
     (0x0019_04e8, 0xe92d_40f0, "state.begin"),
     (0x002c_b000, 0xe92d_40b0, "difficulty.update"),
+    (0x0024_60f0, 0xe92d_40f0, "loading.draw"),
 ];
 
 #[derive(Default)]

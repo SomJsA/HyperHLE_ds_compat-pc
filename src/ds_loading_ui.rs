@@ -14,6 +14,12 @@ fn word(env: &Environment, address: u32) -> Option<u32> {
     Some(u32::from_le_bytes(b.try_into().ok()?))
 }
 
+fn verified_owner(env: &Environment, owner: u32) -> bool {
+    cfg!(target_os = "windows")
+        && crate::ds_frontend_profile::identify(env)
+            .is_some_and(|profile| word(env, owner) == Some(profile.loading_wait_vptr()))
+}
+
 pub(super) fn reset() {
     OWNER.store(0, Relaxed);
     FRAME.store(u64::MAX, Relaxed);
@@ -25,7 +31,7 @@ pub(super) fn cancel() {
 }
 
 pub(super) fn observe(env: &Environment, owner: u32) {
-    if !cfg!(target_os = "windows") || word(env, owner) != Some(0x00a8_73b8) {
+    if !verified_owner(env, owner) {
         return;
     }
     if OWNER.swap(owner, Relaxed) != owner {
@@ -64,7 +70,7 @@ pub(super) fn tick(env: &mut Environment) {
     if owner == 0
         || owner != OWNER.load(Relaxed)
         || !ready()
-        || word(env, owner) != Some(0x00a8_73b8)
+        || !verified_owner(env, owner)
     {
         return;
     }
