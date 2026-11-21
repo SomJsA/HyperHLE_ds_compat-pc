@@ -129,8 +129,9 @@ namespace DeadSpaceBootstrap
 
         private bool PrepareNativeLanguageSetting(DeadSpaceResources.IpaLanguage language)
         {
-            if (!overlayEnabled.Checked || language == null) return true;
-            string file = Path.Combine(SaveStorage.ProfilePath(SelectedDataRoot()), "Documents", "var", "settings.sb");
+            if (!overlayEnabled.Checked || language == null || resourceProfile == null || resourceProfile.BundleIdentifier == null) return true;
+            string profilePath = SaveStorage.ProfilePath(SelectedDataRoot(), resourceProfile.BundleIdentifier);
+            string file = Path.Combine(profilePath, "Documents", "var", "settings.sb");
             if (!File.Exists(file)) return true;
             try
             {

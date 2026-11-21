@@ -20,8 +20,8 @@ namespace DeadSpaceBootstrap
             return Path.GetFullPath(path);
         }
 
-        internal static string ProfilePath(string root)
-        { return Path.Combine(root, "touchHLE_sandbox", Profile); }
+        internal static string ProfilePath(string root, string bundle = Profile)
+        { return Path.Combine(root, "touchHLE_sandbox", bundle); }
 
         internal static void RequireStopped()
         {

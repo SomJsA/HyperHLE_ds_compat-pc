@@ -20,8 +20,10 @@ internal static class ResourceProfilesTest
         try {
             string output = Path.GetFullPath(args[0]); if (Directory.Exists(output)) throw new Exception("New output required."); Directory.CreateDirectory(output);
             string[] ids = { "ipad-1.0.3", "iphone-1.0.3", "world-1.0.1", "current" };
+            string[] bundles = { "com.ea.deadspace.ipad.bv", "com.ea.deadspace.inc", "com.ea.deadspace.bv", "com.ea.deadspace.bv" };
             for (int i = 0; i < ids.Length; i++) {
                 var p = IpaProfiles.Inspect(args[i + 1]); Check(p.Id == ids[i], "Real IPA identity " + ids[i]);
+                Check(p.BundleIdentifier == bundles[i], "Sandbox bundle for " + ids[i]);
                 Check(p.Lighting == (i == 0 || i == 3), "Lighting capability");
                 Check(p.HdText && p.Textures == (i == 3), "HD text / texture components");
                 Check(p.Languages.Count == 8, "IPA embedded language banks " + ids[i]);
@@ -36,6 +38,7 @@ internal static class ResourceProfilesTest
                 {
                     var p = IpaProfiles.Inspect(args[5 + i]);
                     Check(p.Id == extraIds[i], "Real IPA identity " + extraIds[i]);
+                    Check(p.BundleIdentifier == "com.ea.deadspace.ipad.bv", "Sandbox bundle for " + extraIds[i]);
                     Check(p.Lighting && p.HdText && !p.Textures, "New iPad capability " + extraIds[i]);
                     Check(p.Languages.Count == 8, "New iPad language banks " + extraIds[i]);
                     Check(p.Describe(true).Contains("1.3.34") && p.Describe(false).Contains("旧版"), "New iPad bilingual compatibility disclosure");
@@ -45,6 +48,7 @@ internal static class ResourceProfilesTest
             string[] roots = new[] { "first", "second" }.Select(n => Path.Combine(data, "marker-content", n)).ToArray();
             foreach (string root in roots) { Directory.CreateDirectory(Path.Combine(root, "payload")); File.WriteAllText(Path.Combine(root, "installation.json"), "{}"); Fixture(Path.Combine(root, "payload", "DeadSpace.ipa"), root); }
             var unknownProfile = IpaProfiles.Inspect(Path.Combine(roots[0], "payload", "DeadSpace.ipa"));
+            Check(unknownProfile.BundleIdentifier == null, "Unknown IPA must not select a known sandbox bundle");
             Check(!unknownProfile.Adapted && unknownProfile.Experimental && unknownProfile.HdText && !unknownProfile.Textures, "Unknown published IPA uses explicit experimental HD-text trial");
             Check(unknownProfile.Describe(false).Contains("未识别") && unknownProfile.Describe(true).Contains("not recognized"), "Unknown IPA warning is bilingual");
             ResourceSelection.Activate(data, roots[0]); Check(ResourceSelection.Read(data) == roots[0], "First selected");
