@@ -1022,6 +1022,36 @@ fn apply_selection(env: &mut Environment, selection: &SelectionWork) {
     }
 }
 
+fn confirm_ipad_card(env: &mut Environment, work: &MenuWork) {
+    if !menu_ready(env, work.owner, work.page, false) {
+        return;
+    }
+    // Both iPad 1.3.11 slices route the footer through the main menu's
+    // StringIdEvent handler. Its BTN_OK branch checks the selected level
+    // before switching to the native loading page.
+    const HANDLER: u32 = 0x0019_6b60;
+    const PREFIX: [u32; 6] = [0xe92d_40f0, 0xe28d_700c, 0xe92d_0d00, 0xe24d_d038, 0xe24d_db03, 0xe3cd_d007];
+    const OK: u32 = 0x0068_a6b8;
+    const NAME: [u32; 6] = [b'B' as u32, b'T' as u32, b'N' as u32, b'_' as u32, b'O' as u32, b'K' as u32];
+    if env.bins[0].exported_symbols.get("__ZN13LayerMainMenu15OnStringIdEventERK13StringIdEvent") != Some(&HANDLER)
+        || !PREFIX.into_iter().enumerate().all(|(index, value)| word(env, HANDLER + index as u32 * 4) == Some(value))
+        || !NAME.into_iter().enumerate().all(|(index, value)| word(env, OK + index as u32 * 4) == Some(value))
+    {
+        return;
+    }
+    let end = OK + 4 * NAME.len() as u32;
+    let view = env.mem.alloc(24);
+    for (index, value) in [0, 0, OK, end, end, 0].into_iter().enumerate() {
+        env.mem.write(crate::mem::MutPtr::<u32>::from_bits(view.to_bits() + index as u32 * 4), value);
+    }
+    let _: u32 = GuestFunction::from_addr_and_thumb_flag(HANDLER, false)
+        .call_from_host(env, (work.owner, view.to_bits()));
+    env.mem.free(view);
+    if let Some(page) = word(env, work.owner + 0x50) {
+        echo!("[DSfrontendInput] native card footer BTN_OK page={}->{}", work.page, page);
+    }
+}
+
 fn activate(env: &mut Environment, work: &MenuWork) {
     if !menu_ready(env, work.owner, work.page, work.difficulty) {
         return;
@@ -1072,16 +1102,12 @@ fn activate(env: &mut Environment, work: &MenuWork) {
                 button.id,
                 button.card_index().unwrap_or(usize::MAX)
             );
-            // The old iPad ChapterSelectItem::SendAction only copies the
-            // selected level into ChapterSelectWindow. Its subsequent OK
-            // path is not reached by the host-owned frontend confirmation
-            // route, leaving HUD->world null. In an explicit isolated probe,
-            // call the original Application::StartChapter with that exact
-            // EASTL string object. This is profile-gated and opt-in; normal
-            // users retain the original touch flow.
-            if std::env::var("TOUCHHLE_DS_LEGACY_CHAPTER_FORCE").as_deref() == Ok("1")
-                && crate::ds_frontend_profile::is_ipad1311(env)
-            {
+            if !crate::ds_frontend_profile::is_ipad1311(env) {
+                return;
+            }
+            // Retain the explicit diagnostic used to isolate the native
+            // loader from menu dispatch.
+            if std::env::var("TOUCHHLE_DS_LEGACY_CHAPTER_FORCE").as_deref() == Ok("1") {
                 let app: u32 = GuestFunction::from_addr_and_thumb_flag(0x0022_5e30, false)
                     .call_from_host(env, ());
                 let level_string = button.widget.saturating_add(0xb8);
@@ -1095,6 +1121,8 @@ fn activate(env: &mut Environment, work: &MenuWork) {
                         button.card_index().unwrap_or(usize::MAX)
                     );
                 }
+            } else {
+                confirm_ipad_card(env, work);
             }
         }
     }
