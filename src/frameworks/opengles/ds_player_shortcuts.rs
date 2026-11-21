@@ -3,7 +3,7 @@
 //! These are the original game's actions, including its animation, busy-state
 //! guards and tutorial flags. Never replace them with camera rotation, guessed
 //! double taps, or writes to the player's/tutorial's state.
-use super::{ds_current_hud_player, ds_refresh_action_forwarders, ekey_fwds};
+use super::{ds_current_hud_player, ds_native_profile, ds_refresh_action_forwarders, ekey_fwds};
 use crate::abi::{CallFromHost, GuestFunction};
 use crate::mem::ConstVoidPtr;
 use crate::Environment;
@@ -31,9 +31,53 @@ fn supported(env: &Environment) -> bool {
     .all(|&(address, expected)| word(env, address) == Some(expected))
 }
 
+struct LocatorLayout {
+    can_use: (u32, u32),
+    animate: (u32, u32),
+    reset_popup: (u32, u32),
+}
+
+fn locator_layout(env: &Environment) -> Option<LocatorLayout> {
+    // Each known ARMv7 Hud::OnStringIdEvent invokes these methods for its
+    // marker button and embeds ObjectivePopup at Hud+0xf08.
+    let (can_use, animate, reset_popup) = match ds_native_profile(env)?.get_hud {
+        0x0003_0474 if supported(env) => (
+            (0x0003_ae60, 0xe590_01a4),
+            (0x0004_af1c, 0xe92d_40f0),
+            (0x002f_7e64, 0xe92d_4080),
+        ),
+        0x0002_a73c => (
+            (0x0003_4f44, 0xe590_01a4),
+            (0x0004_4adc, 0xe92d_40f0),
+            (0x002c_468c, 0xe92d_4080),
+        ),
+        0x0002_1f18 if env.bins[0]
+            .executable_sha256
+            .is_some_and(|digest| super::DS_IPAD_COMBAT_IMAGES.contains(&digest)) => (
+            (0x0002_c720, 0xe590_01a4),
+            (0x0003_c2b8, 0xe92d_40f0),
+            (0x002c_52b8, 0xe92d_4080),
+        ),
+        0x0003_62f0 => (
+            (0x0004_9610, 0xe590_21a4),
+            (0x0005_ee90, 0xe92d_40f0),
+            (0x0039_54d0, 0xeaff_fe62),
+        ),
+        0x0006_1fa0 => (
+            (0x0007_4e00, 0xe590_21a4),
+            (0x0008_5380, 0xe92d_40f0),
+            (0x0033_0bf0, 0xeaff_fe66),
+        ),
+        _ => return None,
+    };
+    [can_use, animate, reset_popup]
+        .iter()
+        .all(|&(address, expected)| word(env, address) == Some(expected))
+        .then_some(LocatorLayout { can_use, animate, reset_popup })
+}
+
 fn live_player(env: &mut Environment) -> Option<(u32, u32)> {
-    if !supported(env)
-        || crate::ds_frontend_controller::capture_menu()
+    if crate::ds_frontend_controller::capture_menu()
         || crate::ds_frontend_controller::capture_scene_dialog()
     {
         return None;
@@ -45,6 +89,10 @@ fn live_player(env: &mut Environment) -> Option<(u32, u32)> {
 }
 
 pub(super) fn locator(env: &mut Environment) {
+    let Some(layout) = locator_layout(env) else {
+        echo!("[DSshortcut] locator ignored: unsupported native layout");
+        return;
+    };
     let Some((hud, player)) = live_player(env) else {
         echo!("[DSshortcut] locator ignored: no active gameplay player");
         return;
@@ -57,12 +105,12 @@ pub(super) fn locator(env: &mut Environment) {
         return;
     }
     let allowed: u32 =
-        GuestFunction::from_addr_and_thumb_flag(0x0003_ae60, false).call_from_host(env, (player,));
+        GuestFunction::from_addr_and_thumb_flag(layout.can_use.0, false).call_from_host(env, (player,));
     if allowed == 0 {
         // Some zero-g deck transitions intentionally have no locator mesh.
         // The native touch button still replays the current objective label,
         // so keep the target popup independent from route eligibility.
-        let target_reset = reset_target_popup(env, hud);
+        let target_reset = reset_target_popup(env, hud, layout.reset_popup.0);
         echo!(
             "[DSshortcut] locator route unavailable; target_reset={target_reset}"
         );
@@ -70,12 +118,12 @@ pub(super) fn locator(env: &mut Environment) {
     }
     // Same player method/argument as BTN_MARKER, with no BTN_RIG event, wheel
     // preparation or HUD state transition. Native code owns flag 0x400.
-    let accepted: u32 = GuestFunction::from_addr_and_thumb_flag(0x0004_af1c, false)
+    let accepted: u32 = GuestFunction::from_addr_and_thumb_flag(layout.animate.0, false)
         .call_from_host(env, (player, 0u32));
     // Preserve BTN_MARKER's original objective text popup even when the
     // current world has no route pointer (the native deck case). This native
     // presentation object does not open or navigate a HUD/RIG menu.
-    let target_reset = accepted != 0 && reset_target_popup(env, hud);
+    let target_reset = accepted != 0 && reset_target_popup(env, hud, layout.reset_popup.0);
     echo!(
         "[DSshortcut] locator native accepted={} target_reset={} player={:#x} state={}->{} flags={:#x} hud={}",
         accepted,
@@ -88,11 +136,11 @@ pub(super) fn locator(env: &mut Environment) {
     );
 }
 
-fn reset_target_popup(env: &mut Environment, hud: u32) -> bool {
+fn reset_target_popup(env: &mut Environment, hud: u32, reset_popup: u32) -> bool {
     if hud < 0x1000 || word(env, hud + 0xf08).is_none() {
         return false;
     }
-    let _: () = GuestFunction::from_addr_and_thumb_flag(0x002f_7e64, false)
+    let _: () = GuestFunction::from_addr_and_thumb_flag(reset_popup, false)
         .call_from_host(env, (hud + 0xf08,));
     // A zero-G deck may have no locator mesh. Native locator still shows the
     // current objective, so replay the last target independently of the route.
@@ -135,7 +183,7 @@ fn turn_forwarder(env: &mut Environment, player: u32) -> Option<u32> {
 }
 
 fn quick_turn(env: &mut Environment) {
-    let Some((hud, player)) = live_player(env) else {
+    let Some((hud, player)) = supported(env).then(|| live_player(env)).flatten() else {
         echo!("[DSshortcut] quick-turn ignored: no active gameplay player");
         return;
     };
