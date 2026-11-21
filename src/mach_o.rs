@@ -65,6 +65,10 @@ pub struct MachO {
     /// Base address of the __TEXT segment (where the mach_header lives in
     /// memory). Used by `_dyld_get_image_header`.
     pub text_base: u32,
+    /// On Windows x64, identify the selected executable slice for code-address
+    /// optimizations. Dylibs do not have an entry point and skip hashing.
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    pub(crate) executable_sha256: Option<[u8; 32]>,
 }
 
 #[derive(Debug)]
@@ -893,6 +897,11 @@ impl MachO {
             entry_point_is_lc_main,
             last_segment_end,
             text_base: text_segment_base.unwrap_or(first_segment_base.unwrap_or(0)),
+            #[cfg(all(windows, target_arch = "x86_64"))]
+            executable_sha256: entry_point_pc.map(|_| {
+                use sha2::{Digest, Sha256};
+                Sha256::digest(bytes).into()
+            }),
         })
     }
 
