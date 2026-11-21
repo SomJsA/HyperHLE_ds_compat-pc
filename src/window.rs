@@ -1559,22 +1559,28 @@ impl Window {
             || crate::ds_frontend_controller::capture_scene_dialog();
         let blocked=(!background && (!focused || self.ds_capture_suspended || self.ds_mouse_capture.forced_off || self.ds_alt_released || self.ds_gamepad_cursor_mode))
             || ui_capture;
+        let test_pad = self.ds_test_pad.as_ref().map(|pad| pad.instance);
+        let sample_controller = (!background || test_pad.is_some())
+            && ds_input_mode() != ds_gamepad_bindings::InputMode::Keyboard;
         let mut x=0.0;let mut y=0.0;let mut pad_x=0.0;let mut pad_y=0.0;
         if !blocked {
             let gain: f32=std::env::var("TOUCHHLE_DS_KEY_STICK_GAIN").ok().and_then(|v|v.parse().ok()).unwrap_or(2.0);
             if self.key_stick != (0.0,0.0) {x=self.key_stick.0*gain;y=self.key_stick.1*gain;}
-            else if !background && ds_input_mode()!=ds_gamepad_bindings::InputMode::Keyboard {
+            else if sample_controller {
                 let (sx,sy,_)=self.get_controller_stick(options,true);x=sx;y=sy;
                 if self.dpad_state.left || self.dpad_state.right || self.dpad_state.up || self.dpad_state.down {
                     (x,y)=self.pad_directions.vector();
                 }
             }
-            if !background && ds_input_mode()!=ds_gamepad_bindings::InputMode::Keyboard {
+            if sample_controller {
                 use sdl2::controller::Axis;
                 let deadzone:f32=std::env::var("TOUCHHLE_DS_CONTROLLER_LOOK_DEADZONE").ok().and_then(|v|v.parse().ok()).unwrap_or(0.14);
                 let gain:f32=std::env::var("TOUCHHLE_DS_CONTROLLER_LOOK_GAIN").ok().and_then(|v|v.parse().ok()).unwrap_or(18.0);
                 let inv=std::env::var("TOUCHHLE_DS_CONTROLLER_LOOK_INVERT").unwrap_or_default();
                 for controller in &self.controllers {
+                    if background && test_pad != Some(controller.instance_id()) {
+                        continue;
+                    }
                     let axis=|value:i16| { let v=(value as f32/32768.0).clamp(-1.0,1.0);if v.abs()<=deadzone {0.0}else{((v.abs()-deadzone)/(1.0-deadzone).max(0.01)).copysign(v)} };
                     pad_x+=axis(controller.axis(Axis::RightX))*gain*30.0*dt*if inv=="x"||inv=="both"{-1.0}else{1.0};
                     pad_y+=axis(controller.axis(Axis::RightY))*gain*30.0*dt*if inv=="y"||inv=="both"{-1.0}else{1.0};
