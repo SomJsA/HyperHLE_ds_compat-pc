@@ -762,15 +762,6 @@ namespace DeadSpaceBootstrap
                 skipTriangles);
 
             bool useHdTextOverlay = overlayEnabled.Checked && selectedTextLanguage != null && selectedTextLanguage.HdOverlay;
-            // The 1.0.3 / World binaries do not share 1.3.34's verified
-            // InputRegion/forwarder layout. Keep the newer engine-action E
-            // path for 1.3.34, and use the legacy prompt/colour compatibility
-            // path for the known older fingerprints.
-            bool legacyECompatibility = resourceProfile != null
-                && resourceProfile.Id != "current"
-                && (resourceProfile.Id != "unknown" || nativeInputs.Checked);
-            Environment.SetEnvironmentVariable("TOUCHHLE_DS_EKEY_TAP", legacyECompatibility ? "1" : null);
-            Environment.SetEnvironmentVariable("TOUCHHLE_DS_EKEY_LEGACY", legacyECompatibility ? "1" : null);
             foreach (string name in new[] { "TOUCHHLE_DS_CHAPTER_OVERLAY", "TOUCHHLE_DS_SUBTITLE_OVERLAY", "TOUCHHLE_DS_OBJECTIVE_OVERLAY", "TOUCHHLE_DS_TUTORIAL_OVERLAY", "TOUCHHLE_DS_QTE_OVERLAY" })
                 Environment.SetEnvironmentVariable(name, useHdTextOverlay ? "1" : null);
             string localOverlayStyle=ConfigurationFile("overlay-style.json");
@@ -805,12 +796,6 @@ namespace DeadSpaceBootstrap
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_XY", pcMouse.Checked ? aimPoint.Text.Trim() : null);
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_MOUSE_AIM_MODE", mouseAimMode.SelectedIndex == 1 ? "toggle" : "hold");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_CONTROLLER_AIM_MODE", padAimMode.SelectedIndex == 1 ? "toggle" : "hold");
-            bool verifiedFrontendInputs = resourceProfile != null
-                && (resourceProfile.Id == "current"
-                    || resourceProfile.Id == "ipad-world-1.3.11"
-                    || resourceProfile.Id == "ipad-1.0.3-build-1.3.11");
-            Environment.SetEnvironmentVariable("TOUCHHLE_DS_NATIVE_INPUTS",
-                verifiedFrontendInputs && nativeInputs.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_WALK", aimedWalk.Checked ? "1" : "0");
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_AIM_FORWARD_LIMIT", (aimedForwardPercent.Value / 100m).ToString(System.Globalization.CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable("TOUCHHLE_DS_KEY_STICK_GAIN", stickGain.Text.Trim());
@@ -881,12 +866,9 @@ namespace DeadSpaceBootstrap
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
-                info.EnvironmentVariables["TOUCHHLE_USER_DATA_DIR"] = SelectedDataRoot();
+                ApplyGameplayEnvironment(info);
                 ApplyTextureEnvironment(info.EnvironmentVariables, texturePath);
-                info.EnvironmentVariables["TOUCHHLE_DS_GAMEPAD_BINDINGS"] = ConfigurationFile("DeadSpace-Gamepad.ini");
-                info.EnvironmentVariables["TOUCHHLE_DS_INPUT_MODE"] = inputMode.SelectedIndex == 1 ? "keyboard" : inputMode.SelectedIndex == 2 ? "gamepad" : "auto";
                 ApplyFireModeEnvironment(info);
-                info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_TEXT_PATCH"] = useHdTextOverlay ? "1" : "0";
                 info.EnvironmentVariables["TOUCHHLE_DS_TEXT_LANGUAGE"] = selectedTextLanguage == null ? "native" : selectedTextLanguage.Id;
                 info.EnvironmentVariables["TOUCHHLE_DS_TEXT_BANK"] = overlayLanguageFiles == null ? null : overlayLanguageFiles.Primary;

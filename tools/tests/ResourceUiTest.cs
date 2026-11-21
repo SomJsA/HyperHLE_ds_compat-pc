@@ -62,7 +62,8 @@ internal static class ResourceUiTest
                         Check(Convert.ToString(native.GetType().GetField("Id", Hidden).GetValue(native)) == "ja-original", "Disabled HD component preserves native Japanese selection");
                         ((CheckBox)Field(form, "overlayEnabled")).Checked = true;
                     }
-                    Check(((CheckBox)Field(form, "nativeInputs")).Checked == (i == 3), "Native controls switch");
+                    Check(((CheckBox)Field(form, "nativeInputs")).Checked, "Recognized editions default to native gameplay input");
+                    Check(((CheckBox)Field(form, "nativeHud")).Checked == (i == 3), "Native HUD requires the current edition");
                     Check(!(bool)Field(form, "launchReviewCompleted"), "Resource change requires first review");
                     string saves = Convert.ToString(type.GetMethod("SelectedDataRoot", Hidden).Invoke(form, null));
                     Check(saves.Contains("legacy-ipa") == (i != 3), "Legacy saves cannot share 1.3.34 progress");

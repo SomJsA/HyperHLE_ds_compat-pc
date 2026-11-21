@@ -263,10 +263,8 @@ impl Environment {
         let startup_time = Instant::now();
         let launched_bundle_id = bundle.bundle_identifier().to_owned();
 
-        // Native PC enhancements use the verified 1.3.34 code/object layout.
-        // Old editions have different functions at those addresses. Retain
-        // their original touch UI and rendering instead of calling into an
-        // unrelated function just because the desktop controls are enabled.
+        // These older editions use the guest touch frontend/HUD. Gameplay
+        // input is decided after the executable's ARM slice has been loaded.
         let verified_ipad_1311 = launched_bundle_id == "com.ea.deadspace.ipad.bv"
             && bundle.bundle_version() == "1.3.11";
         let legacy_deadspace = matches!(launched_bundle_id.as_str(),
@@ -274,29 +272,9 @@ impl Environment {
             && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34")
             && !verified_ipad_1311;
         if legacy_deadspace {
-            let probe_legacy_gameplay = cfg!(all(windows, target_arch = "x86_64"))
-                && matches!(
-                    (launched_bundle_id.as_str(), bundle.bundle_version()),
-                    ("com.ea.deadspace.inc", "1.3.8") // displayed as 1.0.3
-                    | ("com.ea.deadspace.ipad.bv", "1.0.3")
-                    | ("com.ea.deadspace.bv", "1.0.1")
-                )
-                && window::ds_background_test()
-                && window::ds_native_inputs();
-            // Isolated gameplay still requires the loaded ARMv7 fingerprint
-            // and a verified HUD/player before dispatching input.
-            // Its frontend and HUD continue to use the game's touch path.
             unsafe {
-                if !probe_legacy_gameplay {
-                    std::env::set_var("TOUCHHLE_DS_NATIVE_INPUTS", "0");
-                }
                 std::env::set_var("TOUCHHLE_DS_NATIVE_HUD", "0");
                 std::env::set_var("TOUCHHLE_DS_FRONTEND_NAV", "0");
-            }
-            if probe_legacy_gameplay {
-                echo!("[DSlegacy] isolated native gameplay probe requested for {} build {}", launched_bundle_id, bundle.bundle_version());
-            } else {
-                echo!("[DSlegacy] original touch controls retained; 1.3.34 native PC enhancements are unavailable for this edition");
             }
             // The tablet edition declares landscape-right interface content,
             // opposite to the phone edition's device rotation. The PC launcher
@@ -561,6 +539,21 @@ impl Environment {
             /* slide: */ 0,
         )
         .map_err(|e| format!("Could not load executable: {e}"))?;
+
+        if legacy_deadspace {
+            #[cfg(all(windows, target_arch = "x86_64"))]
+            let supported = crate::ds_legacy_input_profile::LegacyInputProfile::identify(
+                &launched_bundle_id, bundle.bundle_version(), executable.executable_sha256,
+            ).is_some();
+            #[cfg(not(all(windows, target_arch = "x86_64")))]
+            let supported = false;
+            if supported && window::ds_native_inputs() {
+                echo!("[DSlegacy] native gameplay enabled for {} build {} (matched ARMv7)", launched_bundle_id, bundle.bundle_version());
+            } else {
+                unsafe { std::env::set_var("TOUCHHLE_DS_NATIVE_INPUTS", "0"); }
+                echo!("[DSlegacy] original touch controls retained for {} build {}", launched_bundle_id, bundle.bundle_version());
+            }
+        }
 
         let mut dylibs = Vec::new();
         for dylib in &executable.dynamic_libraries {

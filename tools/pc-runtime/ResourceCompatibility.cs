@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using DeadSpaceResources;
@@ -30,6 +31,24 @@ namespace DeadSpaceBootstrap
             page.AutoScrollMinSize = new System.Drawing.Size(710, 815);
         }
 
+        private void ApplyGameplayEnvironment(ProcessStartInfo info)
+        {
+            bool nativeGameplay = resourceProfile != null && resourceProfile.Adapted && nativeInputs.Checked;
+            bool touchInteraction = resourceProfile != null && resourceProfile.Id != "current"
+                && !nativeGameplay && (resourceProfile.Adapted || nativeInputs.Checked);
+            info.EnvironmentVariables["TOUCHHLE_USER_DATA_DIR"] = SelectedDataRoot();
+            info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_INPUTS"] = nativeGameplay ? "1" : "0";
+            foreach (string name in new[] { "TOUCHHLE_DS_EKEY_TAP", "TOUCHHLE_DS_EKEY_LEGACY" })
+            {
+                if (touchInteraction) info.EnvironmentVariables[name] = "1";
+                else info.EnvironmentVariables.Remove(name);
+            }
+            info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
+            info.EnvironmentVariables["TOUCHHLE_DS_INPUT_MODE"] = inputMode.SelectedIndex == 1
+                ? "keyboard" : inputMode.SelectedIndex == 2 ? "gamepad" : "auto";
+            info.EnvironmentVariables["TOUCHHLE_DS_GAMEPAD_BINDINGS"] = ConfigurationFile("DeadSpace-Gamepad.ini");
+        }
+
         private void ApplyResourceCompatibility(string ipa, bool reset)
         {
             var file = new FileInfo(ipa);
@@ -49,7 +68,7 @@ namespace DeadSpaceBootstrap
             if (reset) {
                 advancedLighting.Checked = resourceProfile.Lighting;
                 overlayEnabled.Checked = resourceProfile.HdText;
-                nativeInputs.Checked = resourceProfile.Id == "current" || resourceProfile.Experimental;
+                nativeInputs.Checked = resourceProfile.Adapted || resourceProfile.Experimental;
                 nativeHud.Checked = resourceProfile.Id == "current";
                 requestedTextLanguage = resourceProfile.HdText ? "zh-tieba" : "native";
                 launchReviewCompleted = false;

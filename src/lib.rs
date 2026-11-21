@@ -37,6 +37,8 @@ mod ds_texture_mips;
 mod ds_chapter_overlay;
 mod ds_frontend_controller;
 mod ds_frontend_profile;
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod ds_legacy_input_profile;
 mod ds_font_roles;
 mod ds_frontend_trace;
 mod ds_game_clock;

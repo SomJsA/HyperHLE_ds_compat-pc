@@ -47,7 +47,7 @@ namespace DeadSpaceResources
         internal string Describe(bool english)
         {
             string support = Id == "current" ? (english ? "Most fully adapted: 1.3.34." : "开发者推荐：1.3.34 的适配最完整。")
-                : Adapted ? (english ? "Opening and menu smoke-tested in R6. Legacy editions use the generic PC-to-touch compatibility path; the verified 1.3.34 native camera/HUD/action layout is not used. HD language banks and host fonts load, but binary-specific chapter/subtitle/objective takeover and full gameplay action acceptance still require per-edition verification." : "已在 R6 完成开场和菜单冒烟测试。旧版使用通用 PC 到触摸兼容路径，不套用已验证的 1.3.34 原生相机 / HUD / 动作布局。高清语言库和宿主字体会加载，但章节、字幕、任务接管以及完整游戏内动作仍需按二进制逐版验证。")
+                : Adapted ? (english ? "Recognized legacy edition. The Native PC camera and movement option selects this edition's gameplay layout after the runtime verifies the loaded executable. Menu, HUD, and combat coverage varies by edition. HD language banks and host fonts are available. Full gameplay and chapter-by-chapter verification is ongoing." : "已识别的旧版。启用原生视角与移动后，运行时核验已加载的可执行文件，并选择对应版本的输入布局。菜单、HUD 及战斗的适配程度因版本而异。可用高清语言库和宿主字体，完整游戏流程仍在逐版、逐章验收。")
                 : Experimental ? (english ? "This IPA fingerprint is not recognized. Experimental PC controls and HD text are enabled by default for a trial; turn either off if it does not work." : "未识别此 IPA 指纹；默认试用实验性 PC 操作和高清文字组件，遇到问题可分别关闭。")
                 : (english ? "Not yet adapted or verified. Experimental native resources only; do not assume this package is supported." : "尚未适配或验证；仅尝试原生资源，不代表此构建已兼容。");
             return Name + "\r\n" + support
@@ -238,19 +238,21 @@ namespace DeadSpaceResources
             var p = IpaProfiles.Inspect(Path.Combine(installed, "payload", "DeadSpace.ipa"));
             string selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
             IpaLanguage language = IpaProfiles.FindLanguage(p, selectedLanguage);
-            bool verifiedNativeInput = p.Id == "current";
+            bool nativeHud = p.Id == "current";
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 { "ipa", Path.Combine(installed, "payload", "DeadSpace.ipa") }, { "resource_profile", p.Id },
                 { "overlay_enabled", p.HdText && language != null ? "1" : "0" },
                 { "hd_text_language", selectedLanguage }
             };
             if (!p.Lighting) values["advanced_lighting"] = "0";
-            if (!verifiedNativeInput) values["native_inputs"] = values["native_hud"] = "0";
+            if (!p.Adapted) values["native_inputs"] = "0";
+            if (!nativeHud) values["native_hud"] = "0";
             if (!p.Textures) values["hd_textures"] = "0";
             if (reset) {
                 values["launch_review_r4_completed"] = "0";
                 values["advanced_lighting"] = p.Lighting ? "1" : "0";
-                values["native_inputs"] = values["native_hud"] = verifiedNativeInput ? "1" : "0";
+                values["native_inputs"] = p.Adapted ? "1" : "0";
+                values["native_hud"] = nativeHud ? "1" : "0";
                 values["hd_textures"] = "0";
                 selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
                 values["hd_text_language"] = selectedLanguage;
