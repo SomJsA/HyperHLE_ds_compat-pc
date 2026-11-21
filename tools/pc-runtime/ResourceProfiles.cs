@@ -238,7 +238,7 @@ namespace DeadSpaceResources
             var p = IpaProfiles.Inspect(Path.Combine(installed, "payload", "DeadSpace.ipa"));
             string selectedLanguage = IpaProfiles.NormalizeLanguage(p, languageId, languageId != "native");
             IpaLanguage language = IpaProfiles.FindLanguage(p, selectedLanguage);
-            bool nativeHud = p.Id == "current";
+            bool nativeHud = p.Adapted;
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
                 { "ipa", Path.Combine(installed, "payload", "DeadSpace.ipa") }, { "resource_profile", p.Id },
                 { "overlay_enabled", p.HdText && language != null ? "1" : "0" },

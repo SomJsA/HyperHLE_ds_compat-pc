@@ -263,8 +263,8 @@ impl Environment {
         let startup_time = Instant::now();
         let launched_bundle_id = bundle.bundle_identifier().to_owned();
 
-        // These older editions use the guest touch frontend/HUD. Gameplay
-        // input is decided after the executable's ARM slice has been loaded.
+        // These older editions use the guest touch frontend. Gameplay input
+        // and HUD shortcuts depend on the ARM slice loaded below.
         let verified_ipad_1311 = launched_bundle_id == "com.ea.deadspace.ipad.bv"
             && bundle.bundle_version() == "1.3.11";
         let legacy_deadspace = matches!(launched_bundle_id.as_str(),
@@ -272,10 +272,7 @@ impl Environment {
             && !(launched_bundle_id == "com.ea.deadspace.bv" && bundle.bundle_version() == "1.3.34")
             && !verified_ipad_1311;
         if legacy_deadspace {
-            unsafe {
-                std::env::set_var("TOUCHHLE_DS_NATIVE_HUD", "0");
-                std::env::set_var("TOUCHHLE_DS_FRONTEND_NAV", "0");
-            }
+            unsafe { std::env::set_var("TOUCHHLE_DS_FRONTEND_NAV", "0"); }
             // The tablet edition declares landscape-right interface content,
             // opposite to the phone edition's device rotation. The PC launcher
             // supplies --landscape-right for phones; honour the tablet plist
@@ -550,7 +547,10 @@ impl Environment {
             if supported && window::ds_native_inputs() {
                 echo!("[DSlegacy] native gameplay enabled for {} build {} (matched ARMv7)", launched_bundle_id, bundle.bundle_version());
             } else {
-                unsafe { std::env::set_var("TOUCHHLE_DS_NATIVE_INPUTS", "0"); }
+                unsafe {
+                    std::env::set_var("TOUCHHLE_DS_NATIVE_INPUTS", "0");
+                    std::env::set_var("TOUCHHLE_DS_NATIVE_HUD", "0");
+                }
                 echo!("[DSlegacy] original touch controls retained for {} build {}", launched_bundle_id, bundle.bundle_version());
             }
         }

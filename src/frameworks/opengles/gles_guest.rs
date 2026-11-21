@@ -2273,8 +2273,13 @@ fn ds_gamepad_set_aim(env: &mut Environment, entering: bool) -> bool {
     after == entering as u8
 }
 
-fn ds_invoke_hud_string(env: &mut Environment, hud: u32, command: crate::window::ds_hud_commands::HudCommand) -> Option<u32> {
-    let (_name, address) = command.spec();
+fn ds_invoke_hud_string(
+    env: &mut Environment,
+    hud: u32,
+    layout: &crate::window::ds_hud_commands::Layout,
+    command: crate::window::ds_hud_commands::HudCommand,
+) -> Option<u32> {
+    let address = layout.string_address(command)?;
     let expected = command.string_bytes();
     if env.mem.get_bytes_fallible(crate::mem::ConstVoidPtr::from_bits(address), expected.len() as u32) != Some(expected.as_slice()) {
         echo!("[DShud] {:?} rejected: executable string signature mismatch", command); return None;
@@ -2282,18 +2287,28 @@ fn ds_invoke_hud_string(env: &mut Environment, hud: u32, command: crate::window:
     // This verified handler consumes only a borrowed wchar32 begin/end pair.
     // It neither owns this view nor receives it via generic event dispatch.
     let event = env.mem.alloc(24);
-    for (index, word) in command.borrowed_view().into_iter().enumerate() {
+    for (index, word) in command.borrowed_view(address).into_iter().enumerate() {
         env.mem.write(crate::mem::MutPtr::<u32>::from_bits(event.to_bits() + index as u32 * 4), word);
     }
-    let accepted: u32 = GuestFunction::from_addr_and_thumb_flag(0x00194158, false)
+    let accepted: u32 = GuestFunction::from_addr_and_thumb_flag(layout.handler, false)
         .call_from_host(env, (hud, event.to_bits()));
     env.mem.free(event);
     Some(accepted)
 }
 
 fn ds_native_hud_command(env: &mut Environment, command: crate::window::ds_hud_commands::HudCommand) {
-    use crate::window::ds_hud_commands::HudCommand;
+    use crate::window::ds_hud_commands::{HudCommand, Layout};
     if command == HudCommand::Locator { ds_player_shortcuts::locator(env); return; }
+    let Some(profile) = ds_native_profile(env) else { return; };
+    let Some(layout) = Layout::for_get_hud(profile.get_hud) else { return; };
+    if layout.string_address(command).is_none()
+        || !layout.handler_prefix().into_iter().enumerate().all(|(index, expected)| {
+            ds_read_aim_word(env, layout.handler + index as u32 * 4) == Some(expected)
+        })
+    {
+        echo!("[DShud] {:?} ignored: no mapped command signature", command);
+        return;
+    }
     let Some((hud, player)) = (if command == HudCommand::Pause {
         ds_pause_hud_player(env)
     } else {
@@ -2304,15 +2319,18 @@ fn ds_native_hud_command(env: &mut Environment, command: crate::window::ds_hud_c
     let mut state: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
     let prepared_rig = command.needs_rig(state);
     if command.needs_rig(state) || (command == HudCommand::Rig && state == 0) {
-        // State 0 is ordinary closed HUD, not a cutscene-only state. Enter
-        // through the game's own CanEnterRig + BTN_RIG path; never set state.
-        let can_enter: u32 = GuestFunction::from_addr_and_thumb_flag(0x0018b9ec, false)
-            .call_from_host(env, (hud,));
-        if can_enter == 0 {
-            echo!("[DShud] {:?} ignored: CanEnterRig rejected", command); return;
+        // 1.3.34 exposes a separate gate. The legacy HUD handles BTN_RIG
+        // through its own state-transition branch.
+        if let Some(gate) = layout.can_enter_rig {
+            if ds_read_aim_word(env, gate) != Some(0xe92d_4090) { return; }
+            let can_enter: u32 = GuestFunction::from_addr_and_thumb_flag(gate, false)
+                .call_from_host(env, (hud,));
+            if can_enter == 0 {
+                echo!("[DShud] {:?} ignored: CanEnterRig rejected", command); return;
+            }
         }
         if command != HudCommand::Rig {
-            if ds_invoke_hud_string(env, hud, HudCommand::Rig).is_none() { return; }
+            if ds_invoke_hud_string(env, hud, &layout, HudCommand::Rig).is_none() { return; }
             let after: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
             echo!("[DShud] prepare BTN_RIG HUD={state}->{after}");
             state = after;
@@ -2322,19 +2340,19 @@ fn ds_native_hud_command(env: &mut Environment, command: crate::window::ds_hud_c
     if !command.allowed(state) {
         echo!("[DShud] {:?} ignored: HUD state {}", command, state); return;
     }
-    let Some(accepted) = ds_invoke_hud_string(env, hud, command) else { return; };
+    let Some(accepted) = ds_invoke_hud_string(env, hud, &layout, command) else { return; };
     let (name, _) = command.spec();
     let mut state_after: u32 = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
     // Selection/locator should not leave a wheel that this request opened.
     // Close it via the original toggle event, preserving a pre-existing wheel.
     if prepared_rig && command != HudCommand::Pause && state_after == 1 {
-        if ds_invoke_hud_string(env, hud, HudCommand::Rig).is_some() {
+        if ds_invoke_hud_string(env, hud, &layout, HudCommand::Rig).is_some() {
             state_after = env.mem.read(crate::mem::ConstPtr::<u32>::from_bits(hud + 0x234));
         }
     }
-    let weapon: u32 = env
-        .mem
-        .read(crate::mem::ConstPtr::<u32>::from_bits(player + 0x2ec));
+    let weapon = profile.combat
+        .and_then(|combat| ds_read_aim_word(env, player + combat.abi.index))
+        .unwrap_or(u32::MAX);
     let expected = command
         .weapon_index()
         .map(|index| format!(", expected weapon={index}"))

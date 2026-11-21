@@ -43,7 +43,8 @@ namespace DeadSpaceBootstrap
                 if (touchInteraction) info.EnvironmentVariables[name] = "1";
                 else info.EnvironmentVariables.Remove(name);
             }
-            info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked ? "1" : "0";
+            bool nativeHudAllowed = nativeGameplay || (resourceProfile != null && resourceProfile.Id == "current");
+            info.EnvironmentVariables["TOUCHHLE_DS_NATIVE_HUD"] = nativeHud.Checked && nativeHudAllowed ? "1" : "0";
             info.EnvironmentVariables["TOUCHHLE_DS_INPUT_MODE"] = inputMode.SelectedIndex == 1
                 ? "keyboard" : inputMode.SelectedIndex == 2 ? "gamepad" : "auto";
             info.EnvironmentVariables["TOUCHHLE_DS_GAMEPAD_BINDINGS"] = ConfigurationFile("DeadSpace-Gamepad.ini");
@@ -69,7 +70,7 @@ namespace DeadSpaceBootstrap
                 advancedLighting.Checked = resourceProfile.Lighting;
                 overlayEnabled.Checked = resourceProfile.HdText;
                 nativeInputs.Checked = resourceProfile.Adapted || resourceProfile.Experimental;
-                nativeHud.Checked = resourceProfile.Id == "current";
+                nativeHud.Checked = resourceProfile.Adapted;
                 requestedTextLanguage = resourceProfile.HdText ? "zh-tieba" : "native";
                 launchReviewCompleted = false;
             }
@@ -80,7 +81,7 @@ namespace DeadSpaceBootstrap
             // the control available so the warning dialog can let the user
             // opt into that profile instead of silently disabling it.
             nativeInputs.Enabled = resourceProfile.Id != "unknown" || resourceProfile.Experimental;
-            nativeHud.Enabled = resourceProfile.Id == "current";
+            nativeHud.Enabled = resourceProfile.Adapted;
             if (!resourceProfile.HdText) overlayEnabled.Checked = false;
             if (!nativeInputs.Enabled) nativeInputs.Checked = nativeHud.Checked = false;
             nativeHud.Checked = nativeHud.Enabled && nativeHud.Checked;
