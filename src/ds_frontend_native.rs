@@ -51,6 +51,11 @@ fn ipad1311_rect(page: u32, difficulty: bool, id: &str) -> Option<[f32; 4]> {
         });
     }
     Some(match page {
+        2 => match id {
+            "BTN_NO" => [33., 294., 40., 26.],
+            "BTN_OK" => [408., 294., 40., 26.],
+            _ => return None,
+        },
         5 => match id {
             "BTN_PLAY" => [10., 268., 100., 35.],
             "BTN_OPTIONS" => [118., 268., 100., 35.],
@@ -461,9 +466,22 @@ fn scan_widgets(env: &Environment, handler: u32, page: u32) -> (Vec<Button>, Opt
     (buttons, card_window)
 }
 
+fn ipad_registration_popup(env: &Environment, owner: u32) -> Option<u32> {
+    // Both 1.3.11 draws pass the embedded Popup at owner+0x1f0 to
+    // WidgetHandler::OnDraw(Renderer). Its controls have their own map.
+    let popup = owner.checked_add(0x1f0)?;
+    (word(env, owner + 0x50) == Some(2)
+        && word(env, popup) == Some(0x0077_edb8)
+        && word(env, popup + 0x7c).is_some_and(|layout| layout != 0)
+        && word(env, popup + 0x84).is_some_and(|mode| mode != 0))
+        .then_some(popup)
+}
+
 fn menu_ready(env: &Environment, owner: u32, page: u32, difficulty: bool) -> bool {
     if difficulty {
         word(env, owner + 0x48) == Some(0)
+    } else if page == 2 && crate::ds_frontend_profile::is_ipad1311(env) {
+        ipad_registration_popup(env, owner).is_some()
     } else {
         word(env, owner + 0x50) == Some(page) && word(env, owner + 0x140) == Some(2)
     }
@@ -607,17 +625,18 @@ fn advance_pending(pending: &mut PagePending, current_page: u32) -> PendingStep 
 }
 
 pub(super) fn observe(env: &Environment, owner: u32, page: u32, difficulty: bool) {
-    let ready = if difficulty {
-        word(env, owner + 0x48) == Some(0)
+    let ipad = crate::ds_frontend_profile::is_ipad1311(env);
+    let registration = ipad && !difficulty && page == 2;
+    let handler = if registration {
+        ipad_registration_popup(env, owner)
     } else {
-        word(env, owner + 0x140) == Some(2)
+        menu_ready(env, owner, page, difficulty).then_some(owner + if difficulty { 0x50 } else { 0xb8 })
     };
-    let (mut buttons, card_window) = if ready {
-        scan_widgets(env, owner + if difficulty { 0x50 } else { 0xb8 }, page)
-    } else {
-        (Vec::new(), None)
-    };
-    if crate::ds_frontend_profile::is_ipad1311(env) {
+    let (mut buttons, card_window) = handler.map(|handler| scan_widgets(env, handler, page)).unwrap_or_default();
+    if registration {
+        buttons.retain(|button| matches!(button.id.as_str(), "BTN_NO" | "BTN_OK"));
+    }
+    if ipad {
         for button in &mut buttons {
             if let Some(rect) = ipad1311_rect(page, difficulty, &button.id) {
                 button.rect = rect;
@@ -1014,6 +1033,21 @@ fn activate(env: &mut Environment, work: &MenuWork) {
     if word(env, button.widget) != Some(button.vtable) || byte(env, button.widget + 0x24) != Some(1)
     {
         return;
+    }
+    if work.page == 2 && !work.difficulty && crate::ds_frontend_profile::is_ipad1311(env) {
+        let Some(popup) = ipad_registration_popup(env, work.owner) else { return; };
+        const IS_ANIMATING: u32 = 0x0029_22b0;
+        let prefix = [0xe92d_40b0, 0xe590_1090, 0xe1a0_4000, 0xe28d_7008];
+        if !prefix.into_iter().enumerate().all(|(index, expected)| {
+            word(env, IS_ANIMATING + index as u32 * 4) == Some(expected)
+        }) {
+            return;
+        }
+        let animating: bool = GuestFunction::from_addr_and_thumb_flag(IS_ANIMATING, false)
+            .call_from_host(env, (popup,));
+        if animating {
+            return;
+        }
     }
     match &work.activation {
         Activation::Button(button) => {
