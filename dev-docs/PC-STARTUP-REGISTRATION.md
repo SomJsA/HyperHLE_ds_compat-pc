@@ -1,4 +1,31 @@
-# Startup registration popup input
+# Startup registration
+
+## Windows R6 startup policy
+
+The Windows x64 runtime bypasses the one-time registration question for the
+six known ARMv7 executables. The matching 1.3.34 marker and direct IPA share
+one executable fingerprint. After loading the guest executable and before
+starting the CPU, the runtime verifies the executable fingerprint and the
+three native menu calls to the read-only registration notification getter.
+It replaces each call with a zero result so the original menu takes its
+no-question branch. This also covers the menu paths that would ask again
+after leaving a profile. IPA files and the registration setting on disk are
+outside this path.
+
+With fast present enabled, the two iPad 1.3.11 builds need the native touch
+orientation on the registration question if it is reached. The normal menu
+and the registration form use their existing present transform.
+
+The R6 chapter test copy was checked with a saved profile on all seven
+resource entries. It opened the main menu, resumed the save, accepted native
+movement, and closed normally. An empty iPad 1.3.11 profile still opened the
+native difficulty screen. The old runtime reproduced the question on all
+seven resource entries. The paired iPhone 1.3.8 test used an isolated copy
+of an existing checkpoint with the registration notification re-enabled.
+The candidate reached the main menu without writing that flag, then
+resumed the checkpoint and accepted native movement.
+
+## Historical popup input regression
 
 2026-11-04. Implementation `7c914700`, normal release SHA256
 `0eb0ca1a7ac0c8bf9f263bda24237396f422703f1a1edcdaa984b42575f332d5`.

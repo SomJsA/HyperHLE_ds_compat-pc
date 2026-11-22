@@ -537,6 +537,9 @@ impl Environment {
         )
         .map_err(|e| format!("Could not load executable: {e}"))?;
 
+        #[cfg(all(windows, target_arch = "x86_64"))]
+        crate::ds_registration::suppress_startup_question(&bundle, &executable, &mut mem);
+
         if legacy_deadspace {
             #[cfg(all(windows, target_arch = "x86_64"))]
             let supported = crate::ds_legacy_input_profile::LegacyInputProfile::identify(

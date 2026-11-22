@@ -2271,8 +2271,16 @@ unsafe fn present_renderbuffer(env: &mut Environment, renderbuffer: GLuint, this
     // oriented frame, separating the visible buttons from their touch areas.
     let deadspace_tablet_self_rotates = env.bundle.bundle_identifier() == "com.ea.deadspace.ipad.bv"
         && env.bundle.bundle_version() == "1.0.3";
+    // On the verified 1.3.11 frontend, the registration question already
+    // uses the same orientation as its touch coordinates. Core Animation
+    // presents it upright. Keep the direct present transform in sync there.
+    let ipad_registration = cfg!(target_os = "windows")
+        && crate::ds_frontend_profile::is_ipad1311(env)
+        && crate::ds_frontend_controller::capture_menu()
+        && crate::ds_frontend_controller::state() == 2;
     let needs_autorotation_compensation = device_family.is_ipad()
         && !deadspace_tablet_self_rotates
+        && !ipad_registration
         && !matches!(
             device_orientation,
             crate::window::DeviceOrientation::Portrait
