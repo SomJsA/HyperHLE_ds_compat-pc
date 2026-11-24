@@ -80,6 +80,8 @@ mod gles_generic;
 pub mod present;
 pub(crate) mod present_attrib;
 pub(crate) mod ds_input_prompts;
+mod pvrtc_disk_cache;
+pub(crate) use pvrtc_disk_cache::maintain_existing as maintain_pvrtc_disk_cache;
 mod util;
 use touchHLE_gl_bindings::gl21compat as gl21compat_raw;
 use touchHLE_gl_bindings::gl33core as gl33core_raw;

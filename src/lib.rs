@@ -445,6 +445,9 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
     };
 
     let app_id = bundle.bundle_identifier();
+    if app_id.starts_with("com.ea.deadspace.") {
+        gles::maintain_pvrtc_disk_cache();
+    }
 
     // Windows DeadSpace defaults are independent of the Android profile below.
     // Explicit environment 0 remains the rollout/diagnostic rollback.

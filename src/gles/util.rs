@@ -44,93 +44,6 @@ fn fnv1a_hash(data: &[u8]) -> u64 {
     hash
 }
 
-/// Host-side directory for the on-disk PVRTC decode cache. Decoding PVRTC on
-/// the CPU is one of the dominant startup costs for games that ship most of
-/// their textures compressed (e.g. Unity titles); persisting the decoded RGBA
-/// makes every subsequent launch of the same app skip the decode entirely.
-fn pvrtc_disk_cache_dir() -> Option<std::path::PathBuf> {
-    static CACHE_DIR: std::sync::OnceLock<Option<std::path::PathBuf>> =
-        std::sync::OnceLock::new();
-    CACHE_DIR
-        .get_or_init(|| {
-            let dir = crate::paths::user_data_base_path().join("touchHLE_pvrtc_cache");
-            match std::fs::create_dir_all(&dir) {
-                Ok(()) => Some(dir),
-                Err(e) => {
-                    log!(
-                        "Warning: PVRTC disk cache disabled, can't create {}: {e}",
-                        dir.display()
-                    );
-                    None
-                }
-            }
-        })
-        .clone()
-}
-
-fn pvrtc_disk_cache_path(
-    key: u64,
-    is_2bit: bool,
-    is_opaque: bool,
-    width: u32,
-    height: u32,
-) -> Option<std::path::PathBuf> {
-    pvrtc_disk_cache_dir().map(|dir| {
-        dir.join(format!(
-            "{:016x}-{}{}-{}x{}.rgba",
-            key,
-            if is_2bit { 2 } else { 4 },
-            if is_opaque { "o" } else { "a" },
-            width,
-            height
-        ))
-    })
-}
-
-fn pvrtc_disk_cache_load(
-    key: u64,
-    is_2bit: bool,
-    is_opaque: bool,
-    width: u32,
-    height: u32,
-) -> Option<Vec<u32>> {
-    let path = pvrtc_disk_cache_path(key, is_2bit, is_opaque, width, height)?;
-    let data = std::fs::read(&path).ok()?;
-    let expected = (width as usize) * (height as usize) * std::mem::size_of::<u32>();
-    if data.len() != expected {
-        // Corrupt or stale entry from an older format — ignore it.
-        return None;
-    }
-    let mut pixels = Vec::with_capacity(expected / std::mem::size_of::<u32>());
-    for chunk in data.chunks_exact(std::mem::size_of::<u32>()) {
-        pixels.push(u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]));
-    }
-    Some(pixels)
-}
-
-fn pvrtc_disk_cache_store(
-    key: u64,
-    is_2bit: bool,
-    is_opaque: bool,
-    width: u32,
-    height: u32,
-    pixels: &[u32],
-) {
-    let Some(path) = pvrtc_disk_cache_path(key, is_2bit, is_opaque, width, height) else {
-        return;
-    };
-    let mut bytes = Vec::with_capacity(pixels.len() * std::mem::size_of::<u32>());
-    for px in pixels {
-        bytes.extend_from_slice(&px.to_le_bytes());
-    }
-    // Write atomically (tmp + rename) so a crash mid-write can't leave a
-    // half-written entry that later fails the size check anyway.
-    let tmp = path.with_extension("tmp");
-    if std::fs::write(&tmp, &bytes).is_ok() && std::fs::rename(&tmp, &path).is_err() {
-        let _ = std::fs::remove_file(&tmp);
-    }
-}
-
 /// Convert a fixed-point scalar to a floating-point scalar.
 ///
 /// Beware: Rust's type checker won't complain if you mix up [GLfixed] with
@@ -417,10 +330,10 @@ pub fn try_decode_pvrtc(
             internalformat,
             gles11::COMPRESSED_RGB_PVRTC_4BPPV1_IMG | gles11::COMPRESSED_RGB_PVRTC_2BPPV1_IMG
         );
-        let decoded: Vec<u32> = pvrtc_disk_cache_load(key, is_2bit, is_opaque, width_u, height_u)
+        let decoded: Vec<u32> = super::pvrtc_disk_cache::load(key, is_2bit, is_opaque, width_u, height_u)
             .unwrap_or_else(|| {
                 let decoded: Vec<u32> = crate::image::decode_pvrtc(pvrtc_data, is_2bit, width_u, height_u);
-                pvrtc_disk_cache_store(key, is_2bit, is_opaque, width_u, height_u, &decoded);
+                super::pvrtc_disk_cache::store(key, is_2bit, is_opaque, width_u, height_u, &decoded);
                 decoded
             });
         let decoded: std::rc::Rc<[u32]> = decoded.into();
