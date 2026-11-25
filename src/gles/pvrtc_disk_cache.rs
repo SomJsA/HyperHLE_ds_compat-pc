@@ -7,24 +7,23 @@
 
 use std::collections::HashMap;
 use std::fs::{self, File, Metadata, OpenOptions};
-use std::io::{self, BufWriter, Read, Write};
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 
 const DIRECTORY: &str = "touchHLE_pvrtc_cache";
 const MAX_FILES: usize = 8192;
 const BUDGET: u64 = if cfg!(target_os = "android") {
-    256
+    1536
 } else {
-    512
+    2048
 } * 1024
     * 1024;
 
 struct Entry {
     bytes: u64,
     last_used: SystemTime,
-    modified: SystemTime,
 }
 
 struct DiskCache {
@@ -34,6 +33,7 @@ struct DiskCache {
     _lock: File,
     entries: HashMap<String, Entry>,
     budget: u64,
+    bytes: u64,
 }
 
 static CACHE: OnceLock<Option<Mutex<DiskCache>>> = OnceLock::new();
@@ -134,6 +134,7 @@ impl DiskCache {
             _lock: lock,
             entries: HashMap::new(),
             budget,
+            bytes: 0,
         };
         let mut removed = 0;
         for item in fs::read_dir(&cache.root)? {
@@ -157,12 +158,12 @@ impl DiskCache {
                 continue;
             }
             let modified = metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+            cache.bytes += bytes;
             cache.entries.insert(
                 name,
                 Entry {
                     bytes,
                     last_used: modified,
-                    modified,
                 },
             );
         }
@@ -174,9 +175,8 @@ impl DiskCache {
     }
 
     fn trim(&mut self, incoming: u64, incoming_files: usize) -> io::Result<u64> {
-        let mut bytes = self.entries.values().map(|entry| entry.bytes).sum::<u64>();
         let mut count = self.entries.len();
-        if bytes + incoming <= self.budget && count + incoming_files <= MAX_FILES {
+        if self.bytes + incoming <= self.budget && count + incoming_files <= MAX_FILES {
             return Ok(0);
         }
         let mut oldest: Vec<_> = self
@@ -193,9 +193,9 @@ impl DiskCache {
                 Err(error) => return Err(error),
             }
             self.entries.remove(&name);
-            bytes -= size;
+            self.bytes -= size;
             count -= 1;
-            if bytes + incoming <= self.budget && count + incoming_files <= MAX_FILES {
+            if self.bytes + incoming <= self.budget && count + incoming_files <= MAX_FILES {
                 break;
             }
         }
@@ -218,15 +218,7 @@ impl DiskCache {
         if bytes.len() as u64 != entry.bytes {
             return None;
         }
-        let now = SystemTime::now();
-        entry.last_used = now;
-        if now.duration_since(entry.modified).unwrap_or_default() >= Duration::from_secs(600) {
-            if let Ok(file) = OpenOptions::new().write(true).open(path) {
-                if file.set_modified(now).is_ok() {
-                    entry.modified = now;
-                }
-            }
-        }
+        entry.last_used = SystemTime::now();
         Some(
             bytes
                 .chunks_exact(4)
@@ -253,33 +245,31 @@ impl DiskCache {
                 Ok(_) => return Ok(()),
                 Err(error) => return Err(error),
             }
-            self.entries.remove(&name);
+            self.bytes -= self.entries.remove(&name).unwrap().bytes;
         } else if fs::symlink_metadata(&path).is_ok() {
             return Ok(());
         }
         self.trim(bytes, 1)?;
         let tmp = path.with_extension("tmp");
-        let file = OpenOptions::new().write(true).create_new(true).open(&tmp)?;
-        let result = (|| {
-            let mut writer = BufWriter::with_capacity(64 * 1024, file);
-            for pixel in pixels {
-                writer.write_all(&pixel.to_le_bytes())?;
-            }
-            writer.flush()?;
-            drop(writer);
-            fs::rename(&tmp, &path)
-        })();
+        let mut file = OpenOptions::new().write(true).create_new(true).open(&tmp)?;
+        let mut buffer = Vec::with_capacity(bytes as usize);
+        for pixel in pixels {
+            buffer.extend_from_slice(&pixel.to_le_bytes());
+        }
+        let written = file.write_all(&buffer);
+        drop(file);
+        let result = written.and_then(|_| fs::rename(&tmp, &path));
         if result.is_err() {
             let _ = fs::remove_file(&tmp);
         }
         result?;
+        self.bytes += bytes;
         let now = SystemTime::now();
         self.entries.insert(
             name,
             Entry {
                 bytes,
                 last_used: now,
-                modified: now,
             },
         );
         Ok(())
